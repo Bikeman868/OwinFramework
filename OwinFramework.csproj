@@ -57,6 +57,7 @@
     <Compile Include="Builder\Extensions.cs" />
     <Compile Include="Builder\IDependencyTree.cs" />
     <Compile Include="Builder\IDependencyTreeFactory.cs" />
+    <Compile Include="Interfaces\IRoute.cs" />
     <Compile Include="Interfaces\IRendering.cs" />
     <Compile Include="Interfaces\IAuthentication.cs" />
     <Compile Include="Interfaces\IBuilder.cs" />
@@ -66,6 +67,8 @@
     <Compile Include="Interfaces\IMiddleware.cs" />
     <Compile Include="Interfaces\ISession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Routing\IRouter.cs" />
+    <Compile Include="Routing\Router.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

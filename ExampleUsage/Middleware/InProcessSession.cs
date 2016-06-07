@@ -13,12 +13,12 @@ namespace ExampleUsage.Middleware
     /// inject the ISession feature into the OWIN context, this will make
     /// this middleware run before any middleware that depends on ISession
     /// </summary>
-    public class SessionMiddleware : IMiddleware<ISession>
+    public class InProcessSession : IMiddleware<ISession>
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get; private set; }
 
-        public SessionMiddleware()
+        public InProcessSession()
         {
             Dependencies = new List<IDependency>();
         }

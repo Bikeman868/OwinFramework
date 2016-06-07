@@ -1,33 +1,47 @@
 # OWIN Framework
 
 OWIN represents a great leap forward in enabling application developers to build 
-their applications from components from multiple sources, but OWIN does not go
-far enough and web applications still have nowhere near enough flexibility.
+their applications from components from multiple sources, but OWIN is just the
+starting point and we need more standardization if we want to be able to mix and
+match any OWIN middleware we want and have a working application with minimal
+knowledge of how the parts work.
+
+Using only the OWIN specification I can't use any session or authentication 
+middleware I like and have it work with any output rendering framework I like
+because these things don't know how to talk to each other. In addition as a
+developer I have to undestand all the dependencies bewteen middleware
+components from different sources to be able to configure a working application.
+
+I think we can do much better than this. I want to be able to choose any middleware
+I want, and have something else build me an OWIN pipeline that will work. If I am
+missing something that is essential then tell me what I am missing and tell me
+what my options are.
 
 Consider the following scenario: I have a UI and API way of accessing the
 functionallity of my web site. The UI and the API share functionallity at the
 model and business logic level and need shared caching, but they use different 
 rendering frameworks. We want to build this with OWIN because OWIN is great! The
-problem is that the UI uses forms authentication that depends on session and
-the API use certificate based authentication that does not require session.
-The UI and the API share the same session mechanism. Each UI component end 
-each API endpoint specifies whether it needs session or not, it also specifies 
-the user permissions required to access the functionallity it provides. The UI 
-is a composition build from multiple UI components.
+problem is that I want forms authentication for the UI and that depends on 
+session, but I want certificate based authentication for the API and that does 
+not require session. I want the UI and the API share the same session mechanism. 
+Each UI component and each API endpoint specifies whether it needs session or not, 
+it also specifies the user permissions required to access the functionallity 
+it provides. My UI is a composition built from multiple UI components.
 
-In this scenario how can I source UI components from other developers that 
-know how to specify session and authentication without knowing which
-session provider or authentication provider I chose. How does the session
-provider know whether it needs to establish session or not. The rules for
-establishing session for the API are just whether the endpont requires
-session or not, but for the UI if the page contains any components that
-need authentication then session is required, but if I switch my authentication
-to a different provider that is not session based, then session is only
-needed when the UI components need session.
+How can I use redily available OWIN components to realize this design?
 
-This scenario is not so far fetched. I can't do this today with OWIN and 
-have the flexibility to switch any OWIN component for any other implementation
-without making sbnstantial throughout my application.
+How can I source UI components from other developers that know how to specify 
+session and authentication without knowing which session provider or authentication 
+provider I chose, and how does the session provider know whether it needs to 
+establish session or not. The rules for establishing session for the API are just 
+whether the endpont requires session or not, but for the UI if the page contains 
+any components that need authentication then session is required. If I switch 
+my authenticationto a different provider that is not session based, then session 
+is only needed when the UI components need session.
+
+I can't configure this with palin OWIN and have the flexibility to switch any 
+OWIN middleware component for any other implementation without making substantial 
+changes throughout my application.
 
 This project is an effort to fix this problem.
 
@@ -35,16 +49,17 @@ This project is an effort to fix this problem.
 
 This project mostly consists of interface definitions. These interfaces 
 extend the original OWIN concept of not restricting the building blocks
-of the application by enforcing constraints on what their shape should be
+of the application by enforcing constraints on what their shape should be,
 whilst at the same time providing enough structure to allow different
 implementations of the same functionallity to be switched out without
-having impact anywhere else.
+having impact elsewhere.
 
 The areas of standardization covered by this project are:
-* Configuring the OWIN chain to satisfy dependencies
+* Configuring the OWIN pipeline to satisfy dependencies between middleware
+* Defining routes and splitting/joining the OWIN pipeline
 * Communication between OWIN middleware components
 
-### Configuring the OWIN chain
+## Configuring the OWIN pipeline
 
 This project defines a fluid syntax for defining and chaining OWIN middleware 
 components. The builder works on the following principals:
@@ -52,7 +67,7 @@ components. The builder works on the following principals:
 * Each OWIN middleware component will know that it depends on specific
   types of OWIN middleware, and has a way to declare what these dependencies are. 
   For example if an authentication middleware needs session storage then
-  it can declare this dependency then if the application developer configures
+  it can declare this dependency, then if the application developer configures
   this middleware but does not define a session mechanism for the
   application then an error will be produced. To fix the error the application
   developer needs to choose a specific session mechanism implementation.
@@ -71,17 +86,17 @@ components. The builder works on the following principals:
   for performance reasons.
 
 * The different types of dependencies are examined by the builder which
-  then builds the OWIN middleware chain so that all dependencies are
+  then builds the OWIN middleware pipeline so that all dependencies are
   satisfied.
 
-* There can be routing middleware components that split the OWIN chain
-  into multiple chains and each of these chains can be configured with
+* There can be routing middleware components that split the OWIN pipeline
+  into multiple routes and each of these routes can be configured with
   different implementations. Continuing from the example at the start 
   of this document, I can specify that my routing middleware must run 
-  after session and that it split the chain in two, one for the UI and
-  one for the API. These two chains need to be configured differently.
+  after session and that it split the pipeline in two, one for the UI and
+  one for the API. These two pipelines need to be configured differently.
 
-#### Example application code to configure the OWIN chain
+### Example application code to configure the OWIN pipeline
 
 This is an example of how an appllication can use the builder. Note that
 applications do not have to use the builder, but it makes dependency
@@ -100,75 +115,79 @@ The builder uses this dependency information to build the chain in the order
 session -> authentication -> mvc.
 
 ```
-    public static Startup()
+    public static Configuration(IAppBuilder app)
     {
-	  var builder = new Builder();
-	  var configuration = new UrchinConfiguration();
+      var dependencyTreeFactory = new DependencyTreeFactory();
+	  var builder = new Builder(dependencyTreeFactory);
+	  var configuration = new WebConfigConfiguration();
 
-	  var auth = new FormsAuthentication(builder)
+	  builder.Register(new FormsAuthentication())
 		.ConfiguredWith(configuration, "/owin/authentication/forms");
 
-	  var mvc = new MvcFramework(builder)
+	  builder.Register(new MvcFramework())
 		.ConfiguredWith(configuration, "/owin/mvc");
 
-	  var session = new AspSession(builder)
+	  builder.Register(new AspSession())
 		.ConfiguredWith(configuration, "/owin/aspSession");
 	  
-	  builder.Build();
+      app.UseBuilder(builder);
     }
 ```
 
 Note that you don't have to use the standard builder, any class that
-implements IBuilder could be used instead.
+implements `IBuilder` could be used instead.
 
-Note that you can swith the implementation of session, authentication
-or presentation without changing anything else.
+Note that you can switch the implementation of session, authentication
+or presentation independantly of each other without changing any other 
+code (configuration options will be different for each middleware).
 
 The example presented at the start of this document is a bit more
-complicated because there are multiple chains and several implementations
-of the same functionallity that have to be named to distinguish them. This
-configuration would look like this:
+complicated because there are multiple splits in the OWIN pipeline as
+well as a join. There are also several implementations of the 
+authentication functionallity that have to be named to distinguish them.
+This is about as complicated a scenario as I can envisage at this point.
+
+This very complex configuration might look like this:
 
 ```
-    public static Startup()
+    public static Configuration(IAppBuilder app)
     {
-	  // Note that Builder can also be registered as a singleton
-	  // in an IOC container and this container can be used to
-	  // construct the other middleware components
-
-	  var builder = new Builder();
-	  var configuration = new WebConfigConfiguration();
-
-	  var session = new AspSession(builder)
-		.ConfiguredWith(configuration, "/owin/aspSession");
-
-	  var router = new Router(builder)
-	    .As("router1")
-		.RunsAfter<ISession>();
-		.ConfiguredWith(configuration, "/owin/router1");
-
-	  // Note that the router configuration adds two
-	  // IRoute middleware components to the builder
-	  // called 'apiRoute' and 'uiRoute'
-
-	  var auth1 = new FormsAuthentication(builder)
-		.As("formsAuthentication")
-		.RunsAfter<IRoute>("uiRoute")
-		.ConfiguredWith(configuration, "/owin/authentication/forms");
-
-	  var auth2 = new CertificateAuthentication(builder)
-		.As("certificateAuthentication")
-		.RunsAfter<IRoute>("apiRoute")
-		.ConfiguredWith(configuration, "/owin/authentication/cert");
-
-	  var rest = new RestAPIMapper(builder)
-		.RunsAfter<IAuthentication>("certificateAuthentication")
-		.ConfiguredWith(configuration, "/owin/restAPIMapper");
-
-	  var mvc = new MvcFramework(builder)
-		.RunsAfter<IAuthentication>("formsAuthentication")
-		.ConfiguredWith(configuration, "/owin/mvc");
-
-	  builder.Build();
+      var dependencyTreeFactory = new DependencyTreeFactory();
+      var builder = new Builder(dependencyTreeFactory);
+      var configuration = new UrchinConfiguration();
+	  
+      builder.Register(new FormsAuthentication())
+          .As("FormsAuthentication")
+          .ConfigureWith(configuration, "/owin/auth/forms")
+          .RunAfter<IRoute>("SecureUI");
+	  
+      builder.Register(new CertificateAuthentication())
+          .As("CertificateAuthentication")
+          .ConfigureWith(configuration, "/owin/auth/cert")
+          .RunAfter<IRoute>("API");
+	  
+      builder.Register(new InProcessSession())
+          .ConfigureWith(configuration, "/owin/session");
+	  
+      builder.Register(new TemplatePageRendering())
+          .RunAfter<IRoute>("PublicUI")
+          .RunAfter<IRoute>("SecureUI")
+          .ConfigureWith(configuration, "/owin/templates");
+	  
+      builder.Register(new RestServiceMapper())
+          .RunAfter<IAuthentication>("CertificateAuthentication")
+          .ConfigureWith(configuration, "/owin/rest");
+	  
+      builder.Register(new Router())
+          .AddRoute("UI", context => context.Request.Path.Value.EndsWith(".aspx"))
+          .AddRoute("API", context => true)
+          .RunAfter<ISession>();
+	  
+      builder.Register(new Router())
+          .AddRoute("SecureUI", context => context.Request.Path.Value.StartsWith("/secure"))
+          .AddRoute("PublicUI", context => true)
+          .RunAfter<IRoute>("UI");
+	  
+      app.UseBuilder(builder);
     }
 ```

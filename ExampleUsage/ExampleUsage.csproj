@@ -63,7 +63,7 @@
     <Compile Include="Middleware\TemplatePageRending.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Middleware\SessionMiddleware.cs" />
+    <Compile Include="Middleware\InProcessSession.cs" />
     <Compile Include="StartupRouting.cs" />
     <Compile Include="StartupSimple.cs" />
   </ItemGroup>

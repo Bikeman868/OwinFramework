@@ -2,6 +2,7 @@
 using Microsoft.Owin;
 using Owin;
 using OwinFramework.Interfaces;
+using OwinFramework.Routing;
 
 namespace OwinFramework.Builder
 {
@@ -42,6 +43,20 @@ namespace OwinFramework.Builder
             return middleware;
         }
 
+        public static IMiddleware<IRoute> AddRoute(
+            this IMiddleware<IRoute> middleware,
+            string routeName,
+            Func<IOwinContext, bool> filterExpression)
+        {
+            var router = middleware as IRouter;
+            if (router == null)
+                throw new BuilderException("You can only add routes to a router");
+
+            router.Add(routeName, filterExpression);
+
+            return router;
+        }
+
         public static IAppBuilder UseBuilder(this IAppBuilder appBuilder, IBuilder builder)
         {
             builder.Build(appBuilder);
@@ -57,5 +72,6 @@ namespace OwinFramework.Builder
         {
             owinContext.Set(typeof(T).Name, feature);
         }
+
     }
 }

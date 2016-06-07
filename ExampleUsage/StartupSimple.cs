@@ -31,12 +31,12 @@ namespace ExampleUsage
             builder.Register(new TemplatePageRendering())
                 .ConfigureWith(configuration, "/owin/templates");
 
-            builder.Register(new SessionMiddleware())
+            builder.Register(new InProcessSession())
                 .ConfigureWith(configuration, "/owin/session");
 
-            // This is standard OWIN configuration statements. As well as using the
+            // Below are standard OWIN configuration statements. As well as using the
             // builder to chain middleware into the pipeline, you can also chain
-            // any other middleware here
+            // any other middleware here.
 
             app.UseBuilder(builder);
             app.UseErrorPage();
