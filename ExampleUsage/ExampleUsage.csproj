@@ -56,11 +56,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Middleware\AuthenticationMiddleware.cs" />
+    <Compile Include="Middleware\CertificateAuthentication.cs" />
+    <Compile Include="Middleware\FormsAuthentication.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="Middleware\RestServiceMapper.cs" />
+    <Compile Include="Middleware\TemplatePageRending.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Middleware\SessionMiddleware.cs" />
+    <Compile Include="StartupRouting.cs" />
+    <Compile Include="StartupSimple.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

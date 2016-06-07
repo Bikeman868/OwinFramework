@@ -53,9 +53,11 @@
     <Compile Include="Builder\Builder.cs" />
     <Compile Include="Builder\DependencyTree.cs" />
     <Compile Include="Builder\DependencyTreeFactory.cs" />
+    <Compile Include="Builder\Exceptions.cs" />
     <Compile Include="Builder\Extensions.cs" />
     <Compile Include="Builder\IDependencyTree.cs" />
     <Compile Include="Builder\IDependencyTreeFactory.cs" />
+    <Compile Include="Interfaces\IRendering.cs" />
     <Compile Include="Interfaces\IAuthentication.cs" />
     <Compile Include="Interfaces\IBuilder.cs" />
     <Compile Include="Interfaces\IConfigurable.cs" />

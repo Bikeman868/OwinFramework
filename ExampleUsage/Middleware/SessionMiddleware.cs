@@ -5,9 +5,15 @@ using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces;
 
-namespace ExampleUsage
+namespace ExampleUsage.Middleware
 {
-    public class SessionMiddleware: IMiddleware<ISession>
+    /// <summary>
+    /// This middleware demonstrates the minimum footprint for a middleware
+    /// component. It has no dependencies and can not be configured. It does
+    /// inject the ISession feature into the OWIN context, this will make
+    /// this middleware run before any middleware that depends on ISession
+    /// </summary>
+    public class SessionMiddleware : IMiddleware<ISession>
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get; private set; }

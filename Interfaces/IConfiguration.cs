@@ -5,7 +5,7 @@ namespace OwinFramework.Interfaces
     public interface IConfiguration
     {
         /// <summary>
-        /// Middleware components will call this to register for changes in the configuration data
+        /// Middleware components can call this to register for changes in the configuration data
         /// for the middleware component.
         /// </summary>
         /// <typeparam name="T">The type of the class that configuration should be deserialized into</typeparam>

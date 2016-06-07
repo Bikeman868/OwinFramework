@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using OwinFramework.Builder;
 
@@ -124,6 +125,19 @@ namespace UnitTests
             Assert.IsTrue(buildOrder.IndexOf(3) > buildOrder.IndexOf(5), "3 built after 5");
             Assert.IsTrue(buildOrder.IndexOf(4) > buildOrder.IndexOf(5), "4 built after 5");
             Assert.IsTrue(buildOrder.IndexOf(5) > buildOrder.IndexOf(6), "5 built after 6");
+        }
+
+        [Test]
+        public void Should_detect_circular_references()
+        {
+            _dependencyTree.Add(1, "One", new[] { 2 });
+            _dependencyTree.Add(2, "Two", new[] { 3, 4 });
+            _dependencyTree.Add(3, "Three", new[] { 5 });
+            _dependencyTree.Add(4, "Four", new[] { 5 });
+            _dependencyTree.Add(5, "Five", new[] { 3 });
+            _dependencyTree.Add(6, "Six", null);
+
+            Assert.Throws<CircularDependencyException>(() => _dependencyTree.GetAllKeys());
         }
 
     }

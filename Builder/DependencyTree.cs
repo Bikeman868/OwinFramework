@@ -128,7 +128,7 @@ namespace OwinFramework.Builder
                     message += node.Key + " which depends on " + string.Join(", ", node.DependentKeys);
                     message += " and has " + string.Join(", ", node.IncommingEdges.Select(e => e.Key));
                     message += " depending on it";
-                    throw new Exception(message);
+                    throw new CircularDependencyException(message);
                 }
                 case VisitStatus.Unvisited:
                 {

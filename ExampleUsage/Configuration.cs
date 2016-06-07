@@ -17,8 +17,7 @@ namespace ExampleUsage
 
         private class ChangeRegistration: IDisposable
         {
-            public void Dispose()
-            { }
+            public void Dispose() { }
         }
     }
 }
