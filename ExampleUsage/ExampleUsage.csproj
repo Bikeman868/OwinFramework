@@ -56,11 +56,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AuthenticationMiddleware.cs" />
+    <Compile Include="Middleware\AuthenticationMiddleware.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SessionMiddleware.cs" />
+    <Compile Include="Middleware\SessionMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
