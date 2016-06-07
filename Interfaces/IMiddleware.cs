@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Owin;
 
 namespace OwinFramework.Interfaces
 {
@@ -11,6 +14,8 @@ namespace OwinFramework.Interfaces
     {
         string Name { get; set; }
         IList<IDependency> Dependencies { get; }
+
+        Task Invoke(IOwinContext context, Func<Task> next);
     }
 
     /// <summary>

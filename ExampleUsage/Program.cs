@@ -1,4 +1,7 @@
-﻿using OwinFramework.Builder;
+﻿using System;
+using Microsoft.Owin.Hosting;
+using Owin;
+using OwinFramework.Builder;
 
 namespace ExampleUsage
 {
@@ -6,18 +9,35 @@ namespace ExampleUsage
     {
         static void Main(string[] args)
         {
-            var builder = new Builder();
+            using (WebApp.Start<Startup>("http://localhost:12345"))
+            {
+                Console.ReadLine();
+            }
+        }
+    }
+
+    public class Startup
+    {
+        public void Configuration(IAppBuilder app)
+        {
+            // Note that I did not use an IOC container here to keep things as
+            // simple and focused as possible. You should use IOC in your application
+
+            var dependencyTreeFactory = new DependencyTreeFactory();
+            var builder = new Builder(dependencyTreeFactory);
             var configuration = new Configuration();
 
-            var authentication = new AuthenticationMiddleware(builder)
+            builder.Register(new AuthenticationMiddleware())
                 .As("authentication")
                 .ConfigureWith(configuration, "/owin/authentication");
 
-            var session = new SessionMiddleware(builder)
+            builder.Register(new SessionMiddleware())
                 .As("session")
                 .ConfigureWith(configuration, "/owin/session");
 
-            builder.Build();
+            app.UseBuilder(builder);
+            app.UseErrorPage();
+            app.UseWelcomePage("/");
         }
     }
 }

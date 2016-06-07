@@ -1,4 +1,6 @@
 ﻿using System;
+using Microsoft.Owin;
+using Owin;
 using OwinFramework.Interfaces;
 
 namespace OwinFramework.Builder
@@ -38,6 +40,22 @@ namespace OwinFramework.Builder
             if (configurable != null)
                 configurable.Configure(configuration, configurationPath);
             return middleware;
+        }
+
+        public static IAppBuilder UseBuilder(this IAppBuilder appBuilder, IBuilder builder)
+        {
+            builder.Build(appBuilder);
+            return appBuilder;
+        }
+
+        public static T GetFeature<T>(this IOwinContext owinContext) where T : class
+        {
+            return owinContext.Get<T>(typeof(T).Name);
+        }
+
+        public static void SetFeature<T>(this IOwinContext owinContext, T feature) where T : class
+        {
+            owinContext.Set(typeof(T).Name, feature);
         }
     }
 }

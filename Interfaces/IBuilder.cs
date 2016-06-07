@@ -1,4 +1,6 @@
-﻿namespace OwinFramework.Interfaces
+﻿using Owin;
+
+namespace OwinFramework.Interfaces
 {
     /// <summary>
     /// Defines the component that is responsible for examining the
@@ -8,6 +10,6 @@
     public interface IBuilder
     {
         IMiddleware<T> Register<T>(IMiddleware<T> middleware);
-        void Build();
+        void Build(IAppBuilder app);
     }
 }
