@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using OwinFramework.Builder;
 
-namespace Stockhouse.Shared.Tests.Collections
+namespace UnitTests
 {
     [TestFixture]
     public class Dependency_tree
@@ -95,6 +95,35 @@ namespace Stockhouse.Shared.Tests.Collections
             Assert.IsFalse(dependantsOfThree.Contains(2));
             Assert.IsFalse(dependantsOfThree.Contains(3));
             Assert.IsFalse(dependantsOfThree.Contains(4));
+        }
+
+        [Test]
+        public void Should_calculate_build_order()
+        {
+            _dependencyTree.Add(1, "One", new[] { 2 });
+            _dependencyTree.Add(2, "Two", new[] { 3, 4 });
+            _dependencyTree.Add(3, "Three", new[] { 5 });
+            _dependencyTree.Add(4, "Four", new[] { 5 });
+            _dependencyTree.Add(5, "Five", new[] { 6 });
+            _dependencyTree.Add(6, "Six", null);
+
+            var buildOrder = _dependencyTree.GetAllKeys().ToList();
+
+            Assert.AreEqual(6, buildOrder.Count, "number of items in the build order");
+
+            Assert.IsTrue(buildOrder.Contains(1), "build includes 1");
+            Assert.IsTrue(buildOrder.Contains(2), "build includes 2");
+            Assert.IsTrue(buildOrder.Contains(3), "build includes 3");
+            Assert.IsTrue(buildOrder.Contains(4), "build includes 4");
+            Assert.IsTrue(buildOrder.Contains(5), "build includes 5");
+            Assert.IsTrue(buildOrder.Contains(6), "build includes 6");
+
+            Assert.IsTrue(buildOrder.IndexOf(1) > buildOrder.IndexOf(2), "1 built after 2");
+            Assert.IsTrue(buildOrder.IndexOf(2) > buildOrder.IndexOf(3), "2 built after 3");
+            Assert.IsTrue(buildOrder.IndexOf(2) > buildOrder.IndexOf(4), "2 built after 4");
+            Assert.IsTrue(buildOrder.IndexOf(3) > buildOrder.IndexOf(5), "3 built after 5");
+            Assert.IsTrue(buildOrder.IndexOf(4) > buildOrder.IndexOf(5), "4 built after 5");
+            Assert.IsTrue(buildOrder.IndexOf(5) > buildOrder.IndexOf(6), "5 built after 6");
         }
 
     }

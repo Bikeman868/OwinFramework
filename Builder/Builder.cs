@@ -37,33 +37,53 @@ namespace OwinFramework.Builder
                 component.Dependencies = component.Middleware.Dependencies;
             }
 
-            // Resolve dependencies
+            // When there are multiple middleware compoennts implementing the same
+            // interface then dependencies must use the fully qualifies reference.
+            // When there is only one instance the names should be ignored to 
+            // simplify configuration
+            var singeltons = new List<Type>();
+            var multiples = new List<Type>();
+            foreach (var component in _components)
+            {
+                if (!multiples.Contains(component.MiddlewareType))
+                {
+                    if (singeltons.Contains(component.MiddlewareType))
+                    {
+                        multiples.Add(component.MiddlewareType);
+                        singeltons.Remove(component.MiddlewareType);
+                    }
+                    else
+                        singeltons.Add(component.MiddlewareType);
+                }
+            }
+
+            // These keys are used to pass dependencies to the dependency graph 
+            Func<Type, string, string> buildKey = (t, n) =>
+            {
+                var key = t.FullName;
+                if (!string.IsNullOrEmpty(n) && !singeltons.Contains(t))
+                    key += ":" + n.ToLower();
+                return key;
+            };
+
+            // Build a dependency graph
             var dependencyTree = _dependencyTreeFactory.Create<string, Component>();
             foreach (var component in _components)
             {
-                var key = component.MiddlewareType.FullName;
-                if (!string.IsNullOrEmpty(component.Name))
-                    key += ":" + component.Name.ToLower();
-
-                var dependentKeys = component.Dependencies == null 
+                var key = buildKey(component.MiddlewareType, component.Name);
+                var dependentKeys = component.Dependencies == null
                     ? null
                     : component
                         .Dependencies
-                        .Select(c => 
-                            {
-                                var dependentKey = c.DependentType.FullName;
-                                if (!string.IsNullOrEmpty(c.Name))
-                                    dependentKey += ":" + c.Name;
-                                return dependentKey;
-                            });
+                        .Select(c => buildKey(c.DependentType, c.Name));
 
                 dependencyTree.Add(key, component, dependentKeys);
             }
 
-            // Sort components by order of registration
+            // Sort components by order of least to most dependent
             var orderedComponents  = dependencyTree.GetAllData();
 
-            // Build OWIN chain
+            // Build the OWIN pipeline
             foreach (var component in orderedComponents)
                 app.Use(component.Middleware.Invoke);
         }

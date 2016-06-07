@@ -49,17 +49,17 @@ namespace OwinFramework.Builder
             var node = _nodeIndex[key];
             if (topDown)
             {
-                foreach (var edge in node.Edges)
+                foreach (var edge in node.OutgoingEdges)
                     yield return edge.Key;
             }
 
-            foreach (var edge in node.Edges)
+            foreach (var edge in node.OutgoingEdges)
                 foreach (var decendant in GetDecendents(edge.Key, topDown))
                     yield return decendant;
             
             if (!topDown)
             {
-                foreach (var edge in node.Edges)
+                foreach (var edge in node.OutgoingEdges)
                     yield return edge.Key;
             }
         }
@@ -69,43 +69,77 @@ namespace OwinFramework.Builder
             return _nodeIndex[key].Data;
         }
 
+        public IEnumerable<TData> GetAllData(bool topDown)
+        {
+            BuildGraph();
+
+            var sortedNodes = GetSortedList();
+
+            if (topDown) sortedNodes = sortedNodes.Reverse().ToList();
+
+            return sortedNodes.Select(n => n.Data);
+        }
+
         public IEnumerable<TKey> GetAllKeys(bool topDown)
         {
             BuildGraph();
 
-            var resolved = new List<int>();
-            var unresolved = new List<int>();
+            var sortedNodes = GetSortedList();
 
-            return ResolveDependancies(_nodeIndex.Keys.First(), topDown, resolved, unresolved);
+            if (topDown) sortedNodes = sortedNodes.Reverse().ToList();
+
+            return sortedNodes.Select(n => n.Key);
         }
 
-        public IEnumerable<TData> GetAllData(bool topDown)
+        /// <summary>
+        /// Implements depth first topological sort
+        /// </summary>
+        /// <see cref="https://en.wikipedia.org/wiki/Topological_sorting"/>
+        private IList<GraphNode> GetSortedList()
         {
-            return GetAllKeys(topDown).Select(k => _nodeIndex[k].Data);
+            var nodes = _nodeIndex.Values.ToList();
+
+            foreach (var node in nodes)
+                node.VisitStatus = VisitStatus.Unvisited;
+
+            var sorted = new List<GraphNode>();
+
+            if (nodes.Count > 1)
+            {
+                var unvisitedNode = nodes[0];
+                while (unvisitedNode != null)
+                {
+                    Visit(sorted, unvisitedNode);
+                    unvisitedNode = nodes.FirstOrDefault(n => n.VisitStatus == VisitStatus.Unvisited);
+                }
+            }
+
+            return sorted;
         }
 
-        private IEnumerable<TKey> ResolveDependancies(TKey key, bool topDown, List<int> resolved, List<int> unresolved)
+        private void Visit(ICollection<GraphNode> sortedList, GraphNode node)
         {
-            //unresolved.Add(key);
-            //if (topDown)
-            //{
-            //    foreach (var edge in _edges
-            //        .Where(e => e.From.Equals(key))
-            //        .Where(e => resolved.Contains(e.To)))
-            //        resolved.Add();
-            //}
-
-            //foreach (var edge in _edges.Where(e => e.From.Equals(key)))
-            //    foreach (var decendant in GetDecendents(edge.To, topDown))
-            //        yield return decendant;
-
-            //if (!topDown)
-            //{
-            //    foreach (var edge in _edges.Where(e => e.From.Equals(key)))
-            //        yield return edge.To;
-            //}
-
-            return null;
+            switch (node.VisitStatus)
+            {
+                case VisitStatus.MarkTemporary:
+                {
+                    var message = "There are circular dependencies.";
+                    message += "\rThis problem was detected for  ";
+                    message += node.Key + " which depends on " + string.Join(", ", node.DependentKeys);
+                    message += " and has " + string.Join(", ", node.IncommingEdges.Select(e => e.Key));
+                    message += " depending on it";
+                    throw new Exception(message);
+                }
+                case VisitStatus.Unvisited:
+                {
+                    node.VisitStatus = VisitStatus.MarkTemporary;
+                    foreach (var m in node.OutgoingEdges)
+                        Visit(sortedList, m);
+                    node.VisitStatus = VisitStatus.MarkPermenant;
+                    sortedList.Add(node);
+                    break;
+                }
+            }
         }
 
         private void BuildGraph()
@@ -114,13 +148,28 @@ namespace OwinFramework.Builder
 
             var nextId = 1;
             foreach (var node in _nodeIndex.Values)
+            {
                 node.Id = nextId++;
+                node.IncommingEdges = new List<GraphNode>();
+            }
 
             foreach (var node in _nodeIndex.Values)
-                node.Edges = node.DependentKeys.Select(k => _nodeIndex[k]).ToList();
+            {
+                node.OutgoingEdges = node.DependentKeys.Select(k =>
+                {
+                    GraphNode dependent;
+                    if (!_nodeIndex.TryGetValue(k, out dependent))
+                        throw new Exception("Dependent node '" + k + "' does not exist in the dependecy tree");
+                    return dependent;
+                }).ToList();
+                foreach (var edge in node.OutgoingEdges)
+                    edge.IncommingEdges.Add(node);
+            }
 
             _graphBuilt = true;
         }
+
+        private enum VisitStatus { Unvisited, MarkTemporary, MarkPermenant }
 
         private class GraphNode
         {
@@ -128,7 +177,9 @@ namespace OwinFramework.Builder
             public TData Data;
             public TKey Key;
             public IList<TKey> DependentKeys;
-            public IList<GraphNode> Edges;
+            public IList<GraphNode> OutgoingEdges;
+            public IList<GraphNode> IncommingEdges;
+            public VisitStatus VisitStatus;
         }
     }
 }
