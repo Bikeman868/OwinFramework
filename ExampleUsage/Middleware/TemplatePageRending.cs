@@ -5,6 +5,7 @@ using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Builder;
+using OwinFramework.Interfaces.Routing;
 using OwinFramework.Interfaces.Upstream;
 
 namespace ExampleUsage.Middleware
@@ -16,7 +17,7 @@ namespace ExampleUsage.Middleware
     ///   are configured in the OWIN pipeline the builder will put them before this middleware, 
     ///   but if they are not configured this is not an error.
     /// </summary>
-    public class TemplatePageRendering : IMiddleware<IPresentation>, IUpstreamCommunicator
+    public class TemplatePageRendering : IMiddleware<IPresentation>, IRoutingProcessor
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get; private set; }
@@ -35,7 +36,7 @@ namespace ExampleUsage.Middleware
         /// This is called during the routing phase, before the request processing starts
         /// and allows this middleware to alter the behavour of middleware further up the pipeline
         /// </summary>
-        public void InvokeUpstream(IOwinContext context)
+        public void RouteRequest(IOwinContext context)
         {
             Console.WriteLine("Template page rendering middleware upstream invoked");
 

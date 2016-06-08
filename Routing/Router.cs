@@ -27,5 +27,9 @@ namespace OwinFramework.Routing
         {
             return next.Invoke();
         }
+
+        public void RouteRequest(IOwinContext context)
+        {
+        }
     }
 }

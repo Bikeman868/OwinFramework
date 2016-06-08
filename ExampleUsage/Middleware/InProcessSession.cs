@@ -14,10 +14,16 @@ namespace ExampleUsage.Middleware
     /// <summary>
     /// This class demonstrates a middleware component that supports upstream communication.
     /// 
-    /// Injects the ISession feature into the OWIN context.
+    /// This class injects the ISession feature into the OWIN context during request processing.
     /// 
-    /// Also injects IUpstreamSession feature allowing downstream middleware to indicate whether 
-    /// session is required for the request.
+    /// This class injects IUpstreamSession feature into the OWIN context during the routing
+    /// phose. This object allows downstream middleware to indicate whether session is required 
+    /// for the request.
+    /// 
+    /// In this example the session creation is so cheap that there is no point in having an on/off
+    /// switch for it. This example exists to illustrate how to do it even though in this case it
+    /// is not needed. If you are writing session middleware that persists session to a database
+    /// it would be a really good idea to avoid loading up session for requests that don't need it.
     /// </summary>
     public class InProcessSession : IMiddleware<ISession>, IUpstreamCommunicator<IUpstreamSession>
     {
@@ -39,13 +45,13 @@ namespace ExampleUsage.Middleware
         /// <summary>
         /// This method gets called during the routing phase. It gives the middleware component
         /// an opportunity to inject something into the OWIN context that downstream middleware
-        /// can use to configure it's behaviour specifically for this request.
+        /// can use to configure it's behaviour for this request.
         /// </summary>
-        public void InvokeUpstream(IOwinContext context)
+        public void RouteRequest(IOwinContext context)
         {
             Console.WriteLine("In process session middleware upstream invoked");
 
-            context.SetFeature<IUpstreamSession>(new UpstreamSession(context));
+            context.SetFeature<IUpstreamSession>(new UpstreamSession());
         }
 
         /// <summary>
@@ -87,35 +93,29 @@ namespace ExampleUsage.Middleware
         }
 
         /// <summary>
-        /// This class illustrates one technique for downstream components to configure an upstream
-        /// component by storing settings in the OWIN context's environment.
+        /// An instance of this class is inserted into the OWIN context during the
+        /// request routing phase. This allows downstream middleware to indicate
+        /// whether session is required or not for this request.
         /// </summary>
         private class UpstreamSession : IUpstreamSession
         {
-            private readonly IOwinContext _context;
-
-            public UpstreamSession(IOwinContext context)
-            {
-                _context = context;
-            }
+            private bool _sessionRequired;
 
             public bool SessionRequired
             {
-                get
-                {
-                    var value = _context.Environment["InProcessSessionRequired"];
-                    return value == null ? false : (bool)value;
-                }
-                set
-                {
-                    if (value) _context.Environment["InProcessSessionRequired"] = true;
-                }
+                get { return _sessionRequired; }
+                set { if (value) _sessionRequired = true; }
             }
         }
 
         /// <summary>
         /// This is a very basic implementation of session that is only usefull for
         /// illustration purposes. Do not use this code in your production web site.
+        /// 
+        /// An object of this type is created and added to the OWIN context during
+        /// request processing. It can be used further down the OWIN pipeline to
+        /// retrieve and update user specific information that is persisted between
+        /// requests.
         /// </summary>
         private class DownstreamSession: ISession
         {
