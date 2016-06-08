@@ -24,7 +24,7 @@ namespace ExampleUsage.Middleware
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("Allow everything authorization middleware invoked");
+            Console.WriteLine("PROCESS: Allow everything authorization");
 
             context.SetFeature<IAuthorization>(this);
 

@@ -75,14 +75,14 @@ namespace ExampleUsage
             // runs after session, so both routes will use the same session middleware. If
             // you condifure more than one session middleware in this scenario then an exception
             // will be thrown at startup.
-            builder.Register(new Router())
+            builder.Register(new Router(dependencyTreeFactory))
                 .AddRoute("UI", context => context.Request.Path.Value.EndsWith(".aspx"))
                 .AddRoute("API", context => true)
                 .RunAfter<ISession>(null, false);
 
             // This configures another routing split that divides the 'UI' route into secure
             // and public routes called 'SecureUI' and 'PublicUI'.
-            builder.Register(new Router())
+            builder.Register(new Router(dependencyTreeFactory))
                 .AddRoute("SecureUI", context => context.Request.Path.Value.StartsWith("/secure"))
                 .AddRoute("PublicUI", context => true)
                 .RunAfter<IRoute>("UI");

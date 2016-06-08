@@ -47,11 +47,14 @@ namespace ExampleUsage.Middleware
         /// an opportunity to inject something into the OWIN context that downstream middleware
         /// can use to configure it's behaviour for this request.
         /// </summary>
-        public void RouteRequest(IOwinContext context)
+        public void RouteRequest(IOwinContext context, Action next)
         {
-            Console.WriteLine("In process session middleware upstream invoked");
+            Console.WriteLine("ROUTE: In process session");
 
             context.SetFeature<IUpstreamSession>(new UpstreamSession());
+
+            // Invoke the next middleware in the chain
+            next();
         }
 
         /// <summary>
@@ -61,7 +64,7 @@ namespace ExampleUsage.Middleware
         /// </summary>
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("In process session middleware invoked");
+            Console.WriteLine("PROCESS: In process session");
 
             var upstreamSession = context.GetFeature<IUpstreamSession>();
             var sessionRequired = upstreamSession != null && upstreamSession.SessionRequired;
@@ -89,6 +92,7 @@ namespace ExampleUsage.Middleware
         
             context.SetFeature<ISession>(session);
 
+            // Invoke the next middleware in the chain
             return next.Invoke();
         }
 

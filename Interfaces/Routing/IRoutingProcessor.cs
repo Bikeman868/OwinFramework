@@ -1,4 +1,5 @@
-﻿using Microsoft.Owin;
+﻿using System;
+using Microsoft.Owin;
 
 namespace OwinFramework.Interfaces.Routing
 {
@@ -23,6 +24,6 @@ namespace OwinFramework.Interfaces.Routing
     /// </summary>
     public interface IRoutingProcessor
     {
-        void RouteRequest(IOwinContext context);
+        void RouteRequest(IOwinContext context, Action next);
     }
 }

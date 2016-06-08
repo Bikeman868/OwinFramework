@@ -32,7 +32,7 @@ namespace ExampleUsage.Middleware
                 path,
                 cfg =>
                 {
-                    Console.WriteLine("Forms identification middleware configured");
+                    Console.WriteLine("CONFIGURE: Forms identification");
                 },
                 string.Empty);
             registration.Dispose();
@@ -40,7 +40,7 @@ namespace ExampleUsage.Middleware
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("Forms identification middleware invoked");
+            Console.WriteLine("PROCESS: Forms identification");
 
             context.SetFeature<IIdentification>(new Identification());
 

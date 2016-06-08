@@ -36,9 +36,9 @@ namespace ExampleUsage.Middleware
         /// This is called during the routing phase, before the request processing starts
         /// and allows this middleware to alter the behavour of middleware further up the pipeline
         /// </summary>
-        public void RouteRequest(IOwinContext context)
+        public void RouteRequest(IOwinContext context, Action next)
         {
-            Console.WriteLine("Template page rendering middleware upstream invoked");
+            Console.WriteLine("ROUTE: Template page rendering");
 
             // Get upstream communication interfaces if available
             var upstreamSession = context.GetFeature<IUpstreamSession>();
@@ -51,34 +51,39 @@ namespace ExampleUsage.Middleware
             // Tell the identification middleware that a anonymous users are ok for this request
             if (upstreamIdentification != null)
                 upstreamIdentification.AllowAnonymous = true;
+
+            // Invoke the next middleware in the chain
+            next();
         }
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("Template page rendering middleware invoked");
+            Console.WriteLine("PROCESS: Template page rendering");
 
             var authentication = context.GetFeature<IAuthorization>();
             if (authentication != null)
             {
-                Console.WriteLine("Authorization is available to template page rendering middleware");
+                Console.WriteLine("  Authorization is available");
             }
 
             var identification = context.GetFeature<IIdentification>();
             if (identification != null)
             {
-                Console.WriteLine("Identification is available to template page rendering middleware");
+                Console.WriteLine("  Identification is available");
                 if (identification.IsAnonymous)
-                    Console.WriteLine("Rendering template page for anonymous user");
+                    Console.WriteLine("  Rendering template page for anonymous user");
                 else
-                    Console.WriteLine("Rendering template page for user " + identification.Identity);
+                    Console.WriteLine("  Rendering template page for user " + identification.Identity);
             }
 
             var session = context.GetFeature<ISession>();
             if (session != null)
             {
-                Console.WriteLine("Session is available to template page rendering middleware");
+                Console.WriteLine("  Session is available");
                 if (session.HasSession)
-                    Console.WriteLine("User has a session in template page rendering middleware");
+                    Console.WriteLine("  User has a session");
+                else
+                    Console.WriteLine("  User does not have a session");
             }
 
             context.Response.ContentType = "text/html";

@@ -32,7 +32,7 @@ namespace ExampleUsage.Middleware
                 path,
                 cfg =>
                 {
-                    Console.WriteLine("Certificate identification middleware configured");
+                    Console.WriteLine("CONFIGURE: Certificate identification");
                 },
                 string.Empty);
             registration.Dispose();
@@ -40,7 +40,7 @@ namespace ExampleUsage.Middleware
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("Certificate identification middleware invoked");
+            Console.WriteLine("PROCESS: Certificate identification");
 
             // A real implementation would check client certificates associated with
             // the request at this point to establish user identification

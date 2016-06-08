@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Owin;
 using Owin;
 using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Builder;
+using OwinFramework.Routing;
+using System.Threading.Tasks;
 
 namespace OwinFramework.Builder
 {
@@ -11,6 +14,8 @@ namespace OwinFramework.Builder
     {
         private readonly IList<Component> _components;
         private readonly IDependencyTreeFactory _dependencyTreeFactory;
+
+        private Router _router;
 
         public Builder(IDependencyTreeFactory dependencyTreeFactory)
         {
@@ -30,71 +35,26 @@ namespace OwinFramework.Builder
 
         public void Build(IAppBuilder app)
         {
-            // Get information about the components - their properties might have
-            // changed since they were registered with the builder.
+            _router = new Router(_dependencyTreeFactory);
+            _router.Add(null, owinContext => true);
+
             foreach (var component in _components)
-            {
-                component.Name = component.Middleware.Name;
-                component.Dependencies = component.Middleware.Dependencies;
-            }
+                _router.Segments[0].Add(component.Middleware, component.MiddlewareType);
+            _router.Segments[0].ResolveDependencies();
 
-            // When there are multiple middleware compoennts implementing the same
-            // interface then dependencies must use the fully qualifies reference.
-            // When there is only one instance the names should be ignored to 
-            // simplify configuration
-            var singeltons = new List<Type>();
-            var multiples = new List<Type>();
-            foreach (var component in _components)
-            {
-                if (!multiples.Contains(component.MiddlewareType))
-                {
-                    if (singeltons.Contains(component.MiddlewareType))
-                    {
-                        multiples.Add(component.MiddlewareType);
-                        singeltons.Remove(component.MiddlewareType);
-                    }
-                    else
-                        singeltons.Add(component.MiddlewareType);
-                }
-            }
+            app.Use(Invoke);
+        }
 
-            // These keys are used to pass dependencies to the dependency graph 
-            Func<Type, string, string> buildKey = (t, n) =>
-            {
-                var key = t.FullName;
-                if (!string.IsNullOrEmpty(n) && !singeltons.Contains(t))
-                    key += ":" + n.ToLower();
-                return key;
-            };
-
-            // Build a dependency graph
-            var dependencyTree = _dependencyTreeFactory.Create<string, Component>();
-            foreach (var component in _components)
-            {
-                var key = buildKey(component.MiddlewareType, component.Name);
-                var dependentKeys = component.Dependencies == null
-                    ? null
-                    : component
-                        .Dependencies
-                        .Select(c => buildKey(c.DependentType, c.Name));
-
-                dependencyTree.Add(key, component, dependentKeys);
-            }
-
-            // Sort components by order of least to most dependent
-            var orderedComponents  = dependencyTree.GetAllData();
-
-            // Build the OWIN pipeline
-            foreach (var component in orderedComponents)
-                app.Use(component.Middleware.Invoke);
+        private Task Invoke(IOwinContext context, Func<Task> next)
+        {
+            _router.RouteRequest(context, () => { });
+            return _router.Invoke(context, next);
         }
 
         private class Component
         {
             public IMiddleware Middleware;
             public Type MiddlewareType;
-            public string Name;
-            public IList<IDependency> Dependencies;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace ExampleUsage.Middleware
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("REST service wrapper middleware invoked");
+            Console.WriteLine("PROCESS: REST service wrapper");
 
             context.Response.ContentType = "application/json";
             return context.Response.WriteAsync(@"{""name"":""myName""}");
