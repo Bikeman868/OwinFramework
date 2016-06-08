@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
 
-namespace OwinFramework.Interfaces
+namespace OwinFramework.Interfaces.Upstream
 {
     /// <summary>
     /// Allows multiple IUpstreamCommunicator<T> instances to be added to 

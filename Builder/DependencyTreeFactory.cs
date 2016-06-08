@@ -1,4 +1,5 @@
 ﻿using System;
+using OwinFramework.Interfaces.Builder;
 
 namespace OwinFramework.Builder
 {

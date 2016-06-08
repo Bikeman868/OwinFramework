@@ -2,6 +2,8 @@
 using Microsoft.Owin;
 using Owin;
 using OwinFramework.Interfaces;
+using OwinFramework.Interfaces.Builder;
+using OwinFramework.Interfaces.Routing;
 using OwinFramework.Routing;
 
 namespace OwinFramework.Builder

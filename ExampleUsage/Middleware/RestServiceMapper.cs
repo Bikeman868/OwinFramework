@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Interfaces;
+using OwinFramework.Interfaces.Builder;
 
 namespace ExampleUsage.Middleware
 {
@@ -14,7 +15,7 @@ namespace ExampleUsage.Middleware
     /// In a real application the middleware would examine the OWIN context and produce 
     /// different output for different requests.
     /// </summary>
-    public class RestServiceMapper : IMiddleware<IRendering>
+    public class RestServiceMapper : IMiddleware<IPresentation>
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get; private set; }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Owin;
 
-namespace OwinFramework.Interfaces
+namespace OwinFramework.Interfaces.Builder
 {
     /// <summary>
     /// All OWIN middleware should implement this interface. It provides a 

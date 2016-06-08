@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace OwinFramework.Interfaces
+﻿namespace OwinFramework.Interfaces.Upstream
 {
     /// <summary>
     /// Allows middleware that is further down the pipeline to communicate upstream to

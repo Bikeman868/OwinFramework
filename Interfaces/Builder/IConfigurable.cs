@@ -1,4 +1,4 @@
-﻿namespace OwinFramework.Interfaces
+﻿namespace OwinFramework.Interfaces.Builder
 {
     /// <summary>
     /// Middleware can choose to implement this interface if they can be configured.

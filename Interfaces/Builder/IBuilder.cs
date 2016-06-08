@@ -1,6 +1,6 @@
 ﻿using Owin;
 
-namespace OwinFramework.Interfaces
+namespace OwinFramework.Interfaces.Builder
 {
     /// <summary>
     /// Defines the component that is responsible for examining the

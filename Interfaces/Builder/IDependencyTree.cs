@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace OwinFramework.Builder
+namespace OwinFramework.Interfaces.Builder
 {
     public interface IDependencyTree<TKey, TData> where TKey: IEquatable<TKey>
     {

@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Owin;
-using OwinFramework.Interfaces;
+using OwinFramework.Interfaces.Builder;
 
-namespace OwinFramework.Routing
+namespace OwinFramework.Interfaces.Routing
 {
     public interface IRouter : IMiddleware<IRoute>
     {

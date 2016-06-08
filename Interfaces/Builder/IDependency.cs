@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OwinFramework.Interfaces
+namespace OwinFramework.Interfaces.Builder
 {
     /// <summary>
     /// Contains information about a dependency on another OWIN

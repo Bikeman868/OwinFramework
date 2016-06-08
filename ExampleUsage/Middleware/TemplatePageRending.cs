@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces;
+using OwinFramework.Interfaces.Builder;
+using OwinFramework.Interfaces.Upstream;
 
 namespace ExampleUsage.Middleware
 {
@@ -14,7 +16,7 @@ namespace ExampleUsage.Middleware
     ///   are configured in the OWIN pipeline the builder will put them before this middleware, 
     ///   but if they are not configured this is not an error.
     /// </summary>
-    public class TemplatePageRendering : IMiddleware<IRendering>, IUpstreamCommunicator<IUpstreamSession>
+    public class TemplatePageRendering : IMiddleware<IPresentation>, IUpstreamCommunicator
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get; private set; }

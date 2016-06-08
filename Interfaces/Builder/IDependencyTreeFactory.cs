@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OwinFramework.Builder
+namespace OwinFramework.Interfaces.Builder
 {
     public interface IDependencyTreeFactory
     {

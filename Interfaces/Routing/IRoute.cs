@@ -1,4 +1,4 @@
-﻿namespace OwinFramework.Interfaces
+﻿namespace OwinFramework.Interfaces.Routing
 {
     /// <summary>
     /// Defines the functionallity exposed by the routing feature that
