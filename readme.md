@@ -117,8 +117,7 @@ session -> authentication -> mvc.
 ```
     public static Configuration(IAppBuilder app)
     {
-      var dependencyTreeFactory = new DependencyTreeFactory();
-	  var builder = new Builder(dependencyTreeFactory);
+	  var builder = new Builder();
 	  var configuration = new WebConfigConfiguration();
 
 	  builder.Register(new FormsAuthentication())
@@ -145,25 +144,27 @@ The example presented at the start of this document is a bit more
 complicated because there are multiple splits in the OWIN pipeline as
 well as a join. There are also several implementations of the 
 authentication functionallity that have to be named to distinguish them.
-This is about as complicated a scenario as I can envisage at this point.
+Just for good measure I threw in a couple of different configuration
+mechanisms. This is about as complicated a scenario as I can envisage
+at this point.
 
 This very complex configuration might look like this:
 
 ```
     public static Configuration(IAppBuilder app)
     {
-      var dependencyTreeFactory = new DependencyTreeFactory();
-      var builder = new Builder(dependencyTreeFactory);
-      var configuration = new UrchinConfiguration();
+      var builder = new Builder();
+      var urchin = new UrchinConfiguration();
+      var webConfig = new WebConfigConfiguration();
 	  
       builder.Register(new FormsAuthentication())
           .As("FormsAuthentication")
-          .ConfigureWith(configuration, "/owin/auth/forms")
+          .ConfigureWith(webConfig, "/owin/auth/forms")
           .RunAfter<IRoute>("SecureUI");
 	  
       builder.Register(new CertificateAuthentication())
           .As("CertificateAuthentication")
-          .ConfigureWith(configuration, "/owin/auth/cert")
+          .ConfigureWith(urchin, "/owin/auth/cert")
           .RunAfter<IRoute>("API");
 	  
       builder.Register(new InProcessSession())
@@ -172,11 +173,11 @@ This very complex configuration might look like this:
       builder.Register(new TemplatePageRendering())
           .RunAfter<IRoute>("PublicUI")
           .RunAfter<IRoute>("SecureUI")
-          .ConfigureWith(configuration, "/owin/templates");
+          .ConfigureWith(webConfig, "/owin/templates");
 	  
       builder.Register(new RestServiceMapper())
           .RunAfter<IAuthentication>("CertificateAuthentication")
-          .ConfigureWith(configuration, "/owin/rest");
+          .ConfigureWith(urchin, "/owin/rest");
 	  
       builder.Register(new Router())
           .AddRoute("UI", context => context.Request.Path.Value.EndsWith(".aspx"))
@@ -191,3 +192,56 @@ This very complex configuration might look like this:
       app.UseBuilder(builder);
     }
 ```
+
+## Middleware communications
+
+This project defines some simple extensible standards that allow OWIN middleware
+components to communicate with each other and work together without knowing anything
+about each other.
+
+This project defines some interfaces that allow middleware developers to make their
+middleware interoperable with other middleware from other authors. The list of standard
+interfaces can be increased over time, and application developers can also define 
+interfaces within their application and use them with the builder too.
+
+The `Buider` in this project is completely agnostic to the interfaces that define the
+features provided by a middleware component. This project simply defines `IMiddleware<T>`
+where `T` can be any interface you like.
+
+### Downstream communication
+
+When a class implements `IMiddleware<T>` it must inject `T` into the OWIN context when it
+is invoked. Other middleware components that depend on `T` can add this to their
+dependencies, and the `Builder` will ensure that the middleware that injects `T` into the
+context will be invoked before any middleware that depends on it.
+
+This project defines two extension methods of `IOwinContext` called `SetFeature<T>()` and
+`GetFeature<T>()` that middleware can use to inject these types into the OWIN context 
+and later retrieve them.
+
+This mechanism is simple, and provides forwards communication, i.e. as the request is 
+processed through the OWIN pipeline, any interfaces injected into the OWIN context 
+by a middleware component are available to other middleware further down the pipe. I
+refer to this as downstream communication.
+
+### Upstream communication
+
+The downstream communication mechanism is great, it allows session to be established at the
+start of the request that other middleware further down the pipe can make use of, but
+what about the case where the presentation middleware needs to tell the authentication
+middleware what level of permissiotns are required for this request, but the authentication 
+middleware runs before the presentation middleware in the OWIN pipeline? This requires
+communication back up the pipeline, which is a bit more complicated. I refer to this as
+upstream communication.
+
+This project defines a routing mechanism that split and joins the OWIN pipeline into
+a set of parallel paths (referred to as routes). This routing mechanism also provides
+the upstream communication.
+
+When you use the OWIN Framework, request processing is a two stage process. In the first
+stage the routing components figure out which middleware components are going to be
+used to process this request and in what order. They do this with routing filters that 
+are defined by the application developer (routing filters are very simple Lambda 
+expressions). In the second stage the OWIN pipeline is executed in the usual OWIN fashion. 
+Upstream communication happens during the first stage, downstream communication happens
+during the second stage.

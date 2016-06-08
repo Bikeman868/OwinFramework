@@ -19,15 +19,14 @@ namespace OwinFramework.Interfaces
     }
 
     /// <summary>
-    /// This interface defines an OWIN middleware component of a specific
-    /// type.
+    /// This interface defines an OWIN middleware component that provides
+    /// a specific feature.
     /// </summary>
-    /// <typeparam name="T">Defines the type of middleware component that
-    /// is referenced. This should almost always be an interface type
-    /// so that different implementations of the same interface can
-    /// be swapped for each other. Within an application if the
-    /// application developer wants to use concrete types this is
-    /// OK, but not best practice.</typeparam>
+    /// <typeparam name="T">Defines the feature that this middleware component
+    /// provides. This design deliberately restricts middleware components to
+    /// implementing only one feature. For example this type can be ISession,
+    /// IAuthorization etc. You are not limited to the interfaces defined in this
+    /// project, you can use any interface you like.</typeparam>
     public interface IMiddleware<T>: IMiddleware
     {
     }

@@ -56,8 +56,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Middleware\CertificateAuthentication.cs" />
-    <Compile Include="Middleware\FormsAuthentication.cs" />
+    <Compile Include="Middleware\DoNothing.cs" />
+    <Compile Include="Middleware\AllowEverythingAuthorization.cs" />
+    <Compile Include="Middleware\CertificateIdentification.cs" />
+    <Compile Include="Middleware\FormsIdentification.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Middleware\RestServiceMapper.cs" />
     <Compile Include="Middleware\TemplatePageRending.cs" />

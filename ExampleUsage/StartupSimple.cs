@@ -25,11 +25,13 @@ namespace ExampleUsage
             // is a simplified example, in a real application you should use IOC
             // to build your middleware components.
 
-            builder.Register(new FormsAuthentication())
-                .ConfigureWith(configuration, "/owin/authentication");
+            builder.Register(new FormsIdentification())
+                .ConfigureWith(configuration, "/owin/identification");
 
             builder.Register(new TemplatePageRendering())
                 .ConfigureWith(configuration, "/owin/templates");
+
+            builder.Register(new AllowEverythingAuthorization());
 
             builder.Register(new InProcessSession())
                 .ConfigureWith(configuration, "/owin/session");

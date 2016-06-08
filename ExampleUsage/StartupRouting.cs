@@ -14,7 +14,7 @@ namespace ExampleUsage
     /// 
     /// session --> aspx pages --ui---> /secure --SecureUI--> forms auth -----> template rendering
     ///          |                  |                                        |
-    ///          |                  - > not /secure --PublicUI---------------^
+    ///          |                  --> not /secure --PublicUI---------------^
     ///          |
     ///          -> non aspx --api--> cert auth ----> REST service rendering
     /// </summary>
@@ -33,7 +33,7 @@ namespace ExampleUsage
             // This says that we want to use forms based authentication, that
             // we will refer to it by the name 'FormsAuthentication', and it will
             // only be configured for the 'SecureUI' route.
-            builder.Register(new FormsAuthentication())
+            builder.Register(new FormsIdentification())
                 .As("FormsAuthentication")
                 .ConfigureWith(configuration, "/owin/auth/forms")
                 .RunAfter<IRoute>("SecureUI");
@@ -41,7 +41,7 @@ namespace ExampleUsage
             // This says that we want to use certificate based authentication, that
             // we will refer to it by the name 'CertificateAuthentication', and it will
             // only be configured for the 'API' route.
-            builder.Register(new CertificateAuthentication())
+            builder.Register(new CertificateIdentification())
                 .As("CertificateAuthentication")
                 .ConfigureWith(configuration, "/owin/auth/cert")
                 .RunAfter<IRoute>("API");
@@ -64,7 +64,7 @@ namespace ExampleUsage
             // resulting OWIN pipeline would be the same. For belts and braces we could
             // also add both dependencies.
             builder.Register(new RestServiceMapper())
-                .RunAfter<IAuthentication>("CertificateAuthentication")
+                .RunAfter<IAuthorization>("CertificateAuthentication")
                 .ConfigureWith(configuration, "/owin/rest");
 
             // This configures a routing element that will split the OWIN pipeline into

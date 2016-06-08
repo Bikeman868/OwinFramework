@@ -9,21 +9,17 @@ namespace ExampleUsage.Middleware
 {
     /// <summary>
     /// This middleware example demonstrates the following techniques:
-    /// * It injects the IAuthentication feature into the OWIN context
+    /// * It injects the IIdentification feature into the OWIN context
     /// * It is configurable
-    /// * It has a dependency on the ISession feature which must be present
-    ///   in the OWIN context. The builder will throw an exception at startup
-    ///   if there are no middleware components configured to inject ISession
     /// </summary>
-    public class FormsAuthentication: IMiddleware<IAuthentication>, IConfigurable
+    public class FormsIdentification: IMiddleware<IIdentification>, IConfigurable
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get; private set; }
 
-        public FormsAuthentication()
+        public FormsIdentification()
         {
             Dependencies = new List<IDependency>();
-            this.RunAfter<ISession>();
         }
 
         /// <summary>
@@ -35,7 +31,7 @@ namespace ExampleUsage.Middleware
                 path,
                 cfg =>
                 {
-                    Console.WriteLine("Forms authentication middleware configured");
+                    Console.WriteLine("Forms identification middleware configured");
                 },
                 string.Empty);
             registration.Dispose();
@@ -43,17 +39,25 @@ namespace ExampleUsage.Middleware
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("Forms authentication middleware invoked");
+            Console.WriteLine("Forms identification middleware invoked");
 
-            var session = context.GetFeature<ISession>();
-            // Check session to see if the user is authenticated
+            context.SetFeature<IIdentification>(new Identification());
 
-            context.SetFeature<IAuthentication>(new Authentication());
             return next.Invoke();
         }
 
-        private class Authentication : IAuthentication
+        /// <summary>
+        /// Basic implementation of IIdentification for illustration purposes only
+        /// </summary>
+        private class Identification : IIdentification
         {
+            public string Identity { get; private set; }
+            public bool IsAnonymous { get { return true; } }
+
+            public Identification()
+            {
+                Identity = Guid.NewGuid().ToString("N");
+            }
         }
     }
 }

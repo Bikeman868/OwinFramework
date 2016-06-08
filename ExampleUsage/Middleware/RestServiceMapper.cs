@@ -9,8 +9,10 @@ namespace ExampleUsage.Middleware
     /// <summary>
     /// This example always outputs a very simple JSON response because I want to keep the
     /// focus on the OWIN configuration and not clutter this example with complex
-    /// application logic. In a real application the middleware would examine the OWIN context
-    /// and produce different output for different requests.
+    /// application logic.
+    /// 
+    /// In a real application the middleware would examine the OWIN context and produce 
+    /// different output for different requests.
     /// </summary>
     public class RestServiceMapper : IMiddleware<IRendering>
     {
