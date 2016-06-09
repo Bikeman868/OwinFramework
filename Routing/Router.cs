@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Routing;
+using OwinFramework.Interfaces.Utility;
+using OwinFramework.Utility;
 
 namespace OwinFramework.Routing
 {
@@ -122,7 +124,9 @@ namespace OwinFramework.Routing
                 foreach (var component in _components)
                 {
                     component.Name = component.Middleware.Name;
-                    component.Dependencies = component.Middleware.Dependencies;
+                    component.Dependencies = component.Middleware.Dependencies
+                        .Where(d => d.DependentType != typeof(IRoute))
+                        .ToList();
                 }
 
                 // When there are multiple middleware components implementing the same
@@ -155,7 +159,7 @@ namespace OwinFramework.Routing
                 };
 
                 // Build a dependency graph
-                var dependencyTree = _dependencyTreeFactory.Create<string, Component>();
+                var dependencyTree = _dependencyTreeFactory.Create<Component>();
                 foreach (var component in _components)
                 {
                     var key = buildKey(component.MiddlewareType, component.Name);
@@ -163,13 +167,26 @@ namespace OwinFramework.Routing
                         ? null
                         : component
                             .Dependencies
-                            .Select(c => buildKey(c.DependentType, c.Name));
+                            .Select(c => 
+                                new TreeDependency 
+                                { 
+                                    Key = buildKey(c.DependentType, c.Name),
+                                    Required = c.Required
+                                });
 
                     dependencyTree.Add(key, component, dependentKeys);
                 }
 
                 // Sort components by order of least to most dependent
-                var orderedComponents = dependencyTree.GetAllData();
+                IEnumerable<Component> orderedComponents;
+                try
+                {
+                    orderedComponents = dependencyTree.GetAllData();
+                }
+                catch (Exception ex)
+                {
+                    throw new RoutingException("There is a problem with the dependencies between your OWIN middleware components", ex);
+                }
 
                 _middleware = orderedComponents
                     .Select(c => c.Middleware)

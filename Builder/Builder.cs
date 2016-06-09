@@ -7,6 +7,7 @@ using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Routing;
 using System.Threading.Tasks;
+using OwinFramework.Interfaces.Utility;
 
 namespace OwinFramework.Builder
 {

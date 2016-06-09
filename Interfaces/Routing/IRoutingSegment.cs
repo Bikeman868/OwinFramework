@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace OwinFramework.Interfaces.Routing
 {
-    public interface IRoutingSegment : IRoutingProcessor
+    public interface IRoutingSegment : IRoutingProcessor, IRoute
     {
         string Name { get; }
         Func<IOwinContext, bool> Filter { get; }

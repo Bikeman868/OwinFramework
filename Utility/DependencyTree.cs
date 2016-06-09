@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using OwinFramework.Interfaces.Builder;
+using OwinFramework.Interfaces.Utility;
 
-namespace OwinFramework.Builder
+namespace OwinFramework.Utility
 {
-    public class DependencyTree<TKey, TData> : IDependencyTree<TKey, TData> where TKey: IEquatable<TKey>
+    public class DependencyTree<T> : IDependencyTree<T> 
     {
-        private readonly IDictionary<TKey, GraphNode> _nodeIndex;
+        private readonly IDictionary<string, GraphNode> _nodeIndex;
         private bool _graphBuilt;
 
         public DependencyTree()
         {
-            _nodeIndex = new Dictionary<TKey, GraphNode>();
+            _nodeIndex = new Dictionary<string, GraphNode>();
         }
 
-        public void Add(TKey key, TData data, IEnumerable<TKey> dependentKeys)
+        public void Add(string key, T data, IEnumerable<ITreeDependency> dependentKeys)
         {
             GraphNode treeNode;
             if (_nodeIndex.TryGetValue(key, out treeNode))
@@ -36,14 +36,14 @@ namespace OwinFramework.Builder
                    {
                        Data = data,
                        Key = key,
-                       DependentKeys = dependentKeys == null ? new List<TKey>() : dependentKeys.ToList(),
+                       DependentKeys = dependentKeys == null ? new List<ITreeDependency>() : dependentKeys.ToList(),
                    };
                 _nodeIndex.Add(key, treeNode);
             }
             _graphBuilt = false;
         }
 
-        public IEnumerable<TKey> GetDecendents(TKey key, bool topDown)
+        public IEnumerable<string> GetDecendents(string key, bool topDown)
         {
             BuildGraph();
 
@@ -65,12 +65,12 @@ namespace OwinFramework.Builder
             }
         }
 
-        public TData GetData(TKey key)
+        public T GetData(string key)
         {
             return _nodeIndex[key].Data;
         }
 
-        public IEnumerable<TData> GetAllData(bool topDown)
+        public IEnumerable<T> GetAllData(bool topDown)
         {
             BuildGraph();
 
@@ -81,7 +81,7 @@ namespace OwinFramework.Builder
             return sortedNodes.Select(n => n.Data);
         }
 
-        public IEnumerable<TKey> GetAllKeys(bool topDown)
+        public IEnumerable<string> GetAllKeys(bool topDown)
         {
             BuildGraph();
 
@@ -147,22 +147,27 @@ namespace OwinFramework.Builder
         {
             if (_graphBuilt) return;
 
-            var nextId = 1;
             foreach (var node in _nodeIndex.Values)
             {
-                node.Id = nextId++;
                 node.IncommingEdges = new List<GraphNode>();
             }
 
             foreach (var node in _nodeIndex.Values)
             {
-                node.OutgoingEdges = node.DependentKeys.Select(k =>
-                {
-                    GraphNode dependent;
-                    if (!_nodeIndex.TryGetValue(k, out dependent))
-                        throw new Exception("Dependent node '" + k + "' does not exist in the dependecy tree");
-                    return dependent;
-                }).ToList();
+                node.OutgoingEdges = node.DependentKeys.Select(
+                    dep =>
+                    {
+                        GraphNode dependent;
+                        if (!_nodeIndex.TryGetValue(dep.Key, out dependent))
+                        {
+                            if (dep.Required)
+                                throw new MissingDependencyException("'" + node.Key + "' dependent on '" + dep.Key + "' which was not found in the dependecy tree");
+                        }
+                        return dependent;
+                    })
+                .Where(dep => dep != null)
+                .ToList();
+
                 foreach (var edge in node.OutgoingEdges)
                     edge.IncommingEdges.Add(node);
             }
@@ -174,13 +179,13 @@ namespace OwinFramework.Builder
 
         private class GraphNode
         {
-            public int Id;
-            public TData Data;
-            public TKey Key;
-            public IList<TKey> DependentKeys;
+            public T Data;
+            public string Key;
+            public IList<ITreeDependency> DependentKeys;
             public IList<GraphNode> OutgoingEdges;
             public IList<GraphNode> IncommingEdges;
             public VisitStatus VisitStatus;
         }
+
     }
 }

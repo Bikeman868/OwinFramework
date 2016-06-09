@@ -5,6 +5,7 @@ using OwinFramework.Builder;
 using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Routing;
 using OwinFramework.Routing;
+using OwinFramework.Utility;
 
 namespace ExampleUsage
 {
@@ -34,6 +35,7 @@ namespace ExampleUsage
             // This says that we want to use forms based authentication, that
             // we will refer to it by the name 'FormsAuthentication', and it will
             // only be configured for the 'SecureUI' route.
+            
             builder.Register(new FormsIdentification())
                 .As("FormsAuthentication")
                 .ConfigureWith(configuration, "/owin/auth/forms")

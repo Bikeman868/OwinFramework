@@ -17,7 +17,7 @@ namespace OwinFramework.Interfaces.Builder
         /// <summary>
         /// If there are multiple OWIN components that provide the same
         /// functionallity this name will identify which of those it
-        /// refers to. If there is only OWIN component implementing the
+        /// refers to. If there is only one OWIN component implementing the
         /// specified type then this property should be null
         /// </summary>
         string Name { get; }

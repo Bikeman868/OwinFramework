@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Builder;
+using OwinFramework.Interfaces.Utility;
 
 namespace ExampleUsage.Middleware
 {

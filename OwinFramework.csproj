@@ -51,12 +51,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builder\Builder.cs" />
-    <Compile Include="Builder\DependencyTree.cs" />
-    <Compile Include="Builder\DependencyTreeFactory.cs" />
+    <Compile Include="Interfaces\Utility\ITreeDependency.cs" />
+    <Compile Include="Utility\CircularDependencyException.cs" />
+    <Compile Include="Utility\MissingDependencyException.cs" />
+    <Compile Include="Utility\DependencyTree.cs" />
+    <Compile Include="Utility\DependencyTreeFactory.cs" />
     <Compile Include="Builder\Exceptions.cs" />
     <Compile Include="Builder\Extensions.cs" />
-    <Compile Include="Interfaces\Builder\IDependencyTree.cs" />
-    <Compile Include="Interfaces\Builder\IDependencyTreeFactory.cs" />
+    <Compile Include="Interfaces\Utility\IDependencyTree.cs" />
+    <Compile Include="Interfaces\Utility\IDependencyTreeFactory.cs" />
     <Compile Include="Interfaces\IIdentification.cs" />
     <Compile Include="Interfaces\Routing\IRoute.cs" />
     <Compile Include="Interfaces\IPresentation.cs" />
@@ -77,6 +80,7 @@
     <Compile Include="Interfaces\Routing\IRouter.cs" />
     <Compile Include="Routing\Exceptions.cs" />
     <Compile Include="Routing\Router.cs" />
+    <Compile Include="Utility\TreeDependency.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

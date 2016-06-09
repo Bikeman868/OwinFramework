@@ -7,10 +7,4 @@ namespace OwinFramework.Builder
         public BuilderException() { }
         public BuilderException(string message): base(message) { }
     }
-
-    public class CircularDependencyException : BuilderException
-    {
-        public CircularDependencyException() { }
-        public CircularDependencyException(string message) : base(message) { }
-    }
 }

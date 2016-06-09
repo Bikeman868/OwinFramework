@@ -3,6 +3,8 @@ using System.Linq;
 using NUnit.Framework;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
+using OwinFramework.Interfaces.Utility;
+using OwinFramework.Utility;
 
 namespace UnitTests
 {

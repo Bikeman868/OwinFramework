@@ -1,6 +1,7 @@
 ﻿using ExampleUsage.Middleware;
 using Owin;
 using OwinFramework.Builder;
+using OwinFramework.Utility;
 
 namespace ExampleUsage
 {
