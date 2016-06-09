@@ -32,33 +32,32 @@ namespace ExampleUsage
             // in ant order. The builder will resolve dependencies to add middleware into 
             // the OWIN pipeline so that all dependencies are satisfied.
 
-            // This says that we want to use forms based authentication, that
-            // we will refer to it by the name 'FormsAuthentication', and it will
-            // only be configured for the 'SecureUI' route.
-            
+            // This says that we want to use forms based identification, that
+            // we will refer to it by the name 'forms', and it will
+            // only be configured for the 'secure' route.
             builder.Register(new FormsIdentification())
-                .As("FormsAuthentication")
+                .As("forms")
                 .ConfigureWith(configuration, "/owin/auth/forms")
-                .RunAfter<IRoute>("SecureUI");
+                .RunAfter<IRoute>("secure");
 
-            // This says that we want to use certificate based authentication, that
-            // we will refer to it by the name 'CertificateAuthentication', and it will
-            // only be configured for the 'API' route.
+            // This says that we want to use certificate based identification, that
+            // we will refer to it by the name 'cert', and it will
+            // only be configured for the 'api' route.
             builder.Register(new CertificateIdentification())
-                .As("CertificateAuthentication")
+                .As("cert")
                 .ConfigureWith(configuration, "/owin/auth/cert")
-                .RunAfter<IRoute>("API");
+                .RunAfter<IRoute>("api");
 
             // This specifies the mechanism we want to use to store session
             builder.Register(new InProcessSession())
                 .ConfigureWith(configuration, "/owin/session");
 
             // This specifies that we want to use the template page rendering
-            // middleware and that it should run on both the "PublicUI" route and
-            // the "SecureUI" route.
+            // middleware and that it should run on both the "public" route and
+            // the "secure" route.
             builder.Register(new TemplatePageRendering())
-                .RunAfter<IRoute>("PublicUI")
-                .RunAfter<IRoute>("SecureUI")
+                .RunAfter<IRoute>("public")
+                .RunAfter<IRoute>("secure")
                 .ConfigureWith(configuration, "/owin/templates");
 
             // This specifies that we want to use the REST service mapper
@@ -67,7 +66,7 @@ namespace ExampleUsage
             // resulting OWIN pipeline would be the same. For belts and braces we could
             // also add both dependencies.
             builder.Register(new RestServiceMapper())
-                .RunAfter<IAuthorization>("CertificateAuthentication")
+                .RunAfter<IIdentification>("cert")
                 .ConfigureWith(configuration, "/owin/rest");
 
             // This configures a routing element that will split the OWIN pipeline into
@@ -78,16 +77,16 @@ namespace ExampleUsage
             // you condifure more than one session middleware in this scenario then an exception
             // will be thrown at startup.
             builder.Register(new Router(dependencyTreeFactory))
-                .AddRoute("UI", context => context.Request.Path.Value.EndsWith(".aspx"))
-                .AddRoute("API", context => true)
+                .AddRoute("ui", context => context.Request.Path.Value.EndsWith(".aspx"))
+                .AddRoute("api", context => true)
                 .RunAfter<ISession>(null, false);
 
             // This configures another routing split that divides the 'UI' route into secure
             // and public routes called 'SecureUI' and 'PublicUI'.
             builder.Register(new Router(dependencyTreeFactory))
-                .AddRoute("SecureUI", context => context.Request.Path.Value.StartsWith("/secure"))
-                .AddRoute("PublicUI", context => true)
-                .RunAfter<IRoute>("UI");
+                .AddRoute("secure", context => context.Request.Path.Value.StartsWith("/secure"))
+                .AddRoute("public", context => true)
+                .RunAfter<IRoute>("ui");
 
             // This statement will add all of the middleware registered with the builder into
             // the OWIN pipeline. The builder will add middleware to the pipeline in an order

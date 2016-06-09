@@ -15,7 +15,7 @@ namespace ExampleUsage
         /// </summary>
         static void Main(string[] args)
         {
-            var opt = args.Length > 0 ? args[0] : "simple";
+            var opt = args.Length > 0 ? args[0] : "routing";
             const string url = "http://localhost:12345";
 
             switch (opt)

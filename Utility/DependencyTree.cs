@@ -19,27 +19,16 @@ namespace OwinFramework.Utility
         {
             GraphNode treeNode;
             if (_nodeIndex.TryGetValue(key, out treeNode))
-            {
-                treeNode.Data = data;
-                if (dependentKeys != null)
+                throw new DuplicateKeyException("The key " + key + " has already been added to this dependency graph");
+
+            treeNode = new GraphNode
                 {
-                    foreach (var dependant in dependentKeys)
-                    {
-                        if (!treeNode.DependentKeys.Contains(dependant))
-                            treeNode.DependentKeys.Add(dependant);
-                    }
-                }
-            }
-            else
-            {
-                treeNode = new GraphNode
-                   {
-                       Data = data,
-                       Key = key,
-                       DependentKeys = dependentKeys == null ? new List<ITreeDependency>() : dependentKeys.ToList(),
-                   };
-                _nodeIndex.Add(key, treeNode);
-            }
+                    Data = data,
+                    Key = key,
+                    DependentKeys = dependentKeys == null ? new List<ITreeDependency>() : dependentKeys.ToList(),
+                };
+            _nodeIndex.Add(key, treeNode);
+
             _graphBuilt = false;
         }
 
@@ -70,7 +59,7 @@ namespace OwinFramework.Utility
             return _nodeIndex[key].Data;
         }
 
-        public IEnumerable<T> GetAllData(bool topDown)
+        public IEnumerable<T> GetBuildOrderData(bool topDown)
         {
             BuildGraph();
 
@@ -81,7 +70,7 @@ namespace OwinFramework.Utility
             return sortedNodes.Select(n => n.Data);
         }
 
-        public IEnumerable<string> GetAllKeys(bool topDown)
+        public IEnumerable<string> GetBuildOrderKeys(bool topDown)
         {
             BuildGraph();
 
@@ -161,7 +150,7 @@ namespace OwinFramework.Utility
                         if (!_nodeIndex.TryGetValue(dep.Key, out dependent))
                         {
                             if (dep.Required)
-                                throw new MissingDependencyException("'" + node.Key + "' dependent on '" + dep.Key + "' which was not found in the dependecy tree");
+                                throw new MissingDependencyException("'" + node.Key + "' is dependent on missing '" + dep.Key + "'");
                         }
                         return dependent;
                     })

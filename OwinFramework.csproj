@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Builder\Builder.cs" />
     <Compile Include="Interfaces\Utility\ITreeDependency.cs" />
+    <Compile Include="Utility\DuplicateKeyException.cs" />
     <Compile Include="Utility\CircularDependencyException.cs" />
     <Compile Include="Utility\MissingDependencyException.cs" />
     <Compile Include="Utility\DependencyTree.cs" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Owin;
 using OwinFramework.Interfaces.Builder;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace OwinFramework.Interfaces.Routing
     {
         string Name { get; }
         Func<IOwinContext, bool> Filter { get; }
+        IList<IMiddleware> Middleware { get; }
 
         /// <summary>
         /// Adds a middleware component to this routing segment

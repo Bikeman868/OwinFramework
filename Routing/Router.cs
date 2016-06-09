@@ -85,11 +85,11 @@ namespace OwinFramework.Routing
         {
             public string Name { get; private set; }
             public Func<IOwinContext, bool> Filter { get; private set; }
+            public IList<IMiddleware> Middleware { get; private set; }
 
             private readonly IList<Component> _components;
             private readonly IDependencyTreeFactory _dependencyTreeFactory;
 
-            private IList<IMiddleware> _middleware;
             private IList<IRoutingProcessor> _routingProcessors;
 
             public RoutingSegment(IDependencyTreeFactory dependencyTreeFactory)
@@ -153,8 +153,8 @@ namespace OwinFramework.Routing
                 Func<Type, string, string> buildKey = (t, n) =>
                 {
                     var key = t.FullName;
-                    if (!string.IsNullOrEmpty(n) && !singeltons.Contains(t))
-                        key += ":" + n.ToLower();
+                    if (multiples.Contains(t))
+                        key += ":" + (string.IsNullOrEmpty(n) ? Guid.NewGuid().ToString("N") : n.ToLower());
                     return key;
                 };
 
@@ -181,20 +181,20 @@ namespace OwinFramework.Routing
                 IEnumerable<Component> orderedComponents;
                 try
                 {
-                    orderedComponents = dependencyTree.GetAllData();
+                    orderedComponents = dependencyTree.GetBuildOrderData();
                 }
                 catch (Exception ex)
                 {
                     throw new RoutingException("There is a problem with the dependencies between your OWIN middleware components", ex);
                 }
 
-                _middleware = orderedComponents
+                Middleware = orderedComponents
                     .Select(c => c.Middleware)
                     .ToList();
 
                 // Make a list of the middleware that wants to participate in routing
                 // so that we don't figure this out again for each request
-                _routingProcessors = _middleware
+                _routingProcessors = Middleware
                     .Select(middleware => middleware as IRoutingProcessor)
                     .Where(rp => rp != null)
                     .ToList();
@@ -221,7 +221,7 @@ namespace OwinFramework.Routing
 
             public Task Invoke(IOwinContext context, Func<Task> next)
             {
-                if (_middleware == null)
+                if (Middleware == null)
                     throw new RoutingException("Requests can not be processed until dependencies have been resolved");
 
                 var nextIndex = 0;
@@ -229,8 +229,8 @@ namespace OwinFramework.Routing
 
                 getNext = () =>
                     {
-                        if (nextIndex < _middleware.Count)
-                            return _middleware[nextIndex++].Invoke(context, getNext);
+                        if (nextIndex < Middleware.Count)
+                            return Middleware[nextIndex++].Invoke(context, getNext);
                         return next();
                     };
 
