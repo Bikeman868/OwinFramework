@@ -17,29 +17,26 @@ namespace ExampleUsage
 
             var dependencyTreeFactory = new DependencyTreeFactory();
             var builder = new Builder(dependencyTreeFactory);
-            var configuration = new Configuration();
 
             // This next part defines the concrete implementation of the various
             // OWIN middleware components you want to use in your application. The
             // order that these will be chained into the OWIN pipeline will be
-            // determined from the dependencies defined within the components. This
-            // is a simplified example, in a real application you should use IOC
-            // to build your middleware components.
+            // determined from the dependencies defined within the components.
+            
+            // This is a simplified example, in a real application you should use IOC
+            // to build your middleware components, and you should provide a configuration
+            // for them.
 
-            builder.Register(new FormsIdentification())
-                .ConfigureWith(configuration, "/owin/identification");
-
-            builder.Register(new TemplatePageRendering())
-                .ConfigureWith(configuration, "/owin/templates");
-
+            builder.Register(new NotFoundError());
+            builder.Register(new ReportExceptions());
+            builder.Register(new FormsIdentification());
+            builder.Register(new TemplatePageRendering());
             builder.Register(new AllowEverythingAuthorization());
+            builder.Register(new InProcessSession());
 
-            builder.Register(new InProcessSession())
-                .ConfigureWith(configuration, "/owin/session");
-
-            // Below are standard OWIN configuration statements. As well as using the
-            // builder to chain middleware into the pipeline, you can also chain
-            // any other middleware here.
+            // As well as using the builder to chain middleware into the pipeline, you can also 
+            // chain any other middleware here. Below are some standard OWIN configuration 
+            // statements that show this.
 
             app.UseBuilder(builder);
             app.UseErrorPage();

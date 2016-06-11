@@ -41,17 +41,29 @@ namespace ExampleUsage.Middleware
         {
             Console.WriteLine("ROUTE: Template page rendering");
 
-            // Get upstream communication interfaces if available
-            var upstreamSession = context.GetFeature<IUpstreamSession>();
-            var upstreamIdentification = context.GetFeature<IUpstreamIdentification>();
+            // At this point a real template rendering middleware would figure out from
+            // the request which template it is going to render (if any) and from that
+            // figure out what's needed in the pipeline - for example does the request
+            // have to come fromm a logged on authenticated user with certain permissions
+            // For the purpose of this example I am saying any aspx page is a template
+            if (context.Request.Method == "GET" 
+                && context.Request.Path.HasValue
+                && context.Request.Path.Value.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Set("templateToRender", context.Request.Path.Value);
 
-            // Tell the session middleware that a session is required for this request
-            if (upstreamSession != null)
-                upstreamSession.SessionRequired = true;
+                // Get upstream communication interfaces if available
+                var upstreamSession = context.GetFeature<IUpstreamSession>();
+                var upstreamIdentification = context.GetFeature<IUpstreamIdentification>();
 
-            // Tell the identification middleware that a anonymous users are ok for this request
-            if (upstreamIdentification != null)
-                upstreamIdentification.AllowAnonymous = true;
+                // Tell the session middleware that a session is required for this request
+                if (upstreamSession != null)
+                    upstreamSession.SessionRequired = true;
+
+                // Tell the identification middleware that a anonymous users are ok for this request
+                if (upstreamIdentification != null)
+                    upstreamIdentification.AllowAnonymous = true;
+            }
 
             // Invoke the next middleware in the chain
             next();
@@ -59,6 +71,13 @@ namespace ExampleUsage.Middleware
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
+            // This value was set during the routing phase only if this is 
+            // request for a template page 
+            var templateToRender = context.Get<string>("templateToRender");
+
+            if (string.IsNullOrEmpty(templateToRender))
+                return next();
+
             Console.WriteLine("PROCESS: Template page rendering");
 
             var authentication = context.GetFeature<IAuthorization>();
@@ -80,7 +99,7 @@ namespace ExampleUsage.Middleware
             var session = context.GetFeature<ISession>();
             if (session != null)
             {
-                Console.WriteLine("  Session is available");
+                Console.WriteLine("  Session feature is available");
                 if (session.HasSession)
                     Console.WriteLine("  User has a session");
                 else

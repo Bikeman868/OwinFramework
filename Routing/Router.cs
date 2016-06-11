@@ -167,6 +167,7 @@ namespace OwinFramework.Routing
                         ? null
                         : component
                             .Dependencies
+                            .Where(dep => dep.DependentType != null)
                             .Select(c => 
                                 new TreeDependency 
                                 { 

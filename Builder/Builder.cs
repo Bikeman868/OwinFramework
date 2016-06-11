@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using Microsoft.Owin;
 using Owin;
@@ -41,17 +42,28 @@ namespace OwinFramework.Builder
                 .Where(r => r != null)
                 .ToList();
 
-            // This root level router is a container for evertthinng that's not on a route. When
+            // This root level router is a container for everythinng that's not on a route. When
             // the application does not use routing everything ends up in here
             _router = new Router(_dependencyTreeFactory);
             _router.Add(null, owinContext => true);
             routers.Add(_router);
 
-            foreach (var component in _components)
-            {
-                // TODO: put components in the right segments
-                _router.Segments[0].Add(component.Middleware, component.MiddlewareType);
-            }
+            // Split the components into three groups: front, middle and back.
+            var frontComponents = _components
+                .Where(c => c.Middleware.Dependencies.Any(dep => dep.Position == PpelinePosition.Front))
+                .ToList();
+            var backComponents = _components
+                .Where(c => !frontComponents.Contains(c))
+                .Where(c => c.Middleware.Dependencies.Any(dep => dep.Position == PpelinePosition.Back))
+                .ToList();
+            var middleComponents = _components
+                .Where(c => !frontComponents.Contains(c))
+                .Where(c => !backComponents.Contains(c))
+                .ToList();
+
+            AddToFront(frontComponents);
+            AddToMiddle(middleComponents);
+            AddToBack(backComponents);
 
             foreach (var router in routers)
                 foreach (var segment in router.Segments)
@@ -60,6 +72,28 @@ namespace OwinFramework.Builder
             Dump(_router, "");
 
             app.Use(Invoke);
+        }
+
+        private void AddToFront(IEnumerable<Component> components)
+        {
+            // Components at the front of the pipeline get added directly to the root route
+            foreach (var component in components)
+                _router.Segments[0].Add(component.Middleware, component.MiddlewareType);
+        }
+
+        private void AddToMiddle(IEnumerable<Component> components)
+        {
+            // TODO: place components in the right routes/segments according to their dependencies
+            foreach (var component in components)
+                _router.Segments[0].Add(component.Middleware, component.MiddlewareType);
+        }
+
+        private void AddToBack(IEnumerable<Component> components)
+        {
+            // TODO: for back components with no route dependencies add them to all routes
+            // TODO: for back components with route dependencies add them only to those segments
+            foreach (var component in components)
+                _router.Segments[0].Add(component.Middleware, component.MiddlewareType);
         }
 
         private Task Invoke(IOwinContext context, Func<Task> next)
@@ -81,10 +115,19 @@ namespace OwinFramework.Builder
 
         private void Dump(IDependency dependency, string indent)
         {
-            var line = "depends on " + dependency.DependentType.Name;
-            if (dependency.Name != null) line += " \"" + dependency.Name + "\"";
-            if (!dependency.Required) line += (" (optional)");
-            System.Diagnostics.Debug.WriteLine(indent + line);
+            if (dependency.DependentType != null)
+            {
+                var line = "depends on " + dependency.DependentType.Name;
+                if (dependency.Name != null) line += " \"" + dependency.Name + "\"";
+                if (!dependency.Required) line += (" (optional)");
+                System.Diagnostics.Debug.WriteLine(indent + line);
+            }
+
+            if (dependency.Position == PpelinePosition.Front)
+                System.Diagnostics.Debug.WriteLine(indent + "runs before other middleware");
+
+            if (dependency.Position == PpelinePosition.Back)
+                System.Diagnostics.Debug.WriteLine(indent + "runs after other middleware");
         }
 
         private void Dump(IRoutingSegment segment, string indent)

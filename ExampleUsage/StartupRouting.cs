@@ -52,23 +52,6 @@ namespace ExampleUsage
             builder.Register(new InProcessSession())
                 .ConfigureWith(configuration, "/owin/session");
 
-            // This specifies that we want to use the template page rendering
-            // middleware and that it should run on both the "public" route and
-            // the "secure" route.
-            builder.Register(new TemplatePageRendering())
-                .RunAfter<IRoute>("public")
-                .RunAfter<IRoute>("secure")
-                .ConfigureWith(configuration, "/owin/templates");
-
-            // This specifies that we want to use the REST service mapper
-            // middleware and that it should run after CertificateAuthentication middleware
-            // Note that we could also have told it to RunAfter<IRoute>("API") and the
-            // resulting OWIN pipeline would be the same. For belts and braces we could
-            // also add both dependencies.
-            builder.Register(new RestServiceMapper())
-                .RunAfter<IIdentification>("cert")
-                .ConfigureWith(configuration, "/owin/rest");
-
             // This configures a routing element that will split the OWIN pipeline into
             // two routes. There is a 'UI' route that has forms based authentication and 
             // template based rendering. There is an 'API' route that has certifcate based
@@ -87,6 +70,23 @@ namespace ExampleUsage
                 .AddRoute("secure", context => context.Request.Path.Value.StartsWith("/secure"))
                 .AddRoute("public", context => true)
                 .RunAfter<IRoute>("ui");
+
+            // This specifies that we want to use the template page rendering
+            // middleware and that it should run on both the "public" route and
+            // the "secure" route.
+            builder.Register(new TemplatePageRendering())
+                .RunAfter<IRoute>("public")
+                .RunAfter<IRoute>("secure")
+                .ConfigureWith(configuration, "/owin/templates");
+
+            // This specifies that we want to use the REST service mapper
+            // middleware and that it should run after CertificateAuthentication middleware
+            // Note that we could also have told it to RunAfter<IRoute>("API") and the
+            // resulting OWIN pipeline would be the same. For belts and braces we could
+            // also add both dependencies.
+            builder.Register(new RestServiceMapper())
+                .RunAfter<IIdentification>("cert")
+                .ConfigureWith(configuration, "/owin/rest");
 
             // This statement will add all of the middleware registered with the builder into
             // the OWIN pipeline. The builder will add middleware to the pipeline in an order
