@@ -2,12 +2,21 @@
 
 namespace OwinFramework.Interfaces.Builder
 {
+    public enum PpelinePosition { Front, Middle, Back }
+
+
     /// <summary>
     /// Contains information about a dependency on another OWIN
     /// middleware component.
     /// </summary>
     public interface IDependency
     {
+        /// <summary>
+        /// Specifies which part of the pipeline this middleware should
+        /// run in.
+        /// </summary>
+        PpelinePosition Position { get; }
+
         /// <summary>
         /// The type of middleware functionallity that this component
         /// depends on.

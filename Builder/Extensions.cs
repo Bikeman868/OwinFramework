@@ -1,11 +1,8 @@
 ﻿using System;
 using Microsoft.Owin;
 using Owin;
-using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Routing;
-using OwinFramework.Interfaces.Utility;
-using OwinFramework.Routing;
 
 namespace OwinFramework.Builder
 {
@@ -21,6 +18,7 @@ namespace OwinFramework.Builder
         {
             middleware.Dependencies.Add(new Dependency<T>
             {
+                Position = PpelinePosition.Middle,
                 DependentType = typeof(T),
                 Name = name,
                 Required = required
@@ -28,8 +26,27 @@ namespace OwinFramework.Builder
             return middleware;
         }
 
+        public static IMiddleware RunFirst(this IMiddleware middleware)
+        {
+            middleware.Dependencies.Add(new Dependency<object>
+            {
+                Position = PpelinePosition.Front
+            });
+            return middleware;
+        }
+
+        public static IMiddleware RunLast(this IMiddleware middleware)
+        {
+            middleware.Dependencies.Add(new Dependency<object>
+            {
+                Position = PpelinePosition.Back
+            });
+            return middleware;
+        }
+
         private class Dependency<T> : IDependency<T>
         {
+            public PpelinePosition Position { get; set; }
             public Type DependentType { get; set; }
             public string Name { get; set; }
             public bool Required { get; set; }
