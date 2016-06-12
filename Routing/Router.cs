@@ -23,11 +23,11 @@ namespace OwinFramework.Routing
         public IList<IRoutingSegment> Segments { get; private set; }
 
         private readonly string _owinContextKey;
-        private readonly IDependencyTreeFactory _dependencyTreeFactory;
+        private readonly IDependencyGraphFactory _dependencyGraphFactory;
 
-        public Router(IDependencyTreeFactory dependencyTreeFactory)
+        public Router(IDependencyGraphFactory dependencyGraphFactory)
         {
-            _dependencyTreeFactory = dependencyTreeFactory;
+            _dependencyGraphFactory = dependencyGraphFactory;
 
             _owinContextKey = "R:" + Guid.NewGuid().ToString("N");
             Dependencies = new List<IDependency>();
@@ -36,7 +36,7 @@ namespace OwinFramework.Routing
 
         public IRouter Add(string routeName, Func<IOwinContext, bool> filterExpression)
         {
-            Segments.Add(new RoutingSegment(_dependencyTreeFactory).Initialize(routeName, filterExpression));
+            Segments.Add(new RoutingSegment(_dependencyGraphFactory).Initialize(routeName, filterExpression));
             return this;
         }
 
@@ -88,13 +88,13 @@ namespace OwinFramework.Routing
             public IList<IMiddleware> Middleware { get; private set; }
 
             private readonly IList<Component> _components;
-            private readonly IDependencyTreeFactory _dependencyTreeFactory;
+            private readonly IDependencyGraphFactory _dependencyGraphFactory;
 
             private IList<IRoutingProcessor> _routingProcessors;
 
-            public RoutingSegment(IDependencyTreeFactory dependencyTreeFactory)
+            public RoutingSegment(IDependencyGraphFactory dependencyGraphFactory)
             {
-                _dependencyTreeFactory = dependencyTreeFactory;
+                _dependencyGraphFactory = dependencyGraphFactory;
                 _components = new List<Component>();
             }
 
@@ -159,7 +159,7 @@ namespace OwinFramework.Routing
                 };
 
                 // Build a dependency graph
-                var dependencyTree = _dependencyTreeFactory.Create<Component>();
+                var dependencyGraph = _dependencyGraphFactory.Create<Component>();
                 foreach (var component in _components)
                 {
                     var key = buildKey(component.MiddlewareType, component.Name);
@@ -174,20 +174,20 @@ namespace OwinFramework.Routing
                         .Dependencies
                         .Where(dep => dep.DependentType != null)
                         .Select(c => 
-                            new TreeDependency 
+                            new DependencyGraphEdge 
                             { 
                                 Key = buildKey(c.DependentType, c.Name),
                                 Required = c.Required
                             });
 
-                    dependencyTree.Add(key, component, dependentKeys, position);
+                    dependencyGraph.Add(key, component, dependentKeys, position);
                 }
 
                 // Sort components by order of least to most dependent
                 IEnumerable<Component> orderedComponents;
                 try
                 {
-                    orderedComponents = dependencyTree.GetBuildOrderData();
+                    orderedComponents = dependencyGraph.GetBuildOrderData();
                 }
                 catch (Exception ex)
                 {

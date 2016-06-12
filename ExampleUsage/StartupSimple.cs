@@ -15,8 +15,8 @@ namespace ExampleUsage
             // Note that I did not use an IOC container here to keep things as
             // simple and focused as possible. You should use IOC in your application.
 
-            var dependencyTreeFactory = new DependencyTreeFactory();
-            var builder = new Builder(dependencyTreeFactory);
+            var dependencyGraphFactory = new DependencyGraphFactory();
+            var builder = new Builder(dependencyGraphFactory);
 
             // This next part defines the concrete implementation of the various
             // OWIN middleware components you want to use in your application. The

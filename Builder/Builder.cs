@@ -15,13 +15,13 @@ namespace OwinFramework.Builder
     public class Builder: IBuilder
     {
         private readonly IList<Component> _components;
-        private readonly IDependencyTreeFactory _dependencyTreeFactory;
+        private readonly IDependencyGraphFactory _dependencyGraphFactory;
 
         private Router _router;
 
-        public Builder(IDependencyTreeFactory dependencyTreeFactory)
+        public Builder(IDependencyGraphFactory dependencyGraphFactory)
         {
-            _dependencyTreeFactory = dependencyTreeFactory;
+            _dependencyGraphFactory = dependencyGraphFactory;
             _components = new List<Component>();
         }
 
@@ -52,7 +52,7 @@ namespace OwinFramework.Builder
 
             // This root level router is a container for everythinng that's not on a route. When
             // the application does not use routing everything ends up in here
-            _router = new Router(_dependencyTreeFactory);
+            _router = new Router(_dependencyGraphFactory);
             _router.Add(null, owinContext => true);
             var rootRouterComponent = new RouterComponent
             {

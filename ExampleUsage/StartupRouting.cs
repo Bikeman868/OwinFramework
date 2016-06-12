@@ -25,8 +25,8 @@ namespace ExampleUsage
         public void Configuration(IAppBuilder app)
         {
             // Don't do object construction like this in your application, use IoC instead.
-            var dependencyTreeFactory = new DependencyTreeFactory();
-            var builder = new Builder(dependencyTreeFactory);
+            var dependencyGraphFactory = new DependencyGraphFactory();
+            var builder = new Builder(dependencyGraphFactory);
             var configuration = new DefaultValueConfiguration();
 
             // Note that the middleware components below can be registerd with the builder
@@ -67,14 +67,14 @@ namespace ExampleUsage
             // runs after session, so both routes will use the same session middleware. If
             // you condifure more than one session middleware in this scenario then an exception
             // will be thrown at startup.
-            builder.Register(new Router(dependencyTreeFactory))
+            builder.Register(new Router(dependencyGraphFactory))
                 .AddRoute("ui", context => context.Request.Path.Value.EndsWith(".aspx"))
                 .AddRoute("api", context => true)
                 .RunAfter<ISession>(null, false);
 
             // This configures another routing split that divides the 'UI' route into secure
             // and public routes called 'SecureUI' and 'PublicUI'.
-            builder.Register(new Router(dependencyTreeFactory))
+            builder.Register(new Router(dependencyGraphFactory))
                 .AddRoute("secure", context => context.Request.Path.Value.StartsWith("/secure"))
                 .AddRoute("public", context => true)
                 .RunAfter<IRoute>("ui");

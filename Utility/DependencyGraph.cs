@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Owin;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Utility;
 
 namespace OwinFramework.Utility
 {
-    public class DependencyTree<T> : IDependencyTree<T> 
+    public class DependencyGraph<T> : IDependencyGraph<T> 
     {
         private readonly IDictionary<string, GraphNode> _nodeIndex;
         private bool _graphBuilt;
 
-        public DependencyTree()
+        public DependencyGraph()
         {
             _nodeIndex = new Dictionary<string, GraphNode>();
         }
 
-        public void Add(string key, T data, IEnumerable<ITreeDependency> dependentKeys, PipelinePosition position)
+        public void Add(string key, T data, IEnumerable<IDependencyGraphEdge> edges, PipelinePosition position)
         {
             GraphNode graphNode;
             if (_nodeIndex.TryGetValue(key, out graphNode))
@@ -27,7 +26,7 @@ namespace OwinFramework.Utility
                 {
                     Data = data,
                     Key = key,
-                    DependentKeys = dependentKeys == null ? new List<ITreeDependency>() : dependentKeys.ToList(),
+                    Dependencies = edges == null ? new List<IDependencyGraphEdge>() : edges.ToList(),
                     Position = position
                 };
             _nodeIndex.Add(key, graphNode);
@@ -120,7 +119,7 @@ namespace OwinFramework.Utility
                 {
                     var message = "There are circular dependencies.";
                     message += "\rThis problem was detected for  ";
-                    message += node.Key + " which depends on " + string.Join(", ", node.DependentKeys);
+                    message += node.Key + " which depends on " + string.Join(", ", node.Dependencies);
                     message += " and has " + string.Join(", ", node.IncommingEdges.Select(e => e.Key));
                     message += " depending on it";
                     throw new CircularDependencyException(message);
@@ -163,7 +162,7 @@ namespace OwinFramework.Utility
 
             foreach (var node in _nodeIndex.Values)
             {
-                node.OutgoingEdges = node.DependentKeys.Select(
+                node.OutgoingEdges = node.Dependencies.Select(
                     dep =>
                     {
                         GraphNode dependent;
@@ -191,7 +190,7 @@ namespace OwinFramework.Utility
             public T Data;
             public string Key;
             public PipelinePosition Position;
-            public IList<ITreeDependency> DependentKeys;
+            public IList<IDependencyGraphEdge> Dependencies;
             public IList<GraphNode> OutgoingEdges;
             public IList<GraphNode> IncommingEdges;
             public VisitStatus VisitStatus;
