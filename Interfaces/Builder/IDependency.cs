@@ -2,7 +2,10 @@
 
 namespace OwinFramework.Interfaces.Builder
 {
-    public enum PpelinePosition { Front, Middle, Back }
+    // Note that the order of this enumeration is important because
+    // middleware components are sorted by position and added to the
+    // pipeline in that order.
+    public enum PipelinePosition { Front, Middle, Back }
 
 
     /// <summary>
@@ -15,7 +18,7 @@ namespace OwinFramework.Interfaces.Builder
         /// Specifies which part of the pipeline this middleware should
         /// run in.
         /// </summary>
-        PpelinePosition Position { get; }
+        PipelinePosition Position { get; }
 
         /// <summary>
         /// The type of middleware functionallity that this component

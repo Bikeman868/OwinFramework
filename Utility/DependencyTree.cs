@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Owin;
+using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Utility;
 
 namespace OwinFramework.Utility
@@ -15,19 +17,20 @@ namespace OwinFramework.Utility
             _nodeIndex = new Dictionary<string, GraphNode>();
         }
 
-        public void Add(string key, T data, IEnumerable<ITreeDependency> dependentKeys)
+        public void Add(string key, T data, IEnumerable<ITreeDependency> dependentKeys, PipelinePosition position)
         {
-            GraphNode treeNode;
-            if (_nodeIndex.TryGetValue(key, out treeNode))
+            GraphNode graphNode;
+            if (_nodeIndex.TryGetValue(key, out graphNode))
                 throw new DuplicateKeyException("The key " + key + " has already been added to this dependency graph");
 
-            treeNode = new GraphNode
+            graphNode = new GraphNode
                 {
                     Data = data,
                     Key = key,
                     DependentKeys = dependentKeys == null ? new List<ITreeDependency>() : dependentKeys.ToList(),
+                    Position = position
                 };
-            _nodeIndex.Add(key, treeNode);
+            _nodeIndex.Add(key, graphNode);
 
             _graphBuilt = false;
         }
@@ -82,12 +85,13 @@ namespace OwinFramework.Utility
         }
 
         /// <summary>
-        /// Implements depth first topological sort
+        /// Implements depth first topological sort. There is a small variation in this
+        /// version because nodes can be defined as being fin first or last
         /// </summary>
         /// <see cref="https://en.wikipedia.org/wiki/Topological_sorting"/>
         private IList<GraphNode> GetSortedList()
         {
-            var nodes = _nodeIndex.Values.ToList();
+            var nodes = _nodeIndex.Values.OrderBy(n => n.Position).ToList();
 
             foreach (var node in nodes)
                 node.VisitStatus = VisitStatus.Unvisited;
@@ -100,14 +104,15 @@ namespace OwinFramework.Utility
                 while (unvisitedNode != null)
                 {
                     Visit(sorted, unvisitedNode);
-                    unvisitedNode = nodes.FirstOrDefault(n => n.VisitStatus == VisitStatus.Unvisited);
+                    unvisitedNode = nodes.FirstOrDefault(n => n.VisitStatus == VisitStatus.Unvisited) ??
+                                    nodes.FirstOrDefault(n => n.VisitStatus == VisitStatus.Deferred);
                 }
             }
 
             return sorted;
         }
 
-        private void Visit(ICollection<GraphNode> sortedList, GraphNode node)
+        private VisitStatus Visit(ICollection<GraphNode> sortedList, GraphNode node)
         {
             switch (node.VisitStatus)
             {
@@ -121,15 +126,30 @@ namespace OwinFramework.Utility
                     throw new CircularDependencyException(message);
                 }
                 case VisitStatus.Unvisited:
+                case VisitStatus.Deferred:
                 {
+                    if (node.VisitStatus == VisitStatus.Unvisited 
+                        && node.Position == PipelinePosition.Back)
+                    {
+                        node.VisitStatus = VisitStatus.Deferred;
+                        break;
+                    }
+
+                    var finalStatus = VisitStatus.MarkPermenant;
                     node.VisitStatus = VisitStatus.MarkTemporary;
                     foreach (var m in node.OutgoingEdges)
-                        Visit(sortedList, m);
-                    node.VisitStatus = VisitStatus.MarkPermenant;
-                    sortedList.Add(node);
+                    {
+                        if (Visit(sortedList, m) == VisitStatus.Deferred)
+                            finalStatus = VisitStatus.Deferred;
+                    }
+                    node.VisitStatus = finalStatus;
+
+                    if (finalStatus == VisitStatus.MarkPermenant)
+                        sortedList.Add(node);
                     break;
                 }
             }
+            return node.VisitStatus;
         }
 
         private void BuildGraph()
@@ -164,12 +184,13 @@ namespace OwinFramework.Utility
             _graphBuilt = true;
         }
 
-        private enum VisitStatus { Unvisited, MarkTemporary, MarkPermenant }
+        private enum VisitStatus { Unvisited, MarkTemporary, MarkPermenant, Deferred }
 
         private class GraphNode
         {
             public T Data;
             public string Key;
+            public PipelinePosition Position;
             public IList<ITreeDependency> DependentKeys;
             public IList<GraphNode> OutgoingEdges;
             public IList<GraphNode> IncommingEdges;

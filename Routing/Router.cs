@@ -163,19 +163,24 @@ namespace OwinFramework.Routing
                 foreach (var component in _components)
                 {
                     var key = buildKey(component.MiddlewareType, component.Name);
-                    var dependentKeys = component.Dependencies == null
-                        ? null
-                        : component
-                            .Dependencies
-                            .Where(dep => dep.DependentType != null)
-                            .Select(c => 
-                                new TreeDependency 
-                                { 
-                                    Key = buildKey(c.DependentType, c.Name),
-                                    Required = c.Required
-                                });
 
-                    dependencyTree.Add(key, component, dependentKeys);
+                    var position = PipelinePosition.Middle;
+                    if (component.Dependencies.Any(dep => dep.Position == PipelinePosition.Back))
+                        position = PipelinePosition.Back;
+                    if (component.Dependencies.Any(dep => dep.Position == PipelinePosition.Front))
+                        position = PipelinePosition.Front;
+
+                    var dependentKeys = component
+                        .Dependencies
+                        .Where(dep => dep.DependentType != null)
+                        .Select(c => 
+                            new TreeDependency 
+                            { 
+                                Key = buildKey(c.DependentType, c.Name),
+                                Required = c.Required
+                            });
+
+                    dependencyTree.Add(key, component, dependentKeys, position);
                 }
 
                 // Sort components by order of least to most dependent

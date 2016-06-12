@@ -62,7 +62,7 @@
     <Compile Include="Middleware\AllowEverythingAuthorization.cs" />
     <Compile Include="Middleware\CertificateIdentification.cs" />
     <Compile Include="Middleware\FormsIdentification.cs" />
-    <Compile Include="Configuration.cs" />
+    <Compile Include="DefaultValueConfiguration.cs" />
     <Compile Include="Middleware\RestServiceMapper.cs" />
     <Compile Include="Middleware\TemplatePageRending.cs" />
     <Compile Include="Program.cs" />

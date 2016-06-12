@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.Owin;
 using Owin;
 using OwinFramework.Interfaces.Builder;
@@ -16,10 +17,14 @@ namespace OwinFramework.Builder
 
         public static IMiddleware RunAfter<T>(this IMiddleware middleware, string name = null, bool required = true)
         {
+            var existingDependency = middleware.Dependencies.FirstOrDefault(dep => dep.DependentType == typeof(T));
+            if (existingDependency != null)
+                middleware.Dependencies.Remove(existingDependency);
+
             middleware.Dependencies.Add(new Dependency<T>
             {
-                Position = PpelinePosition.Middle,
-                DependentType = typeof(T),
+                Position = PipelinePosition.Middle,
+                DependentType = typeof (T),
                 Name = name,
                 Required = required
             });
@@ -30,7 +35,7 @@ namespace OwinFramework.Builder
         {
             middleware.Dependencies.Add(new Dependency<object>
             {
-                Position = PpelinePosition.Front
+                Position = PipelinePosition.Front
             });
             return middleware;
         }
@@ -39,14 +44,14 @@ namespace OwinFramework.Builder
         {
             middleware.Dependencies.Add(new Dependency<object>
             {
-                Position = PpelinePosition.Back
+                Position = PipelinePosition.Back
             });
             return middleware;
         }
 
         private class Dependency<T> : IDependency<T>
         {
-            public PpelinePosition Position { get; set; }
+            public PipelinePosition Position { get; set; }
             public Type DependentType { get; set; }
             public string Name { get; set; }
             public bool Required { get; set; }
