@@ -112,8 +112,7 @@ namespace OwinFramework.Builder
                 .ToList();
 
             AddToFront(rootRouterComponent, frontComponents);
-            AddToFront(rootRouterComponent, middleComponents);
-            //AddToMiddle(routerComponents, middleComponents);
+            AddToMiddle(routerComponents, middleComponents);
             AddToBack(routerComponents, backComponents);
 
             // Add components to the segments they were assigned to

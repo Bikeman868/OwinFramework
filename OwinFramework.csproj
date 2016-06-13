@@ -52,6 +52,8 @@
   <ItemGroup>
     <Compile Include="Builder\Builder.cs" />
     <Compile Include="Interfaces\Utility\IDependencyGraphEdge.cs" />
+    <Compile Include="Interfaces\Utility\ISegmenter.cs" />
+    <Compile Include="Interfaces\Utility\ISegmenterFactory.cs" />
     <Compile Include="Utility\DuplicateKeyException.cs" />
     <Compile Include="Utility\CircularDependencyException.cs" />
     <Compile Include="Utility\MissingDependencyException.cs" />
@@ -82,6 +84,8 @@
     <Compile Include="Routing\Exceptions.cs" />
     <Compile Include="Routing\Router.cs" />
     <Compile Include="Utility\DependencyGraphEdge.cs" />
+    <Compile Include="Utility\Segmenter.cs" />
+    <Compile Include="Utility\SegmenterFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
