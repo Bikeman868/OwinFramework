@@ -44,6 +44,7 @@ namespace ExampleUsage
                     Console.WriteLine(ex.Message);
                     ex = ex.InnerException;
                 }
+                Console.ReadLine();
             }
         }
     }

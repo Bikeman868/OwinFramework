@@ -9,6 +9,7 @@ using OwinFramework.Interfaces.Routing;
 using OwinFramework.Routing;
 using System.Threading.Tasks;
 using OwinFramework.Interfaces.Utility;
+using OwinFramework.Utility;
 
 namespace OwinFramework.Builder
 {
@@ -40,6 +41,28 @@ namespace OwinFramework.Builder
 
         public void Build(IAppBuilder app)
         {
+            // Resolve name only dependencies and fill in the type that they depend on
+            foreach (var component in _components)
+            {
+                foreach (var dependency in component.Middleware.Dependencies)
+                {
+                    if (dependency.DependentType == null && !string.IsNullOrEmpty(dependency.Name))
+                    {
+                        var dependent = _components.FirstOrDefault(
+                            c => string.Equals(c.Middleware.Name, dependency.Name, StringComparison.OrdinalIgnoreCase));
+                        if (dependent == null)
+                        {
+                            if (dependency.Required)
+                                throw new MissingDependencyException("There are no middleware components called \"" + dependency.Name + "\"");
+                        }
+                        else
+                        {
+                            dependency.DependentType = dependent.MiddlewareType;
+                        }
+                    }
+                }
+            }
+
             var routerComponents = _components
                 .Select(c => c as RouterComponent)
                 .Where(rc => rc != null)
@@ -186,7 +209,16 @@ namespace OwinFramework.Builder
 
         private void Dump(IDependency dependency, string indent)
         {
-            if (dependency.DependentType != null)
+            if (dependency.DependentType == null)
+            {
+                if (!string.IsNullOrEmpty(dependency.Name))
+                {
+                    var line = "depends on \"" + dependency.Name + "\"";
+                    if (!dependency.Required) line += (" (optional)");
+                    System.Diagnostics.Debug.WriteLine(indent + line);
+                }
+            }
+            else 
             {
                 var line = "depends on " + dependency.DependentType.Name;
                 if (dependency.Name != null) line += " \"" + dependency.Name + "\"";

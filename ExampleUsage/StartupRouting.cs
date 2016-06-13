@@ -40,40 +40,40 @@ namespace ExampleUsage
             builder.Register(new ReportExceptions());
 
             // This says that we want to use forms based identification, that
-            // we will refer to it by the name 'forms', and it will
+            // we will refer to it by the name 'loginId', and it will
             // only be configured for the 'secure' route.
             builder.Register(new FormsIdentification())
-                .As("forms")
+                .As("loginId")
                 .ConfigureWith(configuration, "/owin/auth/forms")
                 .RunAfter<IRoute>("secure");
 
             // This says that we want to use certificate based identification, that
-            // we will refer to it by the name 'cert', and it will
+            // we will refer to it by the name 'certificateId', and it will
             // only be configured for the 'api' route.
             builder.Register(new CertificateIdentification())
-                .As("cert")
+                .As("certificateId")
                 .ConfigureWith(configuration, "/owin/auth/cert")
                 .RunAfter<IRoute>("api");
 
             // This specifies the mechanism we want to use to store session
             builder.Register(new InProcessSession())
-                .RunAfter<IIdentification>("forms")
+                .RunAfter<IIdentification>("loginId") // TODO: remove when route construction is working
                 .ConfigureWith(configuration, "/owin/session");
 
             // This configures a routing element that will split the OWIN pipeline into
-            // two routes. There is a 'UI' route that has forms based authentication and 
-            // template based rendering. There is an 'API' route that has certifcate based
+            // two routes. There is a 'ui' route that has forms based authentication and 
+            // template based rendering. There is an 'api' route that has certifcate based
             // authentication and REST service rendering. It also specifies that routing
             // runs after session, so both routes will use the same session middleware. If
-            // you condifure more than one session middleware in this scenario then an exception
+            // you configure more than one session middleware in this scenario then an exception
             // will be thrown at startup.
             builder.Register(new Router(dependencyGraphFactory))
                 .AddRoute("ui", context => context.Request.Path.Value.EndsWith(".aspx"))
                 .AddRoute("api", context => true)
                 .RunAfter<ISession>(null, false);
 
-            // This configures another routing split that divides the 'UI' route into secure
-            // and public routes called 'SecureUI' and 'PublicUI'.
+            // This configures another routing split that divides the 'ui' route into 
+            // 'secure' and 'public' routes.
             builder.Register(new Router(dependencyGraphFactory))
                 .AddRoute("secure", context => context.Request.Path.Value.StartsWith("/secure"))
                 .AddRoute("public", context => true)
@@ -81,19 +81,19 @@ namespace ExampleUsage
 
             // This specifies that we want to use the template page rendering
             // middleware and that it should run on both the "public" route and
-            // the "secure" route. This joins two of the routes back together.
+            // the "secure" route. This creates a join bewteen the routes.
             builder.Register(new TemplatePageRendering())
                 .RunAfter<IRoute>("public")
                 .RunAfter<IRoute>("secure")
                 .ConfigureWith(configuration, "/owin/templates");
 
             // This specifies that we want to use the REST service mapper
-            // middleware and that it should run after IIdentification middleware called 'cert'
-            // Note that we could also have told it to RunAfter<IRoute>("API") and the
+            // middleware and that it should run after the 'certificateId' middleware
+            // Note that we could also have told it to RunAfter<IRoute>("api") and the
             // resulting OWIN pipeline would be the same. For belts and braces we could
             // also add both dependencies.
             builder.Register(new RestServiceMapper())
-                .RunAfter<IIdentification>("cert")
+                .RunAfter("certificateId")
                 .ConfigureWith(configuration, "/owin/rest");
 
             // This statement will add all of the middleware registered with the builder into

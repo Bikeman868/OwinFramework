@@ -17,6 +17,16 @@ namespace OwinFramework.Builder
 
         public static IMiddleware RunAfter<T>(this IMiddleware middleware, string name = null, bool required = true)
         {
+            if (typeof (T) == typeof (IRoute))
+            {
+                var frontDependency =
+                    middleware.Dependencies.FirstOrDefault(dep => dep.Position == PipelinePosition.Front);
+                if (frontDependency != null)
+                    throw new BuilderException(
+                        "It does not make sense to add this middleware to the '" 
+                        + name + "' route when it is already configured to run before any routing.");
+            }
+
             var existingDependency = middleware.Dependencies.FirstOrDefault(dep => dep.DependentType == typeof(T));
             if (existingDependency != null)
                 middleware.Dependencies.Remove(existingDependency);
@@ -31,8 +41,31 @@ namespace OwinFramework.Builder
             return middleware;
         }
 
+        public static IMiddleware RunAfter(this IMiddleware middleware, string name, bool required = true)
+        {
+            if (string.IsNullOrEmpty(name))
+                throw new BuilderException("When you add a middleware dependency you must either provide a name or a type or middleware that it depends on.");
+
+            var existingDependency = middleware.Dependencies.FirstOrDefault(dep => string.Equals(dep.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (existingDependency != null)
+                middleware.Dependencies.Remove(existingDependency);
+
+            middleware.Dependencies.Add(new Dependency
+            {
+                Position = PipelinePosition.Middle,
+                DependentType = null,
+                Name = name,
+                Required = required
+            });
+            return middleware;
+        }
+
         public static IMiddleware RunFirst(this IMiddleware middleware)
         {
+            var routeDependency = middleware.Dependencies.FirstOrDefault(dep => dep.DependentType == typeof(IRoute));
+            if (routeDependency != null)
+                throw new BuilderException("It does not make sense to configure this middleware to run before any routing when it is already configured to run on the '" + routeDependency.Name + "' route.");
+                
             middleware.Dependencies.Add(new Dependency<object>
             {
                 Position = PipelinePosition.Front
@@ -49,12 +82,16 @@ namespace OwinFramework.Builder
             return middleware;
         }
 
-        private class Dependency<T> : IDependency<T>
+        private class Dependency : IDependency
         {
             public PipelinePosition Position { get; set; }
             public Type DependentType { get; set; }
             public string Name { get; set; }
             public bool Required { get; set; }
+        }
+
+        private class Dependency<T> : Dependency, IDependency<T>
+        {
         }
 
         public static IMiddleware ConfigureWith(
