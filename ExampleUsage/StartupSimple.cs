@@ -16,7 +16,8 @@ namespace ExampleUsage
             // simple and focused as possible. You should use IOC in your application.
 
             var dependencyGraphFactory = new DependencyGraphFactory();
-            var builder = new Builder(dependencyGraphFactory);
+            var segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
+            var builder = new Builder(dependencyGraphFactory, segmenterFactory);
 
             // This next part defines the concrete implementation of the various
             // OWIN middleware components you want to use in your application. The

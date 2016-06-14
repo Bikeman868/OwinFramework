@@ -17,12 +17,16 @@ namespace OwinFramework.Builder
     {
         private readonly IList<Component> _components;
         private readonly IDependencyGraphFactory _dependencyGraphFactory;
+        private readonly ISegmenterFactory _segmenterFactory;
 
         private Router _router;
 
-        public Builder(IDependencyGraphFactory dependencyGraphFactory)
+        public Builder(
+            IDependencyGraphFactory dependencyGraphFactory,
+            ISegmenterFactory segmenterFactory)
         {
             _dependencyGraphFactory = dependencyGraphFactory;
+            _segmenterFactory = segmenterFactory;
             _components = new List<Component>();
         }
 
@@ -154,9 +158,24 @@ namespace OwinFramework.Builder
                 component.SegmentAssignments = segments;
         }
 
-        private void AddToMiddle(IEnumerable<RouterComponent> routers, IEnumerable<MiddlewareComponent> components)
+        private void AddToMiddle(IEnumerable<RouterComponent> routerComponents, IEnumerable<MiddlewareComponent> components)
         {
-            // TODO: assign components to segments
+            var segmenter = _segmenterFactory.Create();
+
+            foreach (var routerComponent in routerComponents)
+                AddToSegmenter(segmenter, routerComponent);
+
+            foreach (var component in components)
+                AddToSegmenter(segmenter, component);
+        }
+
+        private void AddToSegmenter(ISegmenter segmenter, RouterComponent routerComponent)
+        {
+            //segmenter.AddSegment(routerComponent.Middleware.Name ?? "", routerComponent.RouterSegments.Select(s => s.Name));
+        }
+
+        private void AddToSegmenter(ISegmenter segmenter, MiddlewareComponent middlewareComponent)
+        {
         }
 
         private void AddToBack(IEnumerable<RouterComponent> routers, IEnumerable<MiddlewareComponent> components)

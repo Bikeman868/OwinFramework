@@ -26,7 +26,8 @@ namespace ExampleUsage
         {
             // Don't do object construction like this in your application, use IoC instead.
             var dependencyGraphFactory = new DependencyGraphFactory();
-            var builder = new Builder(dependencyGraphFactory);
+            var segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
+            var builder = new Builder(dependencyGraphFactory, segmenterFactory);
             var configuration = new DefaultValueConfiguration();
 
             // Note that the middleware components below can be registerd with the builder
