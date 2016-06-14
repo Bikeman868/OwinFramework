@@ -2,18 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using OwinFramework.Builder;
+using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Utility;
 
 namespace OwinFramework.Utility
 {
     public class Segmenter: ISegmenter
     {
+        private readonly IDependencyGraphFactory _dependencyGraphFactory;
+
         private Dictionary<string, Segment> _segments;
         private Dictionary<string, Node> _nodes;
         private bool _modified;
 
-        public Segmenter()
+        public Segmenter(IDependencyGraphFactory dependencyGraphFactory)
         {
+            _dependencyGraphFactory = dependencyGraphFactory;
             Clear();
         }
 
@@ -191,8 +195,29 @@ namespace OwinFramework.Utility
 
         private void ConsolidateCommonNodes(Segment segment)
         {
+            // Recursively traverse the tree bottom up
             foreach (var child in segment.Children)
                 ConsolidateCommonNodes(child);
+
+            // Sort the nodes by their dependencies. You can't move a node up to
+            // the parent unless you also move its dependents
+            if (segment.Nodes.Count > 1)
+            {
+                var dependencyTree = _dependencyGraphFactory.Create<Node>();
+                foreach (var node in segment.Nodes)
+                {
+                    var dependents = node.DependentNodes
+                        .SelectMany(nl => nl)
+                        .Where(n => segment.Nodes.Contains(n))
+                        .Select(n => new DependencyGraphEdge { Key = n.Key });
+                    dependencyTree.Add(
+                        node.Key, 
+                        node, 
+                        dependents,
+                        PipelinePosition.Middle);
+                }
+                segment.Nodes = dependencyTree.GetBuildOrderData().ToList();
+            }
 
             if (segment.Children.Count < 2) return;
 

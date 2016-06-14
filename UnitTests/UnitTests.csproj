@@ -62,7 +62,7 @@
   <ItemGroup>
     <Compile Include="DependencyGraphTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Segmenter_tests.cs" />
+    <Compile Include="SegmenterTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

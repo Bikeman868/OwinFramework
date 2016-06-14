@@ -87,7 +87,7 @@ namespace OwinFramework.Builder
             // Create Segment objects for each IRoutingSegment configured for the application
             foreach (var routerComponent in routerComponents)
             {
-                var router = (IRouter) routerComponent.Middleware;
+                var router = (IRouter)routerComponent.Middleware;
                 routerComponent.RouterSegments = router.Segments
                     .Select(s => new Segment
                     {
@@ -97,28 +97,37 @@ namespace OwinFramework.Builder
                     .ToList();
             }
 
-            // Split the middleware components into three groups: front, middle and back. Note that routers
-            // are always in the middle. Front means run before routing and back means run after routing
-            var frontComponents = middlewareComponents
-                .Where(c => c.Middleware.Dependencies.Any(dep => dep.Position == PipelinePosition.Front))
-                .ToList();
-            var backComponents = middlewareComponents
-                .Where(c => !frontComponents.Contains(c))
-                .Where(c => c.Middleware.Dependencies.Any(dep => dep.Position == PipelinePosition.Back))
-                .ToList();
-            var middleComponents = middlewareComponents
-                .Where(c => !frontComponents.Contains(c))
-                .Where(c => !backComponents.Contains(c))
-                .ToList();
+            if (routerComponents.Count == 1)
+            {
+                var segment = routerComponents[0].RouterSegments[0];
+                foreach (var component in middlewareComponents)
+                    component.SegmentAssignments.Add(segment);
+            }
+            else
+            {
+                // Split the middleware components into three groups: front, middle and back. Note that routers
+                // are always in the middle. Front means run before routing and back means run after routing
+                var frontComponents = middlewareComponents
+                    .Where(c => c.Middleware.Dependencies.Any(dep => dep.Position == PipelinePosition.Front))
+                    .ToList();
+                var backComponents = middlewareComponents
+                    .Where(c => !frontComponents.Contains(c))
+                    .Where(c => c.Middleware.Dependencies.Any(dep => dep.Position == PipelinePosition.Back))
+                    .ToList();
+                var middleComponents = middlewareComponents
+                    .Where(c => !frontComponents.Contains(c))
+                    .Where(c => !backComponents.Contains(c))
+                    .ToList();
 
-            AddToFront(rootRouterComponent, frontComponents);
-            AddToMiddle(routerComponents, middleComponents);
-            AddToBack(routerComponents, backComponents);
+                AddToFront(rootRouterComponent, frontComponents);
+                AddToMiddle(routerComponents, middleComponents);
+                AddToBack(routerComponents, backComponents);
+            }
 
             // Add components to the segments they were assigned to
             foreach (var component in _components)
             {
-                foreach(var segment in component.SegmentAssignments)
+                foreach (var segment in component.SegmentAssignments)
                 {
                     var routingSegment = segment.RoutingSegment;
                     routingSegment.Add(component.Middleware, component.MiddlewareType);
