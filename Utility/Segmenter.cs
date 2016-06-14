@@ -223,30 +223,51 @@ namespace OwinFramework.Utility
 
             var commonNodes = segment.Children[0].Nodes.ToList();
 
-            for (var i = 1; i < segment.Children.Count; i++)
+            var nodesRemoved = true;
+            while (nodesRemoved)
             {
-                foreach(var node in commonNodes.ToList())
+                nodesRemoved = false;
+                for (var i = 1; i < segment.Children.Count; i++)
                 {
-                    if (!segment.Children[i].Nodes.Contains(node))
+                    var child = segment.Children[i];
+                    foreach (var node in commonNodes.ToList())
                     {
-                        commonNodes.Remove(node);
-                        break;
+                        if (child.Nodes.Contains(node))
+                        {
+                            var blockingDependantCount = node.DependentNodes
+                                .SelectMany(d => d)
+                                .Where(d => child.Nodes.Contains(d))
+                                .Where(d => !commonNodes.Contains(d))
+                                .Count();
+                            if (blockingDependantCount > 0)
+                            {
+                                commonNodes.Remove(node);
+                                nodesRemoved = true;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            commonNodes.Remove(node);
+                            nodesRemoved = true;
+                            break;
+                        }
                     }
                 }
             }
 
             foreach (var node in commonNodes)
-                Consolidate(segment, node);
+                MoveFromChildrenToParent(segment, node);
         }
 
-        private void Consolidate(Segment segment, Node node)
+        private void MoveFromChildrenToParent(Segment parentSegment, Node node)
         {
-            foreach (var child in segment.Children)
+            foreach (var child in parentSegment.Children)
             {
                 if (child.Nodes.Contains(node))
                     RemoveAssignment(node, child);
             }
-            AddAssignment(node, segment);
+            AddAssignment(node, parentSegment);
         }
 
         private class Segment

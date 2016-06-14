@@ -56,7 +56,7 @@ namespace UnitTests
 
             // A depends on B or D
             _segmenter.AddNode(
-                "A", 
+                "A",
                 new[] { new List<string> { "B", "D" } });
 
             // B depends on C
@@ -116,36 +116,43 @@ namespace UnitTests
             // REST on api route requires identification
             _segmenter.AddNode(
                 "REST",
-                new[] { new List<string> { "certId", "formsId" } },
+                new[] { new List<string> { "certId", "formsId", "anonymousId" } },
                 new[] { "api" });
 
-            // MVC on both secure and public route needs session and identification
+            // MVC on both secure and public route needs session
             _segmenter.AddNode(
                 "MVC",
-                new[] { new List<string> { "session" }, new List<string> { "certId", "formsId" } },
+                new[] { new List<string> { "session" } },
                 new[] { "secure", "public" });
 
-            // Session requires identification
+            // Session requires requires identification
             _segmenter.AddNode(
                 "session",
-                new[] { new List<string> { "certId", "formsId" } });
+                new[] { new List<string> { "certId", "formsId", "anonymousId" } });
 
-            // Secure route must have forms based identification
+            // Secure route must have login forms identification
             _segmenter.AddNode(
                 "formsId",
                 null,
                 new[] { "secure" });
 
-            // API route must have certification based identification
+            // API route must have certificate identification
             _segmenter.AddNode(
                 "certId",
                 null,
                 new[] { "api" });
 
+            // Public route must have anonymous identification
+            _segmenter.AddNode(
+                "anonymousId",
+                null,
+                new[] { "public" });
+
             var restSegments = _segmenter.GetNodeSegments("REST");
             var mvcSegments = _segmenter.GetNodeSegments("MVC");
             var certIdSegments = _segmenter.GetNodeSegments("certId");
             var formsIdSegments = _segmenter.GetNodeSegments("formsId");
+            var anonymousIdSegments = _segmenter.GetNodeSegments("anonymousId");
             var sessionSegments = _segmenter.GetNodeSegments("session");
 
             Assert.AreEqual(1, restSegments.Count, "Number of segments REST assigned to");
@@ -159,7 +166,10 @@ namespace UnitTests
             Assert.AreEqual("api", certIdSegments[0], "Cert Id on api route");
 
             Assert.AreEqual(1, formsIdSegments.Count, "Number of segments forms Id assigned to");
-            Assert.AreEqual("secure", certIdSegments[0], "Forms Id on secure route");
+            Assert.AreEqual("secure", formsIdSegments[0], "Forms Id on secure route");
+
+            Assert.AreEqual(1, anonymousIdSegments.Count, "Number of segments anonymous Id assigned to");
+            Assert.AreEqual("public", anonymousIdSegments[0], "Anonymous Id on secure route");
 
             Assert.AreEqual(2, sessionSegments.Count, "Number of segments session assigned to");
             Assert.IsTrue(sessionSegments.Contains("secure"), "Session on secure route");
