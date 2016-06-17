@@ -138,7 +138,11 @@ namespace OwinFramework.Builder
 
             var segments = new List<Segment> { rootRouterComponent.RouterSegments[0] };
             foreach (var component in components)
+            {
                 component.SegmentAssignments = segments;
+                foreach (var segment in segments)
+                    segment.Components.Add(component);
+            }
         }
 
         private void AddToMiddle(IList<RouterComponent> routerComponents, IList<MiddlewareComponent> components)
@@ -172,13 +176,7 @@ namespace OwinFramework.Builder
         private void AddToBack(IEnumerable<RouterComponent> routers, IEnumerable<MiddlewareComponent> components)
         {
             var allSegments = routers
-                .Aggregate(
-                    new List<Segment>(),
-                    (s, r) =>
-                    {
-                        s.AddRange(r.RouterSegments);
-                        return s;
-                    })
+                .SelectMany(r => r.RouterSegments)
                 .ToList();
 
             var leafSegments = allSegments
@@ -205,6 +203,8 @@ namespace OwinFramework.Builder
                         .Where(s => s != null)
                         .ToList();
                 }
+                foreach (var segment in component.SegmentAssignments)
+                    segment.Components.Add(component);
             }
         }
 
@@ -282,7 +282,6 @@ namespace OwinFramework.Builder
             public string UniqueId = Guid.NewGuid().ToString();
             public IMiddleware Middleware;
             public Type MiddlewareType;
-            public List<Component> PriorComponents = new List<Component>();
             public List<Segment> SegmentAssignments = new List<Segment>();
         }
 
@@ -335,7 +334,8 @@ namespace OwinFramework.Builder
                 foreach (var routerComponent in routerComponents)
                 {
                     var router = (IRouter)routerComponent.Middleware;
-                    routerComponent.RouterSegments = router.Segments
+                    routerComponent.RouterSegments = router
+                        .Segments
                         .Select(s => new Segment
                         {
                             Name = s.Name,
