@@ -70,8 +70,7 @@ namespace ExampleUsage
             // will be thrown at startup.
             builder.Register(new Router(dependencyGraphFactory))
                 .AddRoute("ui", context => context.Request.Path.Value.EndsWith(".aspx"))
-                .AddRoute("api", context => true)
-                .RunAfter<ISession>(null, false);
+                .AddRoute("api", context => true);
 
             // This configures another routing split that divides the 'ui' route into 
             // 'secure' and 'public' routes.

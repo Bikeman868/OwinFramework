@@ -67,39 +67,18 @@ namespace OwinFramework.Builder
                 }
             }
 
+            // Split components into routers and other types of middleware
             var routerComponents = _components
                 .Select(c => c as RouterComponent)
                 .Where(rc => rc != null)
                 .ToList();
-
             var middlewareComponents = _components
                 .Select(c => c as MiddlewareComponent)
                 .Where(mc => mc != null)
                 .ToList();
 
-            // This root level router is a container for everythinng that's not on a route. When
-            // the application does not use routing everything ends up in here
-            _router = new Router(_dependencyGraphFactory);
-            _router.Add(null, owinContext => true);
-            var rootRouterComponent = new RouterComponent
-            {
-                Middleware = _router,
-                MiddlewareType = typeof(IRoute)
-            };
-            routerComponents.Add(rootRouterComponent);
-
-            // Create Segment objects for each IRoutingSegment configured for the application
-            foreach (var routerComponent in routerComponents)
-            {
-                var router = (IRouter)routerComponent.Middleware;
-                routerComponent.RouterSegments = router.Segments
-                    .Select(s => new Segment
-                    {
-                        Name = s.Name,
-                        RoutingSegment = s
-                    })
-                    .ToList();
-            }
+            var routeBuilder = new RouteBuilder(_dependencyGraphFactory);
+            _router = routeBuilder.BuildRoutes(routerComponents);
 
             if (routerComponents.Count == 1)
             {
@@ -123,7 +102,7 @@ namespace OwinFramework.Builder
                     .Where(c => !backComponents.Contains(c))
                     .ToList();
 
-                AddToFront(rootRouterComponent, frontComponents);
+                AddToFront(routerComponents, frontComponents);
                 AddToMiddle(routerComponents, middleComponents);
                 AddToBack(routerComponents, backComponents);
             }
@@ -151,14 +130,18 @@ namespace OwinFramework.Builder
             app.Use(Invoke);
         }
 
-        private void AddToFront(RouterComponent rootRouterComponent, IEnumerable<MiddlewareComponent> components)
+        private void AddToFront(IEnumerable<RouterComponent> routerComponents, IEnumerable<MiddlewareComponent> components)
         {
+            var rootRouterComponent = routerComponents.FirstOrDefault(rc => rc.SegmentAssignments.Count == 0);
+            if (rootRouterComponent == null)
+                throw new BuilderException("Internal error, there is no root router.");
+
             var segments = new List<Segment> { rootRouterComponent.RouterSegments[0] };
             foreach (var component in components)
                 component.SegmentAssignments = segments;
         }
 
-        private void AddToMiddle(IEnumerable<RouterComponent> routerComponents, IEnumerable<MiddlewareComponent> components)
+        private void AddToMiddle(IList<RouterComponent> routerComponents, IList<MiddlewareComponent> components)
         {
             var segmenter = _segmenterFactory.Create();
 
@@ -167,6 +150,14 @@ namespace OwinFramework.Builder
 
             foreach (var component in components)
                 AddToSegmenter(segmenter, component);
+
+            //foreach (var component in components)
+            //{
+            //    component.SegmentAssignments = segmenter
+            //        .GetNodeSegments(component.UniqueId)
+            //        .Select(nk => )
+            //        .ToList());
+            //}
         }
 
         private void AddToSegmenter(ISegmenter segmenter, RouterComponent routerComponent)
@@ -288,6 +279,7 @@ namespace OwinFramework.Builder
 
         private class Component
         {
+            public string UniqueId = Guid.NewGuid().ToString();
             public IMiddleware Middleware;
             public Type MiddlewareType;
             public List<Component> PriorComponents = new List<Component>();
@@ -308,6 +300,95 @@ namespace OwinFramework.Builder
             public string Name;
             public IRoutingSegment RoutingSegment;
             public List<Component> Components = new List<Component>();
+        }
+
+        private class RouteBuilder
+        {
+            private readonly IDependencyGraphFactory _dependencyGraphFactory;
+
+            public RouteBuilder(IDependencyGraphFactory dependencyGraphFactory)
+            {
+                _dependencyGraphFactory = dependencyGraphFactory;
+            }
+
+            public Router BuildRoutes(IList<RouterComponent> routerComponents)
+            {
+                // Create a root level router as a container for everythinng that's not on a route. 
+                // When the application does not use routing everything ends up in here
+                var rootRouter = new Router(_dependencyGraphFactory);
+
+                // Add one segment called "root" with a pass everything filter
+                rootRouter.Add("root", owinContext => true);
+                var rootRoutingSegment = rootRouter.Segments[0];
+
+                // Wrap the root router in a component, this is equivalent to registering the router
+                // with the builder. 
+                var rootRouterComponent = new RouterComponent
+                {
+                    Middleware = rootRouter,
+                    MiddlewareType = typeof(IRoute),
+                };
+                routerComponents.Add(rootRouterComponent);
+
+                // Create Segment objects for each IRoutingSegment configured by the application
+                // We will use the segmenter later to fill in the list of components on each segment
+                foreach (var routerComponent in routerComponents)
+                {
+                    var router = (IRouter)routerComponent.Middleware;
+                    routerComponent.RouterSegments = router.Segments
+                        .Select(s => new Segment
+                        {
+                            Name = s.Name,
+                            RoutingSegment = s
+                        })
+                        .ToList();
+                }
+                var rootSegment = rootRouterComponent.RouterSegments[0];
+
+                // Connect the routers together by assiging each one to its parents
+                var allSegments = routerComponents.SelectMany(r => r.RouterSegments).ToList();
+                foreach (var routerComponent in routerComponents)
+                {
+                    if (routerComponent == rootRouterComponent)
+                        continue;
+
+                    var router = (IRouter)routerComponent.Middleware;
+                    var dependentRoutes = router
+                        .Dependencies
+                        .Where(dep => dep.DependentType == typeof (IRoute))
+                        .ToList();
+                    if (dependentRoutes.Count == 0)
+                    {
+                        rootSegment.Components.Add(routerComponent);
+                        routerComponent.SegmentAssignments.Add(rootSegment);
+                    }
+                    else
+                    {
+                        foreach (var routeDependency in dependentRoutes)
+                        {
+                            var dependentSegment = allSegments.FirstOrDefault(
+                                s => string.Equals(s.Name, routeDependency.Name, StringComparison.OrdinalIgnoreCase));
+                            if (dependentSegment == null)
+                            {
+                                if (routeDependency.Required)
+                                    throw new MissingDependencyException(
+                                        "Route '" 
+                                        + routerComponent.Middleware.Name 
+                                        + "' depends on route '"
+                                        + routeDependency.Name
+                                        + "' which is not configured");
+                            }
+                            else
+                            {
+                                dependentSegment.Components.Add(routerComponent);
+                                routerComponent.SegmentAssignments.Add(dependentSegment);
+                            }
+                        }
+                    }
+                }
+
+                return rootRouter;
+            }
         }
     }
 }
