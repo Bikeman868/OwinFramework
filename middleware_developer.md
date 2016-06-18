@@ -112,3 +112,53 @@ during the second stage.
 
 For an example of upstream communication see the `InProcessSession` class in the 
 `ExampleUsage` project.
+
+# FAQ
+
+## How can I convert my existing middleware to work with OwinFramework?
+
+This Framework depends on the Microsoft OWIN package. Assuming you based your
+middleware implementation on this pattern then all you have to do is implement 
+`IMiddleware<T>`.
+
+Starting from existing middleware like this:
+```
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.Owin;
+
+    public class MyMiddleware: IMiddleware<object>
+    {
+	  public Task Invoke(IOwinContext context, Func<Task> next)
+	  {
+	    // Do my stuff here
+		//
+	    return next();
+	  }
+	}
+```
+Make this code work with OwinFramework by changing it to this:
+```
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Microsoft.Owin;
+    using OwinFramework.Interfaces.Builder;
+
+    public class MyMiddleware: IMiddleware<object>
+    {
+	  private readonly IList<IDependency> _dependencies = new List<IDependency>();
+	  public IList<IDependency> Dependencies { get { return _dependencies; } }
+
+	  public string Name { get; set; }
+
+	  public Task Invoke(IOwinContext context, Func<Task> next)
+	  {
+	    // Do my stuff here
+		//
+	    return next();
+	  }
+	}
+```
+Now you can register this with the OwinFramework builder, give it a name and
+make other middleware depend on it by name.
