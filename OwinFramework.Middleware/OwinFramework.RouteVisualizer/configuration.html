@@ -1,0 +1,21 @@
+﻿<html>
+    <head>
+        <title>OwinFramework visualizer middleware configuration</title>
+    </head>
+    <body>
+        <h1>OwinFramework visualizer configuration</h1>
+        <p>The visualizer middleware in the OwinFramework support the following configuration options</p>
+        <div>
+            <p><strong>Path</strong>&nbsp;is the relative path within your web site where the visualizer will be available.</p>
+            <p><strong>Enabled</strong>&nbsp;allows you to turn off the visualizer.</p>
+            <p>
+                <i>
+                    Note that instead of disabling the visualizer, you can place it in the Owin pipeline behind
+                    some security checks to ensure that only authorized users can access it. In a future version of
+                    this middleware I plan to integrate the Authorization middleware with the visualizer so that you can
+                    define the user permissions required to view it.
+                </i>
+            </p>
+        </div>
+    </body>
+</html>

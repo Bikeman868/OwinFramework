@@ -17,11 +17,17 @@ namespace OwinFramework.RouteVisualizer
 {
     public class RouteVisualizer: IMiddleware<object>, IConfigurable, ISelfDocumenting, IAnalysable
     {
-        private const float _textHeight = 12;
-        private const float _textLineSpacing = 15;
+        private const float TextHeight = 12;
+        private const float TextLineSpacing = 15;
 
-        private const float _boxLeftMargin = 5;
-        private const float _boxTopMargin = 5;
+        private const float BoxLeftMargin = 5;
+        private const float BoxTopMargin = 5;
+
+        private const float ChildHorizontalOffset = 20;
+        private const float ChildVericalSpacing = 10;
+        private const float SiblingHorizontalSpacing = 10;
+
+        private const string ConfigDocsPath = "/docs/configuration";
 
         private readonly IList<IDependency> _dependencies = new List<IDependency>();
         public IList<IDependency> Dependencies { get { return _dependencies; } }
@@ -35,10 +41,15 @@ namespace OwinFramework.RouteVisualizer
         {
             if (!string.IsNullOrEmpty(_configuration.Path) 
                 && context.Request.Path.HasValue
-                && string.Equals(context.Request.Path.Value, _configuration.Path, StringComparison.OrdinalIgnoreCase))
+                && context.Request.Path.Value.StartsWith(_configuration.Path, StringComparison.OrdinalIgnoreCase))
             {
                 _requestCount++;
-                return VisualizeRouting(context);
+
+                if (context.Request.Path.Value.Equals(_configuration.Path, StringComparison.OrdinalIgnoreCase))
+                    return VisualizeRouting(context);
+
+                if (context.Request.Path.Value.Equals(_configuration.Path + ConfigDocsPath, StringComparison.OrdinalIgnoreCase))
+                    return DocumentConfiguration(context);
             }
             return next();
         }
@@ -62,6 +73,32 @@ namespace OwinFramework.RouteVisualizer
             return Svg(context, document);
         }
 
+        private Task DocumentConfiguration(IOwinContext context)
+        {
+            var document = GetScriptResource("configuration.html");
+            context.Response.ContentType = "text/html";
+            return context.Response.WriteAsync(document);
+        }
+
+        private string GetScriptResource(string filename)
+        {
+            var scriptResourceName = Assembly.GetExecutingAssembly().GetManifestResourceNames().FirstOrDefault(n => n.Contains(filename));
+            if (scriptResourceName == null)
+                throw new Exception("Failed to find embedded resource " + filename);
+            
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(scriptResourceName))
+            {
+                if (stream == null)
+                    throw new Exception("Failed to find embedded resource " + filename);
+
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+        }
+
+
         #region Creating SVG drawing
 
         protected SvgDocument CreateDocument()
@@ -69,7 +106,7 @@ namespace OwinFramework.RouteVisualizer
             var document = new SvgDocument
             {
                 FontFamily = "Arial",
-                FontSize = _textHeight
+                FontSize = TextHeight
             };
 
             var styles = GetScriptResource("svg.css");
@@ -128,24 +165,6 @@ namespace OwinFramework.RouteVisualizer
             }
         }
 
-        private string GetScriptResource(string filename)
-        {
-            var scriptResourceName = Assembly.GetExecutingAssembly().GetManifestResourceNames().FirstOrDefault(n => n.Contains(filename));
-            if (scriptResourceName == null)
-                throw new Exception("Failed to find embedded resource " + filename);
-            
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(scriptResourceName))
-            {
-                if (stream == null)
-                    throw new Exception("Failed to find embedded resource " + filename);
-
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
-                {
-                    return reader.ReadToEnd();
-                }
-            }
-        }
-
         private void DrawRoutes(
             SvgDocument document, 
             IOwinContext context, 
@@ -171,17 +190,13 @@ namespace OwinFramework.RouteVisualizer
 
         void Arrange(Positioned root)
         {
-            const float childHorizontalOffset = 20;
-            const float childVericalSpacing = 10;
-            const float siblingHorizontalSpacing = 10;
-
             root.TreeHeight = root.Height;
             root.TreeWidth = root.Width;
 
-            var childX = root.X + childHorizontalOffset;
-            var childY = root.Y + root.Height + childVericalSpacing;
+            var childX = root.X + ChildHorizontalOffset;
+            var childY = root.Y + root.Height + ChildVericalSpacing;
 
-            var siblingX = root.X + root.Width + siblingHorizontalSpacing;
+            var siblingX = root.X + root.Width + SiblingHorizontalSpacing;
             var siblingY = root.Y;
 
             var x = childX;
@@ -191,12 +206,12 @@ namespace OwinFramework.RouteVisualizer
                 child.X = x;
                 child.Y = y;
                 Arrange(child);
-                y += child.TreeHeight + childVericalSpacing;
+                y += child.TreeHeight + ChildVericalSpacing;
                 if (child.X + child.TreeWidth > root.X + root.TreeWidth)
                     root.TreeWidth = child.TreeWidth + child.X - root.X;
             }
-            if (y - root.Y - childVericalSpacing > root.TreeHeight)
-            root.TreeHeight = y - root.Y - childVericalSpacing;
+            if (y - root.Y - ChildVericalSpacing > root.TreeHeight)
+            root.TreeHeight = y - root.Y - ChildVericalSpacing;
 
             x = siblingX;
             y = siblingY;
@@ -205,12 +220,12 @@ namespace OwinFramework.RouteVisualizer
                 sibling.X = x;
                 sibling.Y = y;
                 Arrange(sibling);
-                x += sibling.TreeWidth + siblingHorizontalSpacing;
+                x += sibling.TreeWidth + SiblingHorizontalSpacing;
                 if (sibling.Y + sibling.TreeHeight > root.Y + root.TreeHeight)
                     root.TreeHeight = sibling.TreeHeight + sibling.Y - root.Y;
             }
-            if (x - root.X - siblingHorizontalSpacing > root.TreeWidth)
-                root.TreeWidth = x - root.X - siblingHorizontalSpacing;
+            if (x - root.X - SiblingHorizontalSpacing > root.TreeWidth)
+                root.TreeWidth = x - root.X - SiblingHorizontalSpacing;
         }
 
         private void Draw(SvgDocument document, Positioned root)
@@ -239,25 +254,21 @@ namespace OwinFramework.RouteVisualizer
 
         private Positioned PositionRouter(IRouter router)
         {
+            var lines = new List<string>
+            {
+                "Router",
+                router.Name ?? "<anonymous>"
+            };
+
             var positioned = new Positioned
             {
                 Width = 120,
-                Height = _textHeight * 4,
-                DrawAction = (d, p) => 
-                    {
-                        DrawBox(
-                            d, 
-                            p.X, 
-                            p.Y, 
-                            p.Width,
-                            new List<string> 
-                            { 
-                                "Router", 
-                                router.Name ?? "<anonymous>" 
-                            }, 
-                            "router", 
-                            2f);
-                    }
+                Height = TextHeight * 4,
+                DrawAction = (d, p) =>
+                {
+                    DrawLine(d, p.X + ChildHorizontalOffset * 2, p.Y + TextHeight, p.X + ChildHorizontalOffset * 2, p.Y + p.TreeHeight, "route");
+                    DrawBox(d, p.X, p.Y, p.Width, lines, "router", 2f);
+                }
             };
 
             if (router.Segments != null)
@@ -281,11 +292,12 @@ namespace OwinFramework.RouteVisualizer
             var positioned = new Positioned
             {
                 Width = 160,
-                Height = _textHeight * (lines.Count + 2),
+                Height = TextHeight * (lines.Count + 2),
                 DrawAction = (d, p) =>
-                    {
-                        DrawBox(d,p.X,p.Y,p.Width,lines,"segment",2f);
-                    }
+                {
+                    DrawLine(d, p.X + p.Width, p.Y + TextHeight, p.X + p.TreeWidth, p.Y + TextHeight, "segment");
+                    DrawBox(d, p.X, p.Y, p.Width, lines, "segment", 2f);
+                }
             };
 
             if (segment.Middleware != null)
@@ -351,7 +363,7 @@ namespace OwinFramework.RouteVisualizer
             return new Positioned
             {
                 Width = longestLine * 6.5f,
-                Height = _textHeight * (lines.Count + 2),
+                Height = TextHeight * (lines.Count + 2),
                 DrawAction = (d, p) =>
                     {
                         DrawBox(d, p.X, p.Y, p.Width, lines,"middleware", 2f);
@@ -396,7 +408,7 @@ namespace OwinFramework.RouteVisualizer
 
             document.Children.Add(group);
 
-            var height = _textLineSpacing * lines.Count + _boxTopMargin * 2;
+            var height = TextLineSpacing * lines.Count + BoxTopMargin * 2;
 
             var rectangle = new SvgRectangle
             {
@@ -410,7 +422,7 @@ namespace OwinFramework.RouteVisualizer
             for (var lineNumber = 0; lineNumber < lines.Count; lineNumber++)
             {
                 var text = new SvgText(lines[lineNumber]);
-                text.Transforms.Add(new SvgTranslate(_boxLeftMargin, _textHeight + _textLineSpacing * lineNumber + _boxTopMargin));
+                text.Transforms.Add(new SvgTranslate(BoxLeftMargin, TextHeight + TextLineSpacing * lineNumber + BoxTopMargin));
                 text.Children.Add(new SvgTextSpan());
                 group.Children.Add(text);
             }
@@ -427,7 +439,9 @@ namespace OwinFramework.RouteVisualizer
             switch (documentationType)
             {
                 case DocumentationTypes.Configuration:
-                    return new Uri("https://github.com/Bikeman868/OwinFramework");
+                    return new Uri(_configuration.Path + ConfigDocsPath, UriKind.Relative);
+                case DocumentationTypes.Overview:
+                    return new Uri(_configuration.Path + "https://github.com/Bikeman868/OwinFramework/tree/master/OwinFramework.Middleware", UriKind.Absolute);
             }
             return null;
         }
