@@ -6,10 +6,12 @@ namespace OwinFramework.RouteVisualizer
     public class Configuration
     {
         public string Path { get; set; }
+        public bool Enabled { get; set; }
 
         public Configuration()
         {
-            Path = "/routes.svg";
+            Path = "/owin/visualization";
+            Enabled = true;
         }
     }
 }

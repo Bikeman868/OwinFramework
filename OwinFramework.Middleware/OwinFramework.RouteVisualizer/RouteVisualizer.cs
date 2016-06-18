@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +15,7 @@ using Svg.Transforms;
 
 namespace OwinFramework.RouteVisualizer
 {
-    public class RouteVisualizer: IMiddleware<object>, IConfigurable
+    public class RouteVisualizer: IMiddleware<object>, IConfigurable, ISelfDocumenting, IAnalysable
     {
         private const float _textHeight = 12;
         private const float _textLineSpacing = 15;
@@ -36,12 +37,13 @@ namespace OwinFramework.RouteVisualizer
                 && context.Request.Path.HasValue
                 && string.Equals(context.Request.Path.Value, _configuration.Path, StringComparison.OrdinalIgnoreCase))
             {
+                _requestCount++;
                 return VisualizeRouting(context);
             }
             return next();
         }
 
-        public void Configure(IConfiguration configuration, string path)
+        void IConfigurable.Configure(IConfiguration configuration, string path)
         {
             _configurationRegistration = configuration.Register(
                 path, cfg => _configuration = cfg, new Configuration());
@@ -57,8 +59,10 @@ namespace OwinFramework.RouteVisualizer
 
             SetDocumentSize(document, width, height);
 
-            return ReturnSvg(context, document);
+            return Svg(context, document);
         }
+
+        #region Creating SVG drawing
 
         protected SvgDocument CreateDocument()
         {
@@ -96,7 +100,7 @@ namespace OwinFramework.RouteVisualizer
             document.ViewBox = new SvgViewBox(0, 0, width, height);
         }
 
-        protected Task ReturnSvg(IOwinContext context, SvgDocument document)
+        protected Task Svg(IOwinContext context, SvgDocument document)
         {
             try
             {
@@ -127,19 +131,19 @@ namespace OwinFramework.RouteVisualizer
         private string GetScriptResource(string filename)
         {
             var scriptResourceName = Assembly.GetExecutingAssembly().GetManifestResourceNames().FirstOrDefault(n => n.Contains(filename));
-            if (scriptResourceName != null)
+            if (scriptResourceName == null)
+                throw new Exception("Failed to find embedded resource " + filename);
+            
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(scriptResourceName))
             {
-                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(scriptResourceName))
+                if (stream == null)
+                    throw new Exception("Failed to find embedded resource " + filename);
+
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
                 {
-                    if (stream == null)
-                        throw new Exception("Failed to find embedded resource " + filename);
-                    using (var reader = new StreamReader(stream, Encoding.UTF8))
-                    {
-                        return reader.ReadToEnd();
-                    }
+                    return reader.ReadToEnd();
                 }
             }
-            return null;
         }
 
         private void DrawRoutes(
@@ -167,29 +171,46 @@ namespace OwinFramework.RouteVisualizer
 
         void Arrange(Positioned root)
         {
-            var x = root.X + 20;
-            var y = root.Y + root.Height + 10;
+            const float childHorizontalOffset = 20;
+            const float childVericalSpacing = 10;
+            const float siblingHorizontalSpacing = 10;
 
+            root.TreeHeight = root.Height;
+            root.TreeWidth = root.Width;
+
+            var childX = root.X + childHorizontalOffset;
+            var childY = root.Y + root.Height + childVericalSpacing;
+
+            var siblingX = root.X + root.Width + siblingHorizontalSpacing;
+            var siblingY = root.Y;
+
+            var x = childX;
+            var y = childY;
             foreach (var child in root.Children)
             {
                 child.X = x;
                 child.Y = y;
                 Arrange(child);
-                y += child.TreeHeight + 10;
+                y += child.TreeHeight + childVericalSpacing;
+                if (child.X + child.TreeWidth > root.X + root.TreeWidth)
+                    root.TreeWidth = child.TreeWidth + child.X - root.X;
             }
-            root.TreeHeight = y - root.Y;
+            if (y - root.Y - childVericalSpacing > root.TreeHeight)
+            root.TreeHeight = y - root.Y - childVericalSpacing;
 
-            x = root.X + root.Width + 10;
-            y = root.Y;
-
+            x = siblingX;
+            y = siblingY;
             foreach (var sibling in root.Siblings)
             {
                 sibling.X = x;
                 sibling.Y = y;
                 Arrange(sibling);
-                x += sibling.TreeWidth + 10;
+                x += sibling.TreeWidth + siblingHorizontalSpacing;
+                if (sibling.Y + sibling.TreeHeight > root.Y + root.TreeHeight)
+                    root.TreeHeight = sibling.TreeHeight + sibling.Y - root.Y;
             }
-            root.TreeWidth = x - root.X;
+            if (x - root.X - siblingHorizontalSpacing > root.TreeWidth)
+                root.TreeWidth = x - root.X - siblingHorizontalSpacing;
         }
 
         private void Draw(SvgDocument document, Positioned root)
@@ -252,24 +273,18 @@ namespace OwinFramework.RouteVisualizer
 
         private Positioned PositionSegment(IRoutingSegment segment)
         {
+            var lines = new List<string>
+            {
+                "Route: " + (segment.Name ?? "<anonymous>")
+            };
+            
             var positioned = new Positioned
             {
-                Width = 120,
-                Height = _textHeight * 4,
+                Width = 160,
+                Height = _textHeight * (lines.Count + 2),
                 DrawAction = (d, p) =>
                     {
-                        DrawBox(
-                            d,
-                            p.X,
-                            p.Y,
-                            p.Width,
-                            new List<string> 
-                            { 
-                                "Segment",
-                                segment.Name ?? "<anonymous>"
-                            },
-                            "segment",
-                            2f);
+                        DrawBox(d,p.X,p.Y,p.Width,lines,"segment",2f);
                     }
             };
 
@@ -290,25 +305,56 @@ namespace OwinFramework.RouteVisualizer
             if (router != null)
                 return PositionRouter(router);
 
+            var lines = new List<string>();
+
+            lines.Add("Middleware " + middleware.GetType().Name);
+
+            if (string.IsNullOrEmpty(middleware.Name))
+                lines.Add("<anonymous>");
+            else
+                lines.Add("\"" + middleware.Name + "\"");
+
+            var selfDocumenting = middleware as ISelfDocumenting;
+            if (selfDocumenting != null)
+            {
+                lines.Add(selfDocumenting.ShortDescription);
+            }
+
+            var configurable = middleware as IConfigurable;
+            if (configurable != null)
+            {
+                var line = "Configurable";
+                if (selfDocumenting != null)
+                {
+                    var configurationUrl = selfDocumenting.GetDocumentation(DocumentationTypes.Configuration);
+                    if (configurationUrl != null)
+                        line += " (see " + configurationUrl + ")";
+                }
+                lines.Add(line);
+            }
+
+            var analysable = middleware as IAnalysable;
+            if (analysable != null)
+            {
+                foreach (var stat in analysable.AvailableStatistics)
+                {
+                    var value  = analysable.GetStatistic(stat.Id);
+                    if (value != null)
+                    {
+                        lines.Add(stat.Name + " " + value.Formatted);
+                    }
+                }
+            }
+
+            var longestLine = lines.Select(l => l.Length).Max();
+
             return new Positioned
             {
-                Width = 150,
-                Height = _textHeight * 5,
+                Width = longestLine * 6.5f,
+                Height = _textHeight * (lines.Count + 2),
                 DrawAction = (d, p) =>
                     {
-                        DrawBox(
-                            d, 
-                            p.X, 
-                            p.Y, 
-                            p.Width,
-                            new List<string> 
-                            { 
-                                "Middleware",
-                                middleware.GetType().Name,
-                                middleware.Name ?? "<anonymous>"
-                            }, 
-                            "middleware", 
-                            2f);
+                        DrawBox(d, p.X, p.Y, p.Width, lines,"middleware", 2f);
                     }
             };
         }
@@ -372,5 +418,105 @@ namespace OwinFramework.RouteVisualizer
             return height;
         }
 
+        #endregion
+
+        #region ISelfDocumenting
+
+        Uri ISelfDocumenting.GetDocumentation(DocumentationTypes documentationType)
+        {
+            switch (documentationType)
+            {
+                case DocumentationTypes.Configuration:
+                    return new Uri("https://github.com/Bikeman868/OwinFramework");
+            }
+            return null;
+        }
+
+        string ISelfDocumenting.LongDescription
+        {
+            get { return "Allows you to visually inspect your OWIN pipeline configuration to ensure that your application will work as expected."; }
+        }
+
+        string ISelfDocumenting.ShortDescription
+        {
+            get { return "Produces an SVG visualization of the OWIN pipeline"; }
+        }
+
+        #endregion
+
+        #region IAnalysable
+
+        private volatile int _requestCount;
+
+        IList<IStatisticInformation> IAnalysable.AvailableStatistics
+        {
+            get
+            {
+                return new List<IStatisticInformation>
+                {
+                    new StatisticInformation
+                    {
+                        Id = "RequestCount",
+                        Name = "Total requests",
+                        Description = "The total number of requests processed by the visualazer midldeware since the application was restarted",
+                    }
+                };
+            }
+        }
+
+        IStatistic IAnalysable.GetStatistic(string id)
+        {
+            switch (id)
+            {
+                case "RequestCount":
+                    return new RequestCountStatistic(this).Refresh();
+            }
+            return null;
+        }
+
+        private class StatisticInformation: IStatisticInformation
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public string Explanation { get; set; }
+            public string Units { get; set; }
+        }
+
+        private abstract class Statistic: IStatistic
+        {
+            public float Value { get; protected set; }
+            public float Denominator { get; protected set; }
+            public string Formatted { get; protected set; }
+
+            public abstract IStatistic Refresh();
+        }
+
+        private class RequestCountStatistic: Statistic
+        {
+            private readonly RouteVisualizer _routeVisualizer;
+
+            public RequestCountStatistic(RouteVisualizer routeVisualizer)
+            {
+                _routeVisualizer = routeVisualizer;
+            }
+
+            public override IStatistic Refresh()
+            {
+                Value = _routeVisualizer._requestCount;
+                Denominator = 1;
+
+                if (Value < 2000)
+                    Formatted = Value.ToString(CultureInfo.InvariantCulture);
+                else if (Value < 2000000)
+                    Formatted = (Value / 1000f).ToString("f1", CultureInfo.InvariantCulture) + "K";
+                else
+                    Formatted = (Value / 1000000f).ToString("f1", CultureInfo.InvariantCulture) + "M";
+
+                return this;
+            }
+        }
+
+        #endregion
     }
 }
