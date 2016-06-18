@@ -97,7 +97,11 @@ namespace OwinFramework.Utility
 
             var sorted = new List<GraphNode>();
 
-            if (nodes.Count > 1)
+            if (nodes.Count == 1)
+            {
+                sorted.Add(nodes[0]);
+            }
+            else if (nodes.Count > 1)
             {
                 var unvisitedNode = nodes[0];
                 while (unvisitedNode != null)

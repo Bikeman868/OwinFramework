@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Owin;
+using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Routing;
 using OwinFramework.Interfaces.Utility;
@@ -107,14 +108,16 @@ namespace OwinFramework.Routing
 
             public void Add(IMiddleware middleware, Type middlewareType)
             {
-                if (middleware != null)
+                if (middleware == null)
+                    throw new BuilderException("Internal error, middleware can not be null");
+                if (middlewareType == null)
+                    throw new BuilderException("Internal error, middleware type can not be null");
+
+                _components.Add(new Component
                 {
-                    _components.Add(new Component
-                    {
-                        Middleware = middleware,
-                        MiddlewareType = middlewareType
-                    });
-                }
+                    Middleware = middleware,
+                    MiddlewareType = middlewareType
+                });
             }
 
             public void ResolveDependencies()
