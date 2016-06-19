@@ -24,14 +24,15 @@ namespace ExampleUsage
     {
         public void Configuration(IAppBuilder app)
         {
-            // Don't do object construction like this in your application, use IoC instead.
+            // This demonstrates how you would configure the builder without using IoC
+            // The other startup example demonstrates the IoC version
             var dependencyGraphFactory = new DependencyGraphFactory();
             var segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
             var builder = new Builder(dependencyGraphFactory, segmenterFactory);
             var configuration = new DefaultValueConfiguration();
 
             // Note that the middleware components below can be registerd with the builder
-            // in ant order. The builder will resolve dependencies and add middleware into 
+            // in any order. The builder will resolve dependencies and add middleware into 
             // the OWIN pipeline so that all dependencies are satisfied. If there are
             // circular dependencies an exception will be thrown.
 
@@ -64,10 +65,7 @@ namespace ExampleUsage
             // This configures a routing element that will split the OWIN pipeline into
             // two routes. There is a 'ui' route that has forms based authentication and 
             // template based rendering. There is an 'api' route that has certifcate based
-            // authentication and REST service rendering. It also specifies that routing
-            // runs after session, so both routes will use the same session middleware. If
-            // you configure more than one session middleware in this scenario then an exception
-            // will be thrown at startup.
+            // authentication and REST service rendering.
             builder.Register(new Router(dependencyGraphFactory))
                 .AddRoute("ui", context => context.Request.Path.Value.EndsWith(".aspx"))
                 .AddRoute("api", context => true);

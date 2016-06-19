@@ -1,7 +1,9 @@
 ﻿using ExampleUsage.Middleware;
+using Ioc.Modules;
+using Ninject;
 using Owin;
 using OwinFramework.Builder;
-using OwinFramework.Utility;
+using OwinFramework.Interfaces.Builder;
 
 namespace ExampleUsage
 {
@@ -12,12 +14,12 @@ namespace ExampleUsage
     {
         public void Configuration(IAppBuilder app)
         {
-            // Note that I did not use an IOC container here to keep things as
-            // simple and focused as possible. You should use IOC in your application.
-
-            var dependencyGraphFactory = new DependencyGraphFactory();
-            var segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
-            var builder = new Builder(dependencyGraphFactory, segmenterFactory);
+            // This example shows how to use the Ninject IoC container to construct the
+            // Owin pipeline buider. You can use any other IoC container supported by 
+            // the Ioc.Modules package with just one line of code change.
+            var packageLocator = new PackageLocator().ProbeAllLoadedAssemblies();
+            var ninject = new StandardKernel(new Ioc.Modules.Ninject.Module(packageLocator));
+            var builder = ninject.Get<IBuilder>();
 
             // This next part defines the concrete implementation of the various
             // OWIN middleware components you want to use in your application. The
