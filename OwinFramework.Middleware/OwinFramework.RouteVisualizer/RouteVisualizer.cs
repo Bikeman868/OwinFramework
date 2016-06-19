@@ -8,14 +8,17 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Owin;
+using OwinFramework.Builder;
+using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Routing;
+using OwinFramework.Interfaces.Upstream;
 using Svg;
 using Svg.Transforms;
 
 namespace OwinFramework.RouteVisualizer
 {
-    public class RouteVisualizer: IMiddleware<object>, IConfigurable, ISelfDocumenting, IAnalysable
+    public class RouteVisualizer: IMiddleware<object>, IConfigurable, ISelfDocumenting, IAnalysable, IRoutingProcessor
     {
         private const float TextHeight = 12;
         private const float TextLineSpacing = 15;
@@ -25,7 +28,7 @@ namespace OwinFramework.RouteVisualizer
 
         private const float ChildHorizontalOffset = 20;
         private const float ChildVericalSpacing = 10;
-        private const float SiblingHorizontalSpacing = 10;
+        private const float SiblingHorizontalSpacing = 15;
 
         private const string ConfigDocsPath = "/docs/configuration";
 
@@ -37,21 +40,57 @@ namespace OwinFramework.RouteVisualizer
         private IDisposable _configurationRegistration;
         private Configuration _configuration;
 
+        public RouteVisualizer()
+        {
+            this.RunAfter<IAuthorization>(null, false);
+        }
+
+        public void RouteRequest(IOwinContext context, Action next)
+        {
+            // This code asks the authorization middleware to enforce the required
+            // permission to run this middleware. This only applies when the
+            // required permission is configured and authorization middleware is
+            // included in the Owin pipeline.
+            var requiredPermission = _configuration.RequiredPermission;
+            if (!string.IsNullOrEmpty(requiredPermission))
+            {
+                string path;
+                if (IsForThisMiddleware(context, out path))
+                {
+                    var authorization = context.GetFeature<IUpstreamAuthorization>();
+                    if (authorization != null)
+                        authorization.AddRequiredPermission(requiredPermission);
+                }
+            }
+            next();
+        }
+
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            if (!string.IsNullOrEmpty(_configuration.Path) 
-                && context.Request.Path.HasValue
-                && context.Request.Path.Value.StartsWith(_configuration.Path, StringComparison.OrdinalIgnoreCase))
-            {
-                _requestCount++;
+            string path;
+            if (!IsForThisMiddleware(context, out path))
+                return next();
 
-                if (context.Request.Path.Value.Equals(_configuration.Path, StringComparison.OrdinalIgnoreCase))
-                    return VisualizeRouting(context);
+            _requestCount++;
 
-                if (context.Request.Path.Value.Equals(_configuration.Path + ConfigDocsPath, StringComparison.OrdinalIgnoreCase))
-                    return DocumentConfiguration(context);
-            }
-            return next();
+            if (context.Request.Path.Value.Equals(path, StringComparison.OrdinalIgnoreCase))
+                return VisualizeRouting(context);
+
+            if (context.Request.Path.Value.Equals(path + ConfigDocsPath, StringComparison.OrdinalIgnoreCase))
+                return DocumentConfiguration(context);
+
+            throw new Exception("This request looked like it was for the visualization middleware, but the middleware did not know how to handle it.");
+        }
+
+        private bool IsForThisMiddleware(IOwinContext context, out string path)
+        {
+            // Note that the configuration can be changed at any time by another thread
+            path = _configuration.Path;
+
+            return _configuration.Enabled
+                   && !string.IsNullOrEmpty(path)
+                   && context.Request.Path.HasValue
+                   && context.Request.Path.Value.StartsWith(path, StringComparison.OrdinalIgnoreCase);
         }
 
         void IConfigurable.Configure(IConfiguration configuration, string path)
@@ -76,6 +115,16 @@ namespace OwinFramework.RouteVisualizer
         private Task DocumentConfiguration(IOwinContext context)
         {
             var document = GetScriptResource("configuration.html");
+
+            document = document.Replace("{path}", _configuration.Path);
+            document = document.Replace("{enabled}", _configuration.Enabled.ToString());
+            document = document.Replace("{requiredPermission}", _configuration.RequiredPermission ?? "<none>");
+
+            var defaultConfiguration = new Configuration();
+            document = document.Replace("{path.default}", defaultConfiguration.Path);
+            document = document.Replace("{enabled.default}", defaultConfiguration.Enabled.ToString());
+            document = document.Replace("{requiredPermission.default}", defaultConfiguration.RequiredPermission ?? "<none>");
+
             context.Response.ContentType = "text/html";
             return context.Response.WriteAsync(document);
         }
@@ -266,7 +315,11 @@ namespace OwinFramework.RouteVisualizer
                 Height = TextHeight * 4,
                 DrawAction = (d, p) =>
                 {
-                    DrawLine(d, p.X + ChildHorizontalOffset * 2, p.Y + TextHeight, p.X + ChildHorizontalOffset * 2, p.Y + p.TreeHeight, "route");
+                    if (p.Children.Count > 0)
+                    {
+                        var maxChildY = p.Children.Select(c => c.Y).Max();
+                        DrawLine(d, p.X + ChildHorizontalOffset*2, p.Y + TextHeight, p.X + ChildHorizontalOffset*2, maxChildY, "route");
+                    }
                     DrawBox(d, p.X, p.Y, p.Width, lines, "router", 2f);
                 }
             };
@@ -295,7 +348,11 @@ namespace OwinFramework.RouteVisualizer
                 Height = TextHeight * (lines.Count + 2),
                 DrawAction = (d, p) =>
                 {
-                    DrawLine(d, p.X + p.Width, p.Y + TextHeight, p.X + p.TreeWidth, p.Y + TextHeight, "segment");
+                    if (p.Siblings.Count > 0)
+                    {
+                        var maxSiblingX = p.Siblings.Select(s => s.X).Max();
+                        DrawLine(d, p.X + p.Width, p.Y + TextHeight, maxSiblingX, p.Y + TextHeight, "segment");
+                    }
                     DrawBox(d, p.X, p.Y, p.Width, lines, "segment", 2f);
                 }
             };
@@ -532,5 +589,6 @@ namespace OwinFramework.RouteVisualizer
         }
 
         #endregion
+
     }
 }
