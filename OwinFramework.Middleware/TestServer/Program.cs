@@ -1,11 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Owin.Hosting;
 
 namespace TestServer
 {
+    /// <summary>
+    /// This console application uses the Microsoft self hosted Owin package to
+    /// listen on a specific port and handle requests using Owin. This was build
+    /// to allow you to experiment with the middleware components available
+    /// in the Owin Framework.
+    /// </summary>
     class Program
     {
         static void Main(string[] args)
