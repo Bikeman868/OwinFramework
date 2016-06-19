@@ -31,7 +31,7 @@ namespace ExampleUsage.Middleware
             {
                 return next();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("PROCESS: Exception reporter");
 

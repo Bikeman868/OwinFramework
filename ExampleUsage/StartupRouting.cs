@@ -1,7 +1,7 @@
 ﻿using ExampleUsage.Middleware;
 using Owin;
-using OwinFramework;
 using OwinFramework.Builder;
+using OwinFramework.Configuration;
 using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Routing;
 using OwinFramework.Routing;
