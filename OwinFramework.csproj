@@ -58,6 +58,8 @@
     <Compile Include="Configuration\DefaultValueConfiguration.cs" />
     <Compile Include="Interfaces\Builder\IAnalysable.cs" />
     <Compile Include="Interfaces\Builder\ISelfDocumenting.cs" />
+    <Compile Include="Interfaces\Facilities\IIdentityStore.cs" />
+    <Compile Include="Interfaces\Facilities\ITokenStore.cs" />
     <Compile Include="Interfaces\Utility\IDependencyGraphEdge.cs" />
     <Compile Include="Interfaces\Utility\ISegmenter.cs" />
     <Compile Include="Interfaces\Utility\ISegmenterFactory.cs" />
