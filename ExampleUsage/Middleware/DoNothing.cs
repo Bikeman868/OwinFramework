@@ -13,7 +13,7 @@ namespace ExampleUsage.Middleware
     /// This illustrates the minimum code required to be a valid middleware component.
     /// This middleware does nothing and is not configurable.
     /// </summary>
-    public class DoNothing : IMiddleware<IMiddleware>
+    public class DoNothing : IMiddleware<object>
     {
         /// <summary>
         /// The Name property is required for all middleware using this Framework.

@@ -12,7 +12,7 @@ namespace ExampleUsage.Middleware
     /// pipeline after all other middleware has run. It will always return a 404 
     /// response
     /// </summary>
-    public class ReportExceptions : IMiddleware<IMiddleware>
+    public class ReportExceptions : IMiddleware<object>
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get { return _dependencies; } }

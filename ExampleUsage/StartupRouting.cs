@@ -3,6 +3,7 @@ using Owin;
 using OwinFramework.Builder;
 using OwinFramework.Configuration;
 using OwinFramework.Interfaces;
+using OwinFramework.Interfaces.Middleware;
 using OwinFramework.Interfaces.Routing;
 using OwinFramework.Routing;
 using OwinFramework.Utility;

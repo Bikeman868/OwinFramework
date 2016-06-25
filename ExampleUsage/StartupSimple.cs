@@ -8,7 +8,7 @@ using OwinFramework.Interfaces.Builder;
 namespace ExampleUsage
 {
     /// <summary>
-    /// This example demonstrates a very simple configuration
+    /// This example demonstrates a very simple configuration of the Owin Framework
     /// </summary>
     public class StartupSimple
     {
@@ -16,7 +16,8 @@ namespace ExampleUsage
         {
             // This example shows how to use the Ninject IoC container to construct the
             // Owin pipeline buider. You can use any other IoC container supported by 
-            // the Ioc.Modules package with just one line of code change.
+            // the Ioc.Modules package with just one line of code change. You can also
+            // choose not to use IoC, or configure any other IoC container you like.
             var packageLocator = new PackageLocator().ProbeAllLoadedAssemblies();
             var ninject = new StandardKernel(new Ioc.Modules.Ninject.Module(packageLocator));
             var builder = ninject.Get<IBuilder>();
@@ -26,23 +27,24 @@ namespace ExampleUsage
             // order that these will be chained into the OWIN pipeline will be
             // determined from the dependencies defined within the components.
             
-            // This is a simplified example, in a real application you should use IOC
-            // to build your middleware components, and you should provide a configuration
-            // for them.
+            // This is a simplified example, in a real application you should provide a 
+            // configuration mechanism to the middleware. This example will run with
+            // all default configuration values.
 
-            builder.Register(new NotFoundError());
-            builder.Register(new ReportExceptions());
-            builder.Register(new FormsIdentification());
-            builder.Register(new TemplatePageRendering());
-            builder.Register(new AllowEverythingAuthorization());
-            builder.Register(new InProcessSession());
+            builder.Register(ninject.Get<NotFoundError>());
+            builder.Register(ninject.Get<PrintRequest>());
+            builder.Register(ninject.Get<ReportExceptions>());
+            builder.Register(ninject.Get<FormsIdentification>());
+            builder.Register(ninject.Get<TemplatePageRendering>());
+            builder.Register(ninject.Get<AllowEverythingAuthorization>());
+            builder.Register(ninject.Get<InProcessSession>());
 
             // As well as using the builder to chain middleware into the pipeline, you can also 
             // chain any other middleware here. Below are some standard OWIN configuration 
             // statements that show this.
 
-            app.UseBuilder(builder);
             app.UseErrorPage();
+            app.UseBuilder(builder);
             app.UseWelcomePage("/");
         }
     }

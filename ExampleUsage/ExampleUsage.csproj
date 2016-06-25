@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Middleware\PrintRequest.cs" />
     <Compile Include="Middleware\ReportExceptions.cs" />
     <Compile Include="Middleware\NotFoundError.cs" />
     <Compile Include="Middleware\DoNothing.cs" />

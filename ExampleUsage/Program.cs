@@ -18,6 +18,13 @@ namespace ExampleUsage
             var opt = args.Length > 0 ? args[0] : "simple";
             const string url = "http://localhost:12345";
 
+            Action waitForExit = () =>
+            {
+                Console.WriteLine("Owin framework application listening on " + url);
+                Console.WriteLine("Press any key to stop.");
+                Console.ReadLine();
+            };
+
             try
             {
                 switch (opt)
@@ -25,20 +32,21 @@ namespace ExampleUsage
                     case "simple":
                         using (WebApp.Start<StartupSimple>(url))
                         {
-                            Console.ReadLine();
+                            waitForExit();
                         }
                         break;
 
                     case "routing":
                         using (WebApp.Start<StartupRouting>(url))
                         {
-                            Console.ReadLine();
+                            waitForExit();
                         }
                         break;
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Unhandled exception. Press any key to exit.");
                 while (ex != null)
                 {
                     Console.WriteLine(ex.Message);

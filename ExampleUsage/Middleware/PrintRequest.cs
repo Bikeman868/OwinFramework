@@ -5,42 +5,37 @@ using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Builder;
-using OwinFramework.Interfaces.Middleware;
+using OwinFramework.Interfaces.Routing;
 using OwinFramework.Interfaces.Utility;
 
 namespace ExampleUsage.Middleware
 {
     /// <summary>
-    /// This middleware example demonstrates the following techniques:
-    /// * It injects the IAuthorization feature into the OWIN context
+    /// This middleware writes the request url to the console output
     /// </summary>
-    public class AllowEverythingAuthorization : IMiddleware<IAuthorization>, IAuthorization
+    public class PrintRequest : IMiddleware<object>, IRoutingProcessor
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get; private set; }
 
-        public AllowEverythingAuthorization()
+        public PrintRequest()
         {
             Dependencies = new List<IDependency>();
+            this.RunFirst();
         }
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("PROCESS: Allow everything authorization");
-
-            context.SetFeature<IAuthorization>(this);
-
+            Console.WriteLine();
+            Console.WriteLine("Processing " + context.Request.Uri);
             return next.Invoke();
         }
 
-        public bool IsInRole(string roleName)
+        public void RouteRequest(IOwinContext context, Action next)
         {
-            return true;
-        }
-
-        public bool HasPermission(string permissionName)
-        {
-            return true;
+            Console.WriteLine();
+            Console.WriteLine("Routing " + context.Request.Uri);
+            next();
         }
     }
 }
