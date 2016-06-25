@@ -150,27 +150,28 @@ namespace OwinFramework.Builder
             var segmenter = _segmenterFactory.Create();
 
             foreach (var routerComponent in routerComponents)
-                AddToSegmenter(segmenter, routerComponent);
+                if (routerComponent.SegmentAssignments.Count > 0)
+                    segmenter.AddSegment(routerComponent.SegmentAssignments[0].Name ?? "", routerComponent.RouterSegments.Select(s => s.Name));
 
             foreach (var component in components)
                 AddToSegmenter(segmenter, component);
 
-            //foreach (var component in components)
-            //{
-            //    component.SegmentAssignments = segmenter
-            //        .GetNodeSegments(component.UniqueId)
-            //        .Select(nk => )
-            //        .ToList());
-            //}
-        }
+            var allSegments = routerComponents.SelectMany(rc => rc.RouterSegments).ToList();
 
-        private void AddToSegmenter(ISegmenter segmenter, RouterComponent routerComponent)
-        {
-            //segmenter.AddSegment(routerComponent.Middleware.Name ?? "", routerComponent.RouterSegments.Select(s => s.Name));
+            foreach (var component in components)
+            {
+                component.SegmentAssignments = segmenter
+                    .GetNodeSegments(component.UniqueId)
+                    .Select(sn => allSegments.First(s => s.Name == sn))
+                    .ToList();
+            }
         }
 
         private void AddToSegmenter(ISegmenter segmenter, MiddlewareComponent middlewareComponent)
         {
+            IEnumerable<IList<string>> nodeDependencies = null;
+            IEnumerable<string> routeDependencies = null;
+            segmenter.AddNode(middlewareComponent.UniqueId, nodeDependencies, routeDependencies);
         }
 
         private void AddToBack(IEnumerable<RouterComponent> routers, IEnumerable<MiddlewareComponent> components)

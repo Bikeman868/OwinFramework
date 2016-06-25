@@ -7,7 +7,6 @@ using OwinFramework.Builder;
 using OwinFramework.Configuration.Urchin;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.RouteVisualizer;
-using OwinFramework.Utility;
 using Urchin.Client.Sources;
 
 namespace TestServer
@@ -24,22 +23,19 @@ namespace TestServer
 
         public void Configuration(IAppBuilder app)
         {
-            var packageLocator = new PackageLocator().ProbeAllLoadedAssemblies();
+            var packageLocator = new PackageLocator().ProbeBinFolderAssemblies();
             var ninject = new StandardKernel(new Ioc.Modules.Ninject.Module(packageLocator));
             
-            // Initialize the Urchin configuration store
-            ninject.Get<Urchin.Client.Data.ConfigurationStore>().Initialize();;
-
             // Tell urchin to get its configuration from the config.json file in this project. Note that if
             // you edit this file whilst the application is running the changes will be applied without 
             // restarting the application.
             var configFile = new FileInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "config.json");
             _configurationFileSource = ninject.Get<FileSource>().Initialize(configFile, TimeSpan.FromSeconds(5));
 
-            // Construct an adapter between the Owin Framework and Urchin
+            // Construct an adapter between the Owin Framework and Urchin configuration management system
             var urchin = ninject.Get<UrchinConfiguration>();
 
-            // Use the Owin Framework builder to build the Owin pipeline
+            // We will use the Owin Framework builder to build the Owin pipeline
             var builder = ninject.Get<IBuilder>();
 
             // The route visualizer middleware will produce an SVG showing the Owin pipeline configuration
