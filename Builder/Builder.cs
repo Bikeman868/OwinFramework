@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Owin;
 using Owin;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Routing;
-using OwinFramework.Routing;
-using System.Threading.Tasks;
 using OwinFramework.Interfaces.Utility;
+using OwinFramework.Routing;
 using OwinFramework.Utility;
 
 namespace OwinFramework.Builder
@@ -220,7 +220,7 @@ namespace OwinFramework.Builder
 
         private void Dump(IRouter router, string indent)
         {
-            System.Diagnostics.Debug.WriteLine(indent + "Router \"" + (router.Name ?? "<anonymous>") + "\"");
+            Debug.WriteLine(indent + "Router \"" + (router.Name ?? "<anonymous>") + "\"");
             indent += "  ";
 
             foreach (var dependency in router.Dependencies) Dump(dependency, indent);
@@ -235,7 +235,7 @@ namespace OwinFramework.Builder
                 {
                     var line = "depends on \"" + dependency.Name + "\"";
                     if (!dependency.Required) line += (" (optional)");
-                    System.Diagnostics.Debug.WriteLine(indent + line);
+                    Debug.WriteLine(indent + line);
                 }
             }
             else 
@@ -243,19 +243,19 @@ namespace OwinFramework.Builder
                 var line = "depends on " + dependency.DependentType.Name;
                 if (dependency.Name != null) line += " \"" + dependency.Name + "\"";
                 if (!dependency.Required) line += (" (optional)");
-                System.Diagnostics.Debug.WriteLine(indent + line);
+                Debug.WriteLine(indent + line);
             }
 
             if (dependency.Position == PipelinePosition.Front)
-                System.Diagnostics.Debug.WriteLine(indent + "runs before other middleware");
+                Debug.WriteLine(indent + "runs before other middleware");
 
             if (dependency.Position == PipelinePosition.Back)
-                System.Diagnostics.Debug.WriteLine(indent + "runs after other middleware");
+                Debug.WriteLine(indent + "runs after other middleware");
         }
 
         private void Dump(IRoutingSegment segment, string indent)
         {
-            System.Diagnostics.Debug.WriteLine(indent + "has route \"" + (segment.Name ?? "<anonymous>") + "\"");
+            Debug.WriteLine(indent + "has route \"" + (segment.Name ?? "<anonymous>") + "\"");
 
             indent += "  ";
             foreach (var middleware in segment.Middleware)
@@ -271,7 +271,7 @@ namespace OwinFramework.Builder
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine(indent + "Middleware " + middleware.GetType().Name + " \"" + (middleware.Name ?? "<anonymous>") + "\"");
+            Debug.WriteLine(indent + "Middleware " + middleware.GetType().Name + " \"" + (middleware.Name ?? "<anonymous>") + "\"");
             indent += "  ";
 
             foreach (var dependency in middleware.Dependencies) Dump(dependency, indent);

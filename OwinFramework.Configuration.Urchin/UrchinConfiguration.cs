@@ -1,5 +1,6 @@
-﻿using OwinFramework.Interfaces.Builder;
-using System;
+﻿using System;
+using OwinFramework.Interfaces.Builder;
+using Urchin.Client.Interfaces;
 
 namespace OwinFramework.Configuration.Urchin
 {
@@ -10,9 +11,9 @@ namespace OwinFramework.Configuration.Urchin
     /// </summary>
     public class UrchinConfiguration: IConfiguration
     {
-        private readonly global::Urchin.Client.Interfaces.IConfigurationStore _configurationStore;
+        private readonly IConfigurationStore _configurationStore;
 
-        public UrchinConfiguration(global::Urchin.Client.Interfaces.IConfigurationStore configurationStore)
+        public UrchinConfiguration(IConfigurationStore configurationStore)
         {
             _configurationStore = configurationStore;
         }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Utility;

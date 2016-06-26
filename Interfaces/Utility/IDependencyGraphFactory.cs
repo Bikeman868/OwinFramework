@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OwinFramework.Interfaces.Utility
+﻿namespace OwinFramework.Interfaces.Utility
 {
     public interface IDependencyGraphFactory
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Interfaces.Builder;
-using System.Threading.Tasks;
 
 namespace OwinFramework.Interfaces.Routing
 {

@@ -2,9 +2,7 @@
 using Owin;
 using OwinFramework.Builder;
 using OwinFramework.Configuration;
-using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Middleware;
-using OwinFramework.Interfaces.Routing;
 using OwinFramework.Routing;
 using OwinFramework.Utility;
 
@@ -15,9 +13,9 @@ namespace ExampleUsage
     /// different authentication mechanisms for each route. The resulting
     /// OWIN pipeline will be built like this:
     /// 
-    /// session --> aspx pages --ui---> /secure --SecureUI--> forms auth -----> template rendering
-    ///          |                  |                                        |
-    ///          |                  --> not /secure --PublicUI---------------^
+    /// session --> aspx pages --ui---> /secure --secure--> forms auth -----> template rendering
+    ///          |                  |                                      |
+    ///          |                  --> not /secure --public---------------^
     ///          |
     ///          -> non aspx --api--> cert auth ----> REST service rendering
     /// </summary>
@@ -48,7 +46,7 @@ namespace ExampleUsage
             builder.Register(new FormsIdentification())
                 .As("loginId")
                 .ConfigureWith(configuration, "/owin/auth/forms")
-                .RunAfter<IRoute>("secure");
+                .RunOnRoute("secure");
 
             // This says that we want to use certificate based identification, that
             // we will refer to it by the name 'certificateId', and it will
@@ -56,7 +54,7 @@ namespace ExampleUsage
             builder.Register(new CertificateIdentification())
                 .As("certificateId")
                 .ConfigureWith(configuration, "/owin/auth/cert")
-                .RunAfter<IRoute>("api");
+                .RunOnRoute("api");
 
             // This specifies the mechanism we want to use to store session
             builder.Register(new InProcessSession())
@@ -76,14 +74,14 @@ namespace ExampleUsage
             builder.Register(new Router(dependencyGraphFactory))
                 .AddRoute("secure", context => context.Request.Path.Value.StartsWith("/secure"))
                 .AddRoute("public", context => true)
-                .RunAfter<IRoute>("ui");
+                .RunOnRoute("ui");
 
             // This specifies that we want to use the template page rendering
             // middleware and that it should run on both the "public" route and
             // the "secure" route. This creates a join bewteen the routes.
             builder.Register(new TemplatePageRendering())
-                .RunAfter<IRoute>("public")
-                .RunAfter<IRoute>("secure")
+                .RunOnRoute("public")
+                .RunOnRoute("secure")
                 .ConfigureWith(configuration, "/owin/templates");
 
             // This specifies that we want to use the REST service mapper
@@ -97,13 +95,15 @@ namespace ExampleUsage
 
             // This statement will add all of the middleware registered with the builder into
             // the OWIN pipeline. The builder will add middleware to the pipeline in an order
-            // that ensures all dependencies are met. The builder will also create splits in the
-            // OWIN pipeline where there are routing components configured, and joins where
-            // middleware has a dependency on multiple routes.
+            // that ensures all dependencies are met.
+            // The builder will also create splits in the OWIN pipeline where there are routing 
+            // components configured, and joins where middleware has a dependency on multiple 
+            // routes.
+            // If you want to see exactly how the Owin pipeline got built, there is a 
+            // PipelineVisualizer middleware in the OwinFramework.Middleware package that you
+            // can add to your configuraton. This middleware will return an SVG vizualization
+            // of the pipeline including configurations and analytics.
             app.UseBuilder(builder);
-
-            app.UseErrorPage();
-            app.UseWelcomePage("/");
         }
     }
 }

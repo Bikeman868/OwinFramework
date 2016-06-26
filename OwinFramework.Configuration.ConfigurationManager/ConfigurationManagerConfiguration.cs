@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
-using OwinFramework.Interfaces.Builder;
+using AutoMapper;
+using IConfiguration = OwinFramework.Interfaces.Builder.IConfiguration;
 
 namespace OwinFramework.Configuration.ConfiurationManager
 {
@@ -32,7 +33,7 @@ namespace OwinFramework.Configuration.ConfiurationManager
 
             var section = ConfigurationManager.GetSection(path);
             if (section != null)
-                value = AutoMapper.Mapper.Map<T>(section);
+                value = Mapper.Map<T>(section);
 
             onChangeAction(value);
 

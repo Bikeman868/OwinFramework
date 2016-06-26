@@ -60,6 +60,11 @@ namespace OwinFramework.Builder
             return middleware;
         }
 
+        public static IMiddleware RunOnRoute(this IMiddleware middleware, string routeName)
+        {
+            return RunAfter<IRoute>(middleware, routeName);
+        }
+
         public static IMiddleware RunFirst(this IMiddleware middleware)
         {
             var routeDependency = middleware.Dependencies.FirstOrDefault(dep => dep.DependentType == typeof(IRoute));

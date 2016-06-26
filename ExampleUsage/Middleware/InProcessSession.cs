@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Builder;
-using OwinFramework.Interfaces;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Middleware;
 using OwinFramework.Interfaces.Upstream;
-using OwinFramework.Interfaces.Utility;
 
 namespace ExampleUsage.Middleware
 {
