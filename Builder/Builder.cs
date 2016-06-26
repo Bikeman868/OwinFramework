@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -45,6 +46,20 @@ namespace OwinFramework.Builder
 
         public void Build(IAppBuilder app)
         {
+            // Ensure components have unique names
+            var componentNames = new SortedList(new CaseInsensitiveComparer());
+            foreach (var component in _components)
+            {
+                component.Name = string.IsNullOrEmpty(component.Middleware.Name) 
+                    ? Guid.NewGuid().ToShortString(false) 
+                    : component.Middleware.Name;
+                if (componentNames.ContainsKey(component.Name))
+                    throw new BuilderException("Middleware component names must be unique."
+                        + " There is more than one component called '" + component.Name
+                        + "'");
+                componentNames.Add(component.Name, null);
+            }
+
             // Resolve name only dependencies and fill in the type that they depend on
             foreach (var component in _components)
             {
@@ -53,7 +68,7 @@ namespace OwinFramework.Builder
                     if (dependency.DependentType == null && !string.IsNullOrEmpty(dependency.Name))
                     {
                         var dependent = _components.FirstOrDefault(
-                            c => string.Equals(c.Middleware.Name, dependency.Name, StringComparison.OrdinalIgnoreCase));
+                            c => string.Equals(c.Name, dependency.Name, StringComparison.OrdinalIgnoreCase));
                         if (dependent == null)
                         {
                             if (dependency.Required)
@@ -147,31 +162,48 @@ namespace OwinFramework.Builder
 
         private void AddToMiddle(IList<RouterComponent> routerComponents, IList<MiddlewareComponent> components)
         {
+            // Roll up all the segments from all routers
+            var allSegments = routerComponents.SelectMany(rc => rc.RouterSegments).ToList();
+
+            // Make sure all the segments have names since this is how they are linked in the segmenter
+            foreach (var segment in allSegments)
+                if (string.IsNullOrEmpty(segment.Name))
+                    segment.Name = new Guid().ToShortString();
+
+            // The segmenter will assign nodes to segments in a routing graph such that
+            // all nodes appear after their dependents when the graph is traversed, and
+            // each node is as close to the front of the graph as possible.
             var segmenter = _segmenterFactory.Create();
 
-            foreach (var routerComponent in routerComponents)
-                if (routerComponent.SegmentAssignments.Count > 0)
-                    segmenter.AddSegment(routerComponent.SegmentAssignments[0].Name ?? "", routerComponent.RouterSegments.Select(s => s.Name));
+            foreach (var segment in allSegments)
+                AddToSegmenter(segmenter, routerComponents, segment);
 
             foreach (var component in components)
                 AddToSegmenter(segmenter, component);
 
-            var allSegments = routerComponents.SelectMany(rc => rc.RouterSegments).ToList();
-
             foreach (var component in components)
             {
                 component.SegmentAssignments = segmenter
-                    .GetNodeSegments(component.UniqueId)
+                    .GetNodeSegments(component.Name)
                     .Select(sn => allSegments.First(s => s.Name == sn))
                     .ToList();
             }
+        }
+
+        private void AddToSegmenter(ISegmenter segmenter, IEnumerable<RouterComponent> routerComponents, Segment segment)
+        {
+            var childSegments = routerComponents
+                .Where(rc => rc.SegmentAssignments.Any(sa => sa.Name == segment.Name))
+                .Select(rc => rc.Name)
+                .ToList();
+            segmenter.AddSegment(segment.Name, childSegments);
         }
 
         private void AddToSegmenter(ISegmenter segmenter, MiddlewareComponent middlewareComponent)
         {
             IEnumerable<IList<string>> nodeDependencies = null;
             IEnumerable<string> routeDependencies = null;
-            segmenter.AddNode(middlewareComponent.UniqueId, nodeDependencies, routeDependencies);
+            segmenter.AddNode(middlewareComponent.Name, nodeDependencies, routeDependencies);
         }
 
         private void AddToBack(IEnumerable<RouterComponent> routers, IEnumerable<MiddlewareComponent> components)
@@ -281,7 +313,7 @@ namespace OwinFramework.Builder
 
         private class Component
         {
-            public string UniqueId = Guid.NewGuid().ToString();
+            public string Name;
             public IMiddleware Middleware;
             public Type MiddlewareType;
             public List<Segment> SegmentAssignments = new List<Segment>();

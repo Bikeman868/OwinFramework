@@ -140,5 +140,44 @@ namespace OwinFramework.Builder
             owinContext.Set(typeof(T).Name, feature);
         }
 
+        private static readonly char[] ShortStringMixedCaseChars = new char[]
+        {
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h','i','j','k','l','m','n','o','p','q','r','s','t',
+            'u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
+            'Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9'
+        };
+
+        private static readonly char[] ShortStringLowerCaseChars = new char[]
+        {
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h','i','j','k','l','m','n','o','p','q','r','s','t',
+            'u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9'
+        };
+
+        public static string ToShortString(this ulong value, bool mixedCase = true)
+        {
+            var chars = mixedCase ? ShortStringMixedCaseChars : ShortStringLowerCaseChars;
+            if (value == 0) return chars[0] + "";
+
+            var numberBase = (ulong)chars.Length;
+            var result = "";
+            while (value > 0)
+            {
+                var remainder = value % numberBase;
+                value = value/numberBase;
+                result = chars[remainder] + result;
+            }
+            return result;
+        }
+
+        public static string ToShortString(this Guid guid, bool mixedCase = true)
+        {
+            var bytes = guid.ToByteArray();
+            var left = BitConverter.ToUInt64(bytes, 0);
+            var right = BitConverter.ToUInt64(bytes, 8);
+            var maxLength = mixedCase ? 11 : 13;
+            return left.ToShortString(mixedCase).PadLeft(maxLength, 'a') 
+                + right.ToShortString(mixedCase).PadLeft(maxLength, 'a');
+        }
+
     }
 }
