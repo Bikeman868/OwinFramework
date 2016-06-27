@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Owin.Framework.Urchin</id>
+    <version>1.0.0</version>
+    <title>Owin.Framework.Urchin</title>
+    <authors>Martin Halliday</authors>
+    <owners>Martin Halliday</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Configure Owin Framework middleware using Urchin</description>
+    <copyright>Copyright 2016</copyright>
+    <releaseNotes>First release</releaseNotes>
+    <summary>
+      Configures an implementation of IConfiguration in your IoC container
+      that will use the Urchin rules-based configuration management system to 
+      configure Owin middleware.
+    </summary>
+    <projectUrl>https://github.com/Bikeman868/OwinFramework</projectUrl>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <tags>OWIN framework urchin</tags>
+    <dependencies>
+      <dependency id="Owin" version="1.0" />
+      <dependency id="Microsoft.Owin" version="2.1.0" />
+      <dependency id="Ioc.Modules" version="1.0.9" />
+      <dependency id="Owin.Framework" version="1.0.0" />
+    </dependencies>
+    <references>
+    </references>
+  </metadata>
+  <files>
+    <file src="..\OwinFramework.Configuration.Urchin\bin\Net40\Release\OwinFramework.Configuration.Urchin.dll" target="lib\net40"/>
+    <file src="..\OwinFramework.Configuration.Urchin\bin\Net45\Release\OwinFramework.Configuration.Urchin.dll" target="lib\net45"/>
+    <file src="..\*.md" target=""/>
+  </files>
+</package>

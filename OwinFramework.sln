@@ -7,6 +7,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		application_developer.md = application_developer.md
 		middleware_developer.md = middleware_developer.md
+		NuGet\Owin.Framework.ConfigurationManager.nuspec = NuGet\Owin.Framework.ConfigurationManager.nuspec
+		NuGet\Owin.Framework.nuspec = NuGet\Owin.Framework.nuspec
+		NuGet\Owin.Framework.Urchin.nuspec = NuGet\Owin.Framework.Urchin.nuspec
 		readme.md = readme.md
 	EndProjectSection
 EndProject

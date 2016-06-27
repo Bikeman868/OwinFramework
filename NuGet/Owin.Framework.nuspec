@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Owin.Framework</id>
+    <version>1.0.0</version>
+    <title>Owin.Framework</title>
+    <authors>Martin Halliday</authors>
+    <owners>Martin Halliday</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>An open architecture for interoperable OWIN middleware</description>
+    <copyright>Copyright 2016</copyright>
+    <releaseNotes>First release</releaseNotes>
+    <summary>
+      Contains interface definitions that allow middleware components from different
+      authors to be interchangeable in the OWIN pipeline. This givs application developers
+      the freedom to integrate any third-party middleware into their solution and
+      have all the different pieces work together.
+    </summary>
+    <projectUrl>https://github.com/Bikeman868/OwinFramework</projectUrl>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <tags>OWIN framework standards open architecture</tags>
+    <dependencies>
+      <dependency id="Owin" version="1.0" />
+      <dependency id="Microsoft.Owin" version="2.1.0" />
+      <dependency id="Ioc.Modules" version="1.0.9" />
+    </dependencies>
+    <references>
+    </references>
+  </metadata>
+  <files>
+    <file src="..\bin\Net40\Release\OwinFramework.dll" target="lib\net40"/>
+    <file src="..\bin\Net45\Release\OwinFramework.dll" target="lib\net45"/>
+    <file src="..\*.md" target=""/>
+  </files>
+</package>

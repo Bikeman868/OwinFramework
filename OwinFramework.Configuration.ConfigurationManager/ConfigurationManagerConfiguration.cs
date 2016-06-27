@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Configuration;
 using AutoMapper;
 using IConfiguration = OwinFramework.Interfaces.Builder.IConfiguration;
 
-namespace OwinFramework.Configuration.ConfiurationManager
+namespace OwinFramework.Configuration.ConfigurationManager
 {
     /// <summary>
     /// This class implements the IConfiguration interface using the standard .Net ConfigurationManager
@@ -31,7 +30,7 @@ namespace OwinFramework.Configuration.ConfiurationManager
         {
             var value = defaultValue;
 
-            var section = ConfigurationManager.GetSection(path);
+            var section = System.Configuration.ConfigurationManager.GetSection(path);
             if (section != null)
                 value = Mapper.Map<T>(section);
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Ioc.Modules;
+using OwinFramework.Configuration.ConfigurationManager;
 using OwinFramework.Interfaces.Builder;
 
 namespace OwinFramework.Configuration.ConfiurationManager
