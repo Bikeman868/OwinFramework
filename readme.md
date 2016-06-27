@@ -103,8 +103,9 @@ routing.
 optional extra NuGet package that provides middleware configuration
 via the web.config file using the `ConfigurationManager` class.
 
-`OwinFramework.Configuration.Urchin.csproj' is distributed as an
+`OwinFramework.Configuration.Urchin.csproj` is distributed as an
 optional extra NuGet package that provides middleware configuration via
-the Urchin rules based configuration management system.
+the [Urchin](https://github.com/Bikeman868/urchin) rules based configuration 
+management system.
 
 `UnitTests.csproj` contains what you would expect!
