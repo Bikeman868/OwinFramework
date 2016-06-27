@@ -87,3 +87,24 @@ The areas of standardization covered by this project are:
 Note that this is a work in progress, and I would welcome contributions 
 from  as many other developers as possible. The more people who use this
 framework, the more useful it will be to everyone so please join in.
+
+## Solution contents
+
+`ExampleUsage.csproj` is a project that demonstrates some of what is possible
+with this framework. It is by no means trying to be an exhastive list
+of what can be done, but just a few variations to give a flavour.
+
+`OwinFramework.csproj` compiles to the DLL that gets installed from NuGet.
+This is the core framework itself and consists mainly of interfaces but
+also has an OWIN pipeline builder that resolves dependencies and provides
+routing.
+
+`OwinFramework.Configuration.ConfigurationManager.csproj' is distributed as an
+optional extra NuGet package that provides middleware configuration
+via the web.config file using the `ConfigurationManager` class.
+
+`OwinFramework.Configuration.Urchin.csproj' is distributed as an
+optional extra NuGet package that provides middleware configuration via
+the Urchin rules based configuration management system.
+
+`UnitTests.csproj` contains what you would expect!

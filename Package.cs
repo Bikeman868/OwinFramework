@@ -16,9 +16,9 @@ namespace OwinFramework
         {
             IocRegistrations = new List<IocRegistration>
             {
-                new IocRegistration().Init<IDependencyGraphFactory, DependencyGraphFactory>(IocLifetime.SingleInstance),
-                new IocRegistration().Init<ISegmenterFactory, SegmenterFactory>(IocLifetime.SingleInstance),
-                new IocRegistration().Init<IBuilder, Builder.Builder>(IocLifetime.SingleInstance)
+                new IocRegistration().Init<IDependencyGraphFactory, DependencyGraphFactory>(),
+                new IocRegistration().Init<ISegmenterFactory, SegmenterFactory>(),
+                new IocRegistration().Init<IBuilder, Builder.Builder>()
             };
         }
     }
