@@ -2,7 +2,6 @@
 using Owin;
 using OwinFramework.Builder;
 using OwinFramework.Configuration;
-using OwinFramework.Interfaces.Middleware;
 using OwinFramework.Routing;
 using OwinFramework.Utility;
 
@@ -18,13 +17,21 @@ namespace ExampleUsage
     ///          |                  --> not /secure --public---------------^
     ///          |
     ///          -> non aspx --api--> cert auth ----> REST service rendering
+    /// 
+    /// Try these URLs and look at the putput in the console window:
+    ///   http://localhost:12345/test.aspx
+    ///   http://localhost:12345/secure/test.aspx
+    ///   http://localhost:12345/api/user/98765
+    ///   http://localhost:12345/test.jpg
+    ///   http://localhost:12345/api/test.jpg
+    ///   http://localhost:12345/secure/test.jpg
     /// </summary>
     public class StartupRouting
     {
         public void Configuration(IAppBuilder app)
         {
             // This demonstrates how you would configure the builder without using IoC
-            // The other startup example demonstrates the IoC version
+            // There are other startup examples in this project that demonstrate the IoC version
             var dependencyGraphFactory = new DependencyGraphFactory();
             var segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
             var builder = new Builder(dependencyGraphFactory, segmenterFactory);
@@ -35,12 +42,33 @@ namespace ExampleUsage
             // the OWIN pipeline so that all dependencies are satisfied. If there are
             // circular dependencies an exception will be thrown.
 
-            // These middleware are configured to run at the front and back of the OWIN
-            // pipeline so no need to configure routing. You could also add more than
-            // one of these middleware compoennts, configure them differently and add
-            // them to different routes.
-            builder.Register(new NotFoundError());
+            // This middleware is built to run at the front of the Owin pipeline
+            // so not much more to set up here.
             builder.Register(new ReportExceptions());
+
+            // Configure different 404 behaviours for different routes.
+            // Note that NotFoundError middleware is built to run at the end of the Owin
+            // pipeline after all other middleware. If no other middleware handled the 
+            // request then it returns a 404 response.
+            builder.Register(new NotFoundError())
+                .As("apiNotFoundError")
+                .RunOnRoute("api")
+                .ConfigureWith(configuration, "/owin/notFound/api");
+
+            builder.Register(new NotFoundError())
+                .As("uiNotFoundError")
+                .RunOnRoute("ui")
+                .ConfigureWith(configuration, "/owin/notFound/ui");
+
+            builder.Register(new NotFoundError())
+                .As("staticFilesNotFoundError")
+                .RunOnRoute("staticFiles")
+                .ConfigureWith(configuration, "/owin/notFound/staticFiles");
+
+            builder.Register(new NotFoundError())
+                .As("invalidNotFoundError")
+                .RunOnRoute("invalid")
+                .ConfigureWith(configuration, "/owin/notFound/invalid");
 
             // This says that we want to use forms based identification, that
             // we will refer to it by the name 'loginId', and it will
@@ -73,7 +101,22 @@ namespace ExampleUsage
             // off the incomming request.
             builder.Register(new Router(dependencyGraphFactory))
                 .AddRoute("ui", context => context.Request.Path.Value.EndsWith(".aspx"))
-                .AddRoute("api", context => true);
+                .AddRoute("staticFiles", context =>
+                {
+                    var path = context.Request.Path.Value;
+                    var fileExtensionIndex = path.LastIndexOf('.');
+                    if (fileExtensionIndex < 0) return false;
+
+                    var fileExtension = path.Substring(fileExtensionIndex).ToLower();
+                    if (fileExtension == ".html") return true;
+                    if (fileExtension == ".css") return true;
+                    if (fileExtension == ".js") return true;
+                    if (fileExtension == ".jpg") return true;
+                    if (fileExtension == ".png") return true;
+                    return false;
+                })
+                .AddRoute("api", context => context.Request.Path.Value.StartsWith("/api/"))
+                .AddRoute("invalid", context => true);
 
             // This configures another routing split that divides the 'ui' route into 
             // 'secure' and 'public' routes.

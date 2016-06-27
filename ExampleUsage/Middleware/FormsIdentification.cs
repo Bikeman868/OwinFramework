@@ -36,10 +36,7 @@ namespace ExampleUsage.Middleware
         {
             var registration = configuration.Register(
                 path,
-                cfg =>
-                {
-                    Console.WriteLine("CONFIGURE: Forms identification");
-                },
+                cfg => Console.WriteLine("CONFIGURE: Forms identification '" + Name + "' from " + path),
                 string.Empty);
             registration.Dispose();
         }

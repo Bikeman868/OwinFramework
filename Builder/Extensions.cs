@@ -19,6 +19,9 @@ namespace OwinFramework.Builder
         {
             if (typeof (T) == typeof (IRoute))
             {
+                if (name == null)
+                    throw new BuilderException("When adding a dependency on a route the name of the route must be specified");
+
                 var frontDependency =
                     middleware.Dependencies.FirstOrDefault(dep => dep.Position == PipelinePosition.Front);
                 if (frontDependency != null)
@@ -27,9 +30,18 @@ namespace OwinFramework.Builder
                         + name + "' route when it is already configured to run before any routing.");
             }
 
-            var existingDependency = middleware.Dependencies.FirstOrDefault(dep => dep.DependentType == typeof(T));
-            if (existingDependency != null)
-                middleware.Dependencies.Remove(existingDependency);
+            if (name == null)
+            {
+                var existingDependency = middleware.Dependencies.FirstOrDefault(dep => dep.DependentType == typeof (T));
+                if (existingDependency != null)
+                    middleware.Dependencies.Remove(existingDependency);
+            }
+            else
+            {
+                var existingDependency = middleware.Dependencies.FirstOrDefault(dep => string.Equals(dep.Name, name, StringComparison.OrdinalIgnoreCase));
+                if (existingDependency != null)
+                    middleware.Dependencies.Remove(existingDependency);
+            }
 
             middleware.Dependencies.Add(new Dependency<T>
             {

@@ -169,12 +169,7 @@ namespace OwinFramework.Utility
                     dep =>
                     {
                         GraphNode dependent;
-                        if (!_nodeIndex.TryGetValue(dep.Key, out dependent))
-                        {
-                            if (dep.Required)
-                                throw new MissingDependencyException("'" + node.Key + "' is dependent on missing '" + dep.Key + "'");
-                        }
-                        return dependent;
+                        return !_nodeIndex.TryGetValue(dep.Key, out dependent) ? null : dependent;
                     })
                 .Where(dep => dep != null)
                 .ToList();
