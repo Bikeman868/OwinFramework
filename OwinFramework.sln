@@ -18,9 +18,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "OwinFramework.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Configuration.ConfigurationManager", "OwinFramework.Configuration.ConfigurationManager\OwinFramework.Configuration.ConfigurationManager.csproj", "{07C0DFD7-C18B-45F6-AA3B-4B62CAE2FD3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Configuration.Urchin", "OwinFramework.Configuration.Urchin\OwinFramework.Configuration.Urchin.csproj", "{271C0BF8-A359-43F6-8780-725D2E25A0A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Configuration.Urchin.Net45", "OwinFramework.Configuration.Urchin\OwinFramework.Configuration.Urchin.Net45.csproj", "{271C0BF8-A359-43F6-8780-725D2E25A0A8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Net40", "OwinFramework.Net40.csproj", "{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Configuration.Urchin.Net40", "OwinFramework.Configuration.Urchin\OwinFramework.Configuration.Urchin.Net40.csproj", "{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,6 +54,10 @@ Global
 		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
