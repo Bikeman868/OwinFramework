@@ -19,6 +19,9 @@ namespace TestServer
             {
                 using (WebApp.Start<Startup>(url))
                 {
+                    Console.WriteLine("Test server listening on " + url);
+                    Console.WriteLine("Pipeline vizualizer is at " + url + "/owin/pipeline");
+                    Console.WriteLine("Press any key to stop");
                     Console.ReadLine();
                 }
             }

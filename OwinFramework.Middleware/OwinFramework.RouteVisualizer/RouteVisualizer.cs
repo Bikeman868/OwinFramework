@@ -341,10 +341,12 @@ namespace OwinFramework.RouteVisualizer
             {
                 "Route: " + (segment.Name ?? "<anonymous>")
             };
-            
+
+            var longestLine = lines.Select(l => l.Length).Max();
+
             var positioned = new Positioned
             {
-                Width = 160,
+                Width = longestLine * 6.5f,
                 Height = TextHeight * (lines.Count + 2),
                 DrawAction = (d, p) =>
                 {
