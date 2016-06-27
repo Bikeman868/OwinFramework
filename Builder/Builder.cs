@@ -175,11 +175,12 @@ namespace OwinFramework.Builder
             // each node is as close to the front of the graph as possible.
             var segmenter = _segmenterFactory.Create();
 
-            foreach (var segment in allSegments)
-                AddToSegmenter(segmenter, routerComponents, segment);
+            foreach (var routerComponent in routerComponents)
+                foreach(var parent in routerComponent.ParentRouteNames)
+                    segmenter.AddSegment(parent, routerComponent.ChildRouteNames);  
 
             foreach (var component in components)
-                AddToSegmenter(segmenter, component);
+                AddToSegmenter(segmenter, components, component);
 
             foreach (var component in components)
             {
@@ -187,22 +188,53 @@ namespace OwinFramework.Builder
                     .GetNodeSegments(component.Name)
                     .Select(sn => allSegments.First(s => s.Name == sn))
                     .ToList();
+                if (component.SegmentAssignments.Count == 0)
+                    throw new BuilderException(
+                        "Middleware '" + component.Name + "' of type " +
+                        component.Middleware.GetType().Name + "<" + component.MiddlewareType.Name + ">" +
+                        " will not be added to the Owin pipeline because it is not assigned to any route," +
+                        " and there are no other middleware that depend on it that are assigned to a route." +
+                        " You must either assign this middleware to a route, or assign middleware that depends on" +
+                        " it to a route. You can also configure this middleware to run at the start or the " +
+                        " end of the pipeline to fix this problem.");
             }
         }
 
-        private void AddToSegmenter(ISegmenter segmenter, IEnumerable<RouterComponent> routerComponents, Segment segment)
+        private void AddToSegmenter(ISegmenter segmenter, IList<MiddlewareComponent> components, MiddlewareComponent middlewareComponent)
         {
-            var childSegments = routerComponents
-                .Where(rc => rc.SegmentAssignments.Any(sa => sa.Name == segment.Name))
-                .Select(rc => rc.Name)
-                .ToList();
-            segmenter.AddSegment(segment.Name, childSegments);
-        }
-
-        private void AddToSegmenter(ISegmenter segmenter, MiddlewareComponent middlewareComponent)
-        {
-            IEnumerable<IList<string>> nodeDependencies = null;
-            IEnumerable<string> routeDependencies = null;
+            IList<List<string>> nodeDependencies = new List<List<string>>();
+            IList<string> routeDependencies = new List<string>();
+            foreach (var dependency in middlewareComponent.Middleware.Dependencies)
+            {
+                if (string.IsNullOrEmpty(dependency.Name))
+                {
+                    if (dependency.DependentType == typeof (IRoute))
+                        throw new BuilderException(
+                            "Route dependencies must specify the name of the route."
+                            + " Middleware type " + middlewareComponent.Middleware.GetType().Name
+                            + "<" + middlewareComponent.MiddlewareType.Name 
+                            + "> has a dependency on an unnamed route.");
+                    var dependantNames = components
+                        .Where(c => c.MiddlewareType == dependency.DependentType)
+                        .Select(c => c.Name)
+                        .ToList();
+                    nodeDependencies.Add(dependantNames);
+                }
+                else
+                { 
+                    if (dependency.DependentType == typeof(IRoute))
+                    {
+                        routeDependencies.Add(dependency.Name);
+                    }
+                    else
+                    {
+                        var dependantNames = new List<string> { dependency.Name };
+                        if (!dependency.Required)
+                            dependantNames.Add(null);
+                        nodeDependencies.Add(dependantNames);
+                    }
+                }
+            }
             segmenter.AddNode(middlewareComponent.Name, nodeDependencies, routeDependencies);
         }
 
@@ -325,6 +357,8 @@ namespace OwinFramework.Builder
 
         private class RouterComponent : Component
         {
+            public List<string> ParentRouteNames = new List<string>();
+            public List<string> ChildRouteNames = new List<string>();
             public List<Segment> RouterSegments = new List<Segment>();
         }
 
@@ -332,7 +366,7 @@ namespace OwinFramework.Builder
         {
             public string Name;
             public IRoutingSegment RoutingSegment;
-            public List<Component> Components = new List<Component>();
+            public readonly List<Component> Components = new List<Component>();
         }
 
         private class RouteBuilder
@@ -350,8 +384,8 @@ namespace OwinFramework.Builder
                 // When the application does not use routing everything ends up in here
                 var rootRouter = new Router(_dependencyGraphFactory);
 
-                // Add one segment called "root" with a pass everything filter
-                rootRouter.Add("root", owinContext => true);
+                // Add a root segment called with a pass everything filter
+                rootRouter.Add(Guid.NewGuid().ToShortString(false), owinContext => true);
                 var rootRoutingSegment = rootRouter.Segments[0];
 
                 // Wrap the root router in a component, this is equivalent to registering the router
@@ -362,6 +396,25 @@ namespace OwinFramework.Builder
                     MiddlewareType = typeof(IRoute),
                 };
                 routerComponents.Add(rootRouterComponent);
+
+                // For each router component figure out it's parents and children in the routing graph
+                var defaultParents = new List<string> { rootRoutingSegment.Name };
+                foreach (var routerComponent in routerComponents)
+                {
+                    var router = (IRouter)routerComponent.Middleware;
+
+                    routerComponent.ChildRouteNames = router.Segments
+                        .Select(s => s.Name)
+                        .ToList();
+
+                    routerComponent.ParentRouteNames = router.Dependencies
+                        .Where(d => d.DependentType == typeof(IRoute) && !string.IsNullOrEmpty(d.Name))
+                        .Select(s => s.Name)
+                        .ToList();
+
+                    if (routerComponent.ParentRouteNames.Count == 0 && !ReferenceEquals(routerComponent, rootRouterComponent))
+                        routerComponent.ParentRouteNames = defaultParents;
+                }
 
                 // Create Segment objects for each IRoutingSegment configured by the application
                 // We will use the segmenter later to fill in the list of components on each segment

@@ -5,6 +5,8 @@ using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Middleware;
+using OwinFramework.Interfaces.Routing;
+using OwinFramework.Interfaces.Upstream;
 
 namespace ExampleUsage.Middleware
 {
@@ -13,7 +15,7 @@ namespace ExampleUsage.Middleware
     /// * It injects the IIdentification feature into the OWIN context
     /// * It is configurable
     /// </summary>
-    public class FormsIdentification: IMiddleware<IIdentification>, IConfigurable
+    public class FormsIdentification: IMiddleware<IIdentification>, IConfigurable, IRoutingProcessor
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get; private set; }
@@ -21,6 +23,10 @@ namespace ExampleUsage.Middleware
         public FormsIdentification()
         {
             Dependencies = new List<IDependency>();
+
+            // This middleware depends on having session available. This feature
+            // is provided by IMiddleware<ISession>
+            this.RunAfter<ISession>();
         }
 
         /// <summary>
@@ -36,6 +42,21 @@ namespace ExampleUsage.Middleware
                 },
                 string.Empty);
             registration.Dispose();
+        }
+
+        public void RouteRequest(IOwinContext context, Action next)
+        {
+            // Get a reference to the session middleware
+            var upstreamSession = context.GetFeature<IUpstreamSession>();
+            if (upstreamSession == null)
+                throw new Exception("The forms identification middleware needs a session to be available");
+
+            // Tell the session middleware that a session must be established for this request
+            // because forms identification can not work without it.
+            upstreamSession.SessionRequired = true;
+
+            // Execute the next step in routing the request
+            next();
         }
 
         public Task Invoke(IOwinContext context, Func<Task> next)
@@ -57,8 +78,9 @@ namespace ExampleUsage.Middleware
 
             public Identification()
             {
-                Identity = Guid.NewGuid().ToString("N");
+                Identity = Guid.NewGuid().ToShortString();
             }
         }
+
     }
 }

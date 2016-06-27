@@ -108,12 +108,12 @@ namespace UnitTests
         }
 
         [Test]
-        public void Should_segment_dependency_graph_for_real_world_example()
+        public void Should_segment_dependency_graph_for_real_world_example1()
         {
             _segmenter.AddSegment("root", new[] { "api", "ui" });
             _segmenter.AddSegment("ui", new[] { "secure", "public" });
 
-            // REST on api route requires identification
+            // REST on api route requires some type of identification
             _segmenter.AddNode(
                 "REST",
                 new[] { new List<string> { "certId", "formsId", "anonymousId" } },
@@ -125,7 +125,7 @@ namespace UnitTests
                 new[] { new List<string> { "session" } },
                 new[] { "secure", "public" });
 
-            // Session requires requires identification
+            // Session requires requires some type of identification
             _segmenter.AddNode(
                 "session",
                 new[] { new List<string> { "certId", "formsId", "anonymousId" } });
@@ -175,5 +175,6 @@ namespace UnitTests
             Assert.IsTrue(sessionSegments.Contains("secure"), "Session on secure route");
             Assert.IsTrue(sessionSegments.Contains("public"), "Session on public route");
         }
+
     }
 }

@@ -35,10 +35,6 @@ namespace ExampleUsage.Middleware
         {
             _sessions = new Dictionary<string, DownstreamSession>();
             Dependencies = new List<IDependency>();
-
-            // This middleware depends on knowing the identity of the caller. This feature
-            // is provided by the IIdentification middleware
-            this.RunAfter<IIdentification>();
         }
 
         /// <summary>

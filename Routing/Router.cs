@@ -30,7 +30,7 @@ namespace OwinFramework.Routing
         {
             _dependencyGraphFactory = dependencyGraphFactory;
 
-            _owinContextKey = "R:" + Guid.NewGuid().ToString("N");
+            _owinContextKey = "R:" + Guid.NewGuid().ToShortString(false);
             Dependencies = new List<IDependency>();
             Segments = new List<IRoutingSegment>();
         }

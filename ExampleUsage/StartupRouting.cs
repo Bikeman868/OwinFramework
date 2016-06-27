@@ -36,35 +36,41 @@ namespace ExampleUsage
             // circular dependencies an exception will be thrown.
 
             // These middleware are configured to run at the front and back of the OWIN
-            // pipeline so not much to configure here.
+            // pipeline so no need to configure routing. You could also add more than
+            // one of these middleware compoennts, configure them differently and add
+            // them to different routes.
             builder.Register(new NotFoundError());
             builder.Register(new ReportExceptions());
 
             // This says that we want to use forms based identification, that
             // we will refer to it by the name 'loginId', and it will
-            // only be configured for the 'secure' route.
+            // only be configured for the 'secure' route. This also defines
+            // the configureation mechanism and specifies where to get config
+            // for this instance in the config file.
             builder.Register(new FormsIdentification())
                 .As("loginId")
                 .ConfigureWith(configuration, "/owin/auth/forms")
                 .RunOnRoute("secure");
 
             // This says that we want to use certificate based identification, that
-            // we will refer to it by the name 'certificateId', and it will
-            // only be configured for the 'api' route.
+            // we will refer to it by the name 'certificateId'.
             builder.Register(new CertificateIdentification())
                 .As("certificateId")
-                .ConfigureWith(configuration, "/owin/auth/cert")
-                .RunOnRoute("api");
+                .ConfigureWith(configuration, "/owin/auth/cert");
 
-            // This specifies the mechanism we want to use to store session
+            // This specifies the mechanism we want to use to store session.
+            // We don't need to specify anything else because each middleware knows
+            // already whether it needs session or not and the builder will ensure
+            // that session is included in the pipeline before anything that needs it.
             builder.Register(new InProcessSession())
-                .RunAfter<IIdentification>("loginId") // TODO: remove when route construction is working
                 .ConfigureWith(configuration, "/owin/session");
 
             // This configures a routing element that will split the OWIN pipeline into
             // two routes. There is a 'ui' route that has forms based authentication and 
             // template based rendering. There is an 'api' route that has certifcate based
             // authentication and REST service rendering.
+            // Since this router does not have any route dependencies it will run directly
+            // off the incomming request.
             builder.Register(new Router(dependencyGraphFactory))
                 .AddRoute("ui", context => context.Request.Path.Value.EndsWith(".aspx"))
                 .AddRoute("api", context => true);
@@ -84,13 +90,11 @@ namespace ExampleUsage
                 .RunOnRoute("secure")
                 .ConfigureWith(configuration, "/owin/templates");
 
-            // This specifies that we want to use the REST service mapper
-            // middleware and that it should run after the 'certificateId' middleware
-            // Note that we could also have told it to RunAfter<IRoute>("api") and the
-            // resulting OWIN pipeline would be the same. For belts and braces we could
-            // also add both dependencies.
+            // This specifies that we want to use the REST service mapper on the 'api' route
+            // and that it should run after the 'certificateId' middleware
             builder.Register(new RestServiceMapper())
                 .RunAfter("certificateId")
+                .RunOnRoute("api")
                 .ConfigureWith(configuration, "/owin/rest");
 
             // This statement will add all of the middleware registered with the builder into
@@ -104,6 +108,9 @@ namespace ExampleUsage
             // can add to your configuraton. This middleware will return an SVG vizualization
             // of the pipeline including configurations and analytics.
             app.UseBuilder(builder);
+
+            // Anything that you do with the builder after this point will have no effect on
+            // to Owin pipeline which has already been built.
         }
     }
 }
