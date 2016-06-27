@@ -1,10 +1,20 @@
 # OWIN Framework
 
-OWIN represents a great leap forward in enabling application developers to build 
-their applications from components from multiple sources, but OWIN is just the
-starting point and we need more standardization if we want to be able to mix and
-match any OWIN middleware we want and have a working application with minimal
-knowledge of how the parts work.
+OWIN represents a great leap forward in standardizing the interface bewteen
+the hosting environment and the web application. It allows any web application
+to run on any hosting platform, and this standardization is helpful to
+everyone involved in web development.
+
+Another great thing about OWIN is that it defines only one very straightforward
+interface that does not place any constraints on the shaps of the application
+or the hosting platform, constraining only those things that absolutely have
+to be constrained to make OWIN possible.
+
+I wanted to extend these great OWIN concepts up to the next layer, and define
+a set of interfaces that place no unnecessary constraints on the shape
+of the middleware components whilst at the same time allowing middleware
+components to be switched out transparently in the same way that you can
+switch out the hosting service.
 
 Using only the OWIN specification I can't use any session or authentication 
 middleware I like and have it work with any output rendering framework I like
@@ -28,22 +38,30 @@ Each UI component and each API endpoint specifies whether it needs session or no
 it also specifies the user permissions required to access the functionallity 
 it provides. My UI is a composition built from multiple UI components.
 
-How can I use redily available OWIN components to realize this design?
+Katana can do this I hear you say! But for me Katana missed the whole point 
+of the open architecture that OWIN promised. Katana is an evolution of ASP.Net
+and as such is a huge suite of middleware components that work together but do
+not work with anything else. Sure Microsoft provided specific points of
+extensibility like creating your own view engine, but these things are
+extremely complex and it takes many hours to understand enough about the
+Katana ecosystem to extend it in any meaningful way. I don't think Katans
+is a good platform for everyone to use as a model for writing interoperable
+middleware components becuase it is full of details specific to the Microsoft
+implementation. In short I don't think Microsoft designed Katana to be
+the foundation of an open architecture for building middleware components, and
+I see that as a missed oportunity.
 
-How can I source UI components from other developers that know how to specify 
-session and authentication without knowing which session provider or authentication 
-provider I chose, and how does the session provider know whether it needs to 
-establish session or not. The rules for establishing session for the API are just 
-whether the endpont requires session or not, but for the UI if the page contains 
-any components that need authentication then session is required. If I switch 
-my authenticationto a different provider that is not session based, then session 
-is only needed when the UI components need session.
+This project set out to define an open architecture for building middleware
+components that work together, and in the spirit of the original OWIN
+design it comprises mostly interfaces that do not place constraints on the
+shape of the middleware compoennts.
 
-I can't configure this with palin OWIN and have the flexibility to switch any 
-OWIN middleware component for any other implementation without making substantial 
-changes throughout my application.
-
-This project is an effort to fix this problem.
+Using this framework I can I source UI components from other developers that 
+know how to specify session and authentication without knowing which session 
+provider or authentication provider I chose, and the session provider knows 
+whether it needs to establish session or not without knowing anything about
+the middleware downstream. This is just one example of the class of problems
+that this framework solves.
 
 If you are writing middleware components to share with others please read
 [the middleware development guide](middleware_developer.md).
@@ -65,3 +83,7 @@ The areas of standardization covered by this project are:
 * Configuring the OWIN pipeline to satisfy dependencies between middleware
 * Defining routes and splitting/joining the OWIN pipeline
 * Communication between OWIN middleware components
+
+Note that this is a work in progress, and I would welcome contributions 
+from  as many other developers as possible. The more people who use this
+framework, the more useful it will be to everyone so please join in.
