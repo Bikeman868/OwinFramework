@@ -99,7 +99,7 @@ This is the core framework itself and consists mainly of interfaces but
 also has an OWIN pipeline builder that resolves dependencies and provides
 routing.
 
-`OwinFramework.Configuration.ConfigurationManager.csproj' is distributed as an
+`OwinFramework.Configuration.ConfigurationManager.csproj` is distributed as an
 optional extra NuGet package that provides middleware configuration
 via the web.config file using the `ConfigurationManager` class.
 
