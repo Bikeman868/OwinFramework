@@ -56,9 +56,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OwinFramework.csproj">
+    <ProjectReference Include="..\OwinFramework.Net45.csproj">
       <Project>{16eac894-ec45-4bc7-9ef9-d36e4c27ec44}</Project>
-      <Name>OwinFramework</Name>
+      <Name>OwinFramework.Net45</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
