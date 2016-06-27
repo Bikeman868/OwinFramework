@@ -4,42 +4,54 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{31AA3ECA-763A-429D-933E-B52B1BBAB7A1}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{83474FEB-8DEC-49F1-BB40-833A7DD81932}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TestServer</RootNamespace>
-    <AssemblyName>TestServer</AssemblyName>
+    <RootNamespace>OwinFramework.RouteVisualizer</RootNamespace>
+    <AssemblyName>OwinFramework.RouteVisualizer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\Net45\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\Net45\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OwinFramework">
-      <HintPath>..\..\bin\Debug\OwinFramework.dll</HintPath>
+    <Reference Include="Ioc.Modules, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ioc.Modules.1.0.9\lib\net45\Ioc.Modules.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="OwinFramework.Configuration.Urchin">
-      <HintPath>..\..\OwinFramework.Configuration.Urchin\bin\Debug\OwinFramework.Configuration.Urchin.dll</HintPath>
+    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OwinFramework, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.Framework.1.0.0\lib\net45\OwinFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Svg, Version=2.2.1.1459, Culture=neutral, PublicKeyToken=12a0bac221edeae2, processorArchitecture=MSIL">
+      <HintPath>..\packages\Svg.2.2.1\lib\net35\Svg.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -50,22 +62,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="RouteVisualizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Startup.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="svg.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="svg.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="configuration.html" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\OwinFramework.RouteVisualizer\OwinFramework.RouteVisualizer.Net45.csproj">
-      <Project>{83474feb-8dec-49f1-bb40-833a7dd81932}</Project>
-      <Name>OwinFramework.RouteVisualizer.Net45</Name>
-    </ProjectReference>
+    <None Include="packages.OwinFramework.RouteVisualizer.Net45.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
