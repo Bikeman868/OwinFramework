@@ -385,7 +385,7 @@ namespace OwinFramework.Builder
                 var rootRouter = new Router(_dependencyGraphFactory);
 
                 // Add a root segment called with a pass everything filter
-                rootRouter.Add(Guid.NewGuid().ToShortString(false), owinContext => true);
+                rootRouter.Add("root", owinContext => true);
                 var rootRoutingSegment = rootRouter.Segments[0];
 
                 // Wrap the root router in a component, this is equivalent to registering the router
