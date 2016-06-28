@@ -18,7 +18,12 @@ using Svg.Transforms;
 
 namespace OwinFramework.RouteVisualizer
 {
-    public class RouteVisualizer: IMiddleware<object>, IConfigurable, ISelfDocumenting, IAnalysable, IRoutingProcessor
+    public class RouteVisualizer: 
+        IMiddleware<object>, 
+        IConfigurable, 
+        ISelfDocumenting, 
+        IAnalysable, 
+        IRoutingProcessor
     {
         private const float TextHeight = 12;
         private const float TextLineSpacing = 15;
@@ -412,6 +417,7 @@ namespace OwinFramework.RouteVisualizer
                     var value  = analysable.GetStatistic(stat.Id);
                     if (value != null)
                     {
+                        value.Refresh();
                         lines.Add(stat.Name + " " + value.Formatted);
                     }
                 }
