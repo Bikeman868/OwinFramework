@@ -38,7 +38,7 @@ namespace OwinFramework.RouteVisualizer
         public string Name { get; set; }
 
         private IDisposable _configurationRegistration;
-        private Configuration _configuration;
+        private Configuration _configuration = new Configuration();
 
         public RouteVisualizer()
         {
@@ -317,7 +317,7 @@ namespace OwinFramework.RouteVisualizer
                 {
                     if (p.Children.Count > 0)
                     {
-                        var maxChildY = p.Children.Select(c => c.Y).Max();
+                        var maxChildY = p.Children.Select(c => c.Y.Value).Max();
                         DrawLine(d, p.X + ChildHorizontalOffset*2, p.Y + TextHeight, p.X + ChildHorizontalOffset*2, maxChildY, "route");
                     }
                     DrawBox(d, p.X, p.Y, p.Width, lines, "router", 2f);
@@ -352,7 +352,7 @@ namespace OwinFramework.RouteVisualizer
                 {
                     if (p.Siblings.Count > 0)
                     {
-                        var maxSiblingX = p.Siblings.Select(s => s.X).Max();
+                        var maxSiblingX = p.Siblings.Select(s => s.X.Value).Max();
                         DrawLine(d, p.X + p.Width, p.Y + TextHeight, maxSiblingX, p.Y + TextHeight, "segment");
                     }
                     DrawBox(d, p.X, p.Y, p.Width, lines, "segment", 2f);
