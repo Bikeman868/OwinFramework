@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Ioc.Modules;
 using OwinFramework.Interfaces.Builder;
+using OwinFramework.Interfaces.Routing;
 using OwinFramework.Interfaces.Utility;
 using OwinFramework.Utility;
 
@@ -18,7 +19,8 @@ namespace OwinFramework
             {
                 new IocRegistration().Init<IDependencyGraphFactory, DependencyGraphFactory>(),
                 new IocRegistration().Init<ISegmenterFactory, SegmenterFactory>(),
-                new IocRegistration().Init<IBuilder, Builder.Builder>()
+                new IocRegistration().Init<IBuilder, Builder.Builder>(),
+                new IocRegistration().Init<IRouter, Routing.Router>(IocLifetime.MultiInstance),
             };
         }
     }
