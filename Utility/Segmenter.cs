@@ -47,13 +47,22 @@ namespace OwinFramework.Utility
         public void AddSegment(string name, IEnumerable<string> childSegments)
         {
             if (_segments.ContainsKey(name))
-                throw new DuplicateKeyException("Segment with name '" + name + "' already added to segmenter");
-
-            _segments[name] = new Segment
             {
-                Name = name,
-                ChildSegmentNames = childSegments == null ? new List<string>() : childSegments.ToList()
-            };
+                if (childSegments != null)
+                {
+                    var segment = _segments[name];
+                    foreach (var child in childSegments)
+                        segment.ChildSegmentNames.Add(child);
+                }
+            }
+            else
+            {
+                _segments[name] = new Segment
+                {
+                    Name = name,
+                    ChildSegmentNames = childSegments == null ? new List<string>() : childSegments.ToList()
+                };
+            }
 
             _modified = true;
         }
@@ -116,7 +125,7 @@ namespace OwinFramework.Utility
             {
                 node.DependentNodes = node
                     .NodeDependencies
-                    .Select(nl => (IList<Node>)nl.Select(n => _nodes[n]).ToList())
+                    .Select(nl => (IList<Node>)nl.Where(n => n != null).Select(n => _nodes[n]).ToList())
                     .ToList();
                 node.AssignedSegments = new List<Segment>();
             }

@@ -176,5 +176,89 @@ namespace UnitTests
             Assert.IsTrue(sessionSegments.Contains("public"), "Session on public route");
         }
 
+        [Test]
+        public void Should_segment_dependency_graph_for_real_world_example2()
+        {
+            _segmenter.AddSegment("root", new[] { "get", "post", "put", "delete" });
+            _segmenter.AddSegment("root", new[] { "visualizer", "analytics" });
+            _segmenter.AddSegment("get", new[] { "getUser", "getGroup", "getPermission", "getRole" });
+            _segmenter.AddSegment("post", new[] { "postUser", "postGroup", "postPermission", "postRole" });
+            _segmenter.AddSegment("delete", new[] { "deleteUser", "deleteGroup", "deletePermission", "deleteRole" });
+
+            // user middleware handles get, post and delete requests. If identification or authorization
+            // are configured then they should be before the user middleware but they are optional
+            _segmenter.AddNode(
+                "user",
+                new[] { 
+                    new List<string> { "secretKeyId", "formsId", null }, 
+                    new List<string> { "authorization", null } },
+                new[] { "getUser", "postUser", "deleteUser" });
+
+            // group middleware handles get, post and delete requests. If identification or authorization
+            // are configured then they should be before the user middleware but they are optional
+            _segmenter.AddNode(
+                "group",
+                new[] { 
+                    new List<string> { "secretKeyId", "formsId", null }, 
+                    new List<string> { "authorization", null } },
+                new[] { "getGroup", "postGroup", "deleteGroup" });
+
+            // group middleware handles get, post and delete requests. If identification or authorization
+            // are configured then they should be before the user middleware but they are optional
+            _segmenter.AddNode(
+                "permission",
+                new[] { 
+                    new List<string> { "secretKeyId", "formsId", null }, 
+                    new List<string> { "authorization", null } },
+                new[] { "getPermission", "postPermission", "deletePermission" });
+
+            // role middleware handles get, post and delete requests. If identification or authorization
+            // are configured then they should be before the user middleware but they are optional
+            _segmenter.AddNode(
+                "role",
+                new[] { 
+                    new List<string> { "secretKeyId", "formsId", null }, 
+                    new List<string> { "authorization", null } },
+                new[] { "getRole", "postRole", "deleteRole" });
+
+            // forms identification must be on post and delete routes and needs session
+            _segmenter.AddNode(
+                "formsId",
+                new[] { new List<string> { "session" } },
+                new[] { "post", "delete" });
+
+            // secret key identification must be on post and delete routes
+            _segmenter.AddNode(
+                "secretKeyId",
+                null,
+                new[] { "post", "delete" });
+
+            // authorization needs some form of identification
+            _segmenter.AddNode(
+                "authorization",
+                new[] { new List<string> { "secretKeyId", "formsId" } });
+
+            // session has no dependencies
+            _segmenter.AddNode("session");
+
+            var userSegments = _segmenter.GetNodeSegments("user");
+            var groupSegments = _segmenter.GetNodeSegments("group");
+            var permissionSegments = _segmenter.GetNodeSegments("permission");
+            var roleSegments = _segmenter.GetNodeSegments("role");
+            var formsIdSegments = _segmenter.GetNodeSegments("formsId");
+            var secretKeyIdSegments = _segmenter.GetNodeSegments("secretKeyId");
+            var authorizationSegments = _segmenter.GetNodeSegments("authorization");
+            var sessionSegments = _segmenter.GetNodeSegments("session");
+
+            Assert.IsNotNull(userSegments);
+            Assert.IsNotNull(groupSegments);
+            Assert.IsNotNull(permissionSegments);
+            Assert.IsNotNull(roleSegments);
+            Assert.IsNotNull(formsIdSegments);
+            Assert.IsNotNull(secretKeyIdSegments);
+            Assert.IsNotNull(authorizationSegments);
+            Assert.IsNotNull(sessionSegments);
+        }
+
     }
 }
