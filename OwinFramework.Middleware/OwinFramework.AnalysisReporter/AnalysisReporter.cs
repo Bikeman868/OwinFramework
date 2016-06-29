@@ -79,6 +79,11 @@ namespace OwinFramework.AnalysisReporter
                     .Where(s => !string.IsNullOrEmpty(s));
                 foreach (var acceptFormat in acceptFormats)
                 {
+                    if (acceptFormat == "*/*")
+                    {
+                        format = _configuration.DefaultFormat;
+                        break;
+                    }
                     if (_supportedFormats.Contains(acceptFormat))
                     {
                         format = acceptFormat;
