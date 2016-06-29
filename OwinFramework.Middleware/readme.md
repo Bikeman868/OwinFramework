@@ -19,4 +19,6 @@ As well as making this set of middleware available, the framework was deliberate
 designed so that middleware developers can support it without requiring
 application developers to use it. This is because middleware developers only
 have to implement the very simple `IMiddleware<T>` interface for their middleware
-to work with the OWIN Framework.
+to work with the OWIN Framework, and implementing this interface does not
+change how the middleware is used for application developers that choose not
+to use the OWIN Framework.
