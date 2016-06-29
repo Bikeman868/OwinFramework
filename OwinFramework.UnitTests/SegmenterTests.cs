@@ -119,21 +119,21 @@ namespace UnitTests
                 new[] { new List<string> { "certId", "formsId", "anonymousId" } },
                 new[] { "api" });
 
-            // MVC on both secure and public route needs session
+            // MVC on both secure and public route needs session, can use identification if present
             _segmenter.AddNode(
                 "MVC",
-                new[] { new List<string> { "session" } },
+                new[] { 
+                    new List<string> { "session" },
+                    new List<string> { "certId", "formsId", "anonymousId", null }},
                 new[] { "secure", "public" });
 
-            // Session requires requires some type of identification
-            _segmenter.AddNode(
-                "session",
-                new[] { new List<string> { "certId", "formsId", "anonymousId" } });
+            // Session has no dependencies
+            _segmenter.AddNode("session");
 
-            // Secure route must have login forms identification
+            // Secure route must have login forms identification which needs session
             _segmenter.AddNode(
                 "formsId",
-                null,
+                new[] { new List<string> { "session" } },
                 new[] { "secure" });
 
             // API route must have certificate identification
@@ -171,67 +171,68 @@ namespace UnitTests
             Assert.AreEqual(1, anonymousIdSegments.Count, "Number of segments anonymous Id assigned to");
             Assert.AreEqual("public", anonymousIdSegments[0], "Anonymous Id on secure route");
 
-            Assert.AreEqual(2, sessionSegments.Count, "Number of segments session assigned to");
-            Assert.IsTrue(sessionSegments.Contains("secure"), "Session on secure route");
-            Assert.IsTrue(sessionSegments.Contains("public"), "Session on public route");
+            Assert.AreEqual(1, sessionSegments.Count, "Number of segments session assigned to");
+            Assert.IsTrue(sessionSegments.Contains("ui"), "Session on ui route");
         }
 
         [Test]
         public void Should_segment_dependency_graph_for_real_world_example2()
         {
-            _segmenter.AddSegment("root", new[] { "get", "post", "put", "delete" });
+            _segmenter.AddSegment("root", new[] { "get", "modify" });
             _segmenter.AddSegment("root", new[] { "visualizer", "analytics" });
             _segmenter.AddSegment("get", new[] { "getUser", "getGroup", "getPermission", "getRole" });
+            _segmenter.AddSegment("modify", new[] { "post", "put", "delete" });
             _segmenter.AddSegment("post", new[] { "postUser", "postGroup", "postPermission", "postRole" });
+            _segmenter.AddSegment("put", new[] { "putUser", "putGroup", "putPermission", "putRole" });
             _segmenter.AddSegment("delete", new[] { "deleteUser", "deleteGroup", "deletePermission", "deleteRole" });
 
-            // user middleware handles get, post and delete requests. If identification or authorization
+            // user middleware handles get, post, put and delete requests. If identification or authorization
             // are configured then they should be before the user middleware but they are optional
             _segmenter.AddNode(
                 "user",
                 new[] { 
                     new List<string> { "secretKeyId", "formsId", null }, 
                     new List<string> { "authorization", null } },
-                new[] { "getUser", "postUser", "deleteUser" });
+                new[] { "getUser", "postUser", "putUser", "deleteUser" });
 
-            // group middleware handles get, post and delete requests. If identification or authorization
+            // group middleware handles get, post, put and delete requests. If identification or authorization
             // are configured then they should be before the user middleware but they are optional
             _segmenter.AddNode(
                 "group",
                 new[] { 
                     new List<string> { "secretKeyId", "formsId", null }, 
                     new List<string> { "authorization", null } },
-                new[] { "getGroup", "postGroup", "deleteGroup" });
+                new[] { "getGroup", "postGroup", "putGroup", "deleteGroup" });
 
-            // group middleware handles get, post and delete requests. If identification or authorization
+            // group middleware handles get, post, put and delete requests. If identification or authorization
             // are configured then they should be before the user middleware but they are optional
             _segmenter.AddNode(
                 "permission",
                 new[] { 
                     new List<string> { "secretKeyId", "formsId", null }, 
                     new List<string> { "authorization", null } },
-                new[] { "getPermission", "postPermission", "deletePermission" });
+                new[] { "getPermission", "postPermission", "putPermission", "deletePermission" });
 
-            // role middleware handles get, post and delete requests. If identification or authorization
+            // role middleware handles get, post, put and delete requests. If identification or authorization
             // are configured then they should be before the user middleware but they are optional
             _segmenter.AddNode(
                 "role",
                 new[] { 
                     new List<string> { "secretKeyId", "formsId", null }, 
                     new List<string> { "authorization", null } },
-                new[] { "getRole", "postRole", "deleteRole" });
+                new[] { "getRole", "postRole", "putRole", "deleteRole" });
 
-            // forms identification must be on post and delete routes and needs session
+            // forms identification must be on post, put and delete routes and needs session
             _segmenter.AddNode(
                 "formsId",
                 new[] { new List<string> { "session" } },
-                new[] { "post", "delete" });
+                new[] { "post", "put", "delete" });
 
-            // secret key identification must be on post and delete routes
+            // secret key identification must be on post, put and delete routes
             _segmenter.AddNode(
                 "secretKeyId",
                 null,
-                new[] { "post", "delete" });
+                new[] { "post", "put", "delete" });
 
             // authorization needs some form of identification
             _segmenter.AddNode(
@@ -250,14 +251,32 @@ namespace UnitTests
             var authorizationSegments = _segmenter.GetNodeSegments("authorization");
             var sessionSegments = _segmenter.GetNodeSegments("session");
 
-            Assert.IsNotNull(userSegments);
-            Assert.IsNotNull(groupSegments);
-            Assert.IsNotNull(permissionSegments);
-            Assert.IsNotNull(roleSegments);
-            Assert.IsNotNull(formsIdSegments);
-            Assert.IsNotNull(secretKeyIdSegments);
-            Assert.IsNotNull(authorizationSegments);
-            Assert.IsNotNull(sessionSegments);
+            Assert.IsNotNull(userSegments, "User segment assignments");
+            Assert.IsNotNull(groupSegments, "Group segment assignments");
+            Assert.IsNotNull(permissionSegments, "Permission segment assignments");
+            Assert.IsNotNull(roleSegments, "Role segment assignments");
+            Assert.IsNotNull(formsIdSegments, "Forms identification segment assignments");
+            Assert.IsNotNull(secretKeyIdSegments, "Secret key identification segment assignments");
+            Assert.IsNotNull(authorizationSegments, "Authorization segment assignments");
+            Assert.IsNotNull(sessionSegments, "Session segment assignments");
+
+            Assert.AreEqual(4, userSegments.Count, "Number of segments user is assigned to");
+            Assert.IsTrue(userSegments.Contains("getUser"), "User on the getUser segment");
+            Assert.IsTrue(userSegments.Contains("postUser"), "User on the postUser segment");
+            Assert.IsTrue(userSegments.Contains("putUser"), "User on the putUser segment");
+            Assert.IsTrue(userSegments.Contains("deleteUser"), "User on the deleteUser segment");
+
+            Assert.AreEqual(1, formsIdSegments.Count, "Number of segments forms identification is assigned to");
+            Assert.IsTrue(formsIdSegments.Contains("modify"));
+
+            Assert.AreEqual(1, secretKeyIdSegments.Count, "Number of segments secret key identification is assigned to");
+            Assert.IsTrue(secretKeyIdSegments.Contains("modify"));
+
+            Assert.AreEqual(1, authorizationSegments.Count, "Number of segments authorization is assigned to");
+            Assert.IsTrue(authorizationSegments.Contains("modify"));
+
+            Assert.AreEqual(1, sessionSegments.Count, "Number of segments session is assigned to");
+            Assert.IsTrue(sessionSegments.Contains("modify"));
         }
 
     }

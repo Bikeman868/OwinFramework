@@ -152,6 +152,8 @@ namespace OwinFramework.Utility
 
         private void ResolveMultiChoiceDependency(Node node, IList<Node> choices)
         {
+            // TODO: this doesn't work when the list of choices contains a 
+            // null indicating that choosing none is also OK
             var segments = _segments.Values
                 .Where(s => s.Nodes.Contains(node))
                 .Where(s => s.Nodes.Any(choices.Contains))
