@@ -64,6 +64,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="markdown\analysableTemplate.md" />
+    <EmbeddedResource Include="markdown\pageTemplate.md" />
+    <EmbeddedResource Include="markdown\statisticTemplate.md" />
     <None Include="packages.OwinFramework.AnalysisReporter.Net40.config" />
     <None Include="readme.md" />
   </ItemGroup>
@@ -78,6 +81,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="html\statisticTemplate.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="text\analysableTemplate.txt" />
+    <EmbeddedResource Include="text\pageTemplate.txt" />
+    <EmbeddedResource Include="text\statisticTemplate.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

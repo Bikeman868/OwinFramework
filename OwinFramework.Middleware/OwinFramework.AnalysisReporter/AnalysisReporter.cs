@@ -5,11 +5,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Middleware;
 using OwinFramework.Interfaces.Routing;
+using Newtonsoft.Json.Linq;
 
 namespace OwinFramework.AnalysisReporter
 {
@@ -45,7 +47,7 @@ namespace OwinFramework.AnalysisReporter
             throw new Exception("This request looked like it was for the analysis reporter middleware, but the middleware did not know how to handle it.");
         }
 
-        // Note that these two lists must be 1-1
+        // Note that these two lists must be 1-1 and in the same order
         private enum ReportFormat 
         { 
             Html = 0, 
@@ -65,14 +67,13 @@ namespace OwinFramework.AnalysisReporter
      
         private Task ReportAnalysis(IOwinContext context)
         {
-            string format = null;
+            string mimeType = null;
             if (string.IsNullOrEmpty(context.Request.Accept))
             {
-                format = _configuration.DefaultFormat;
+                mimeType = _configuration.DefaultFormat;
             }
             else
             {
-
                 var acceptFormats = context.Request.Accept
                     .Split(',')
                     .Select(s => s.Trim())
@@ -81,18 +82,18 @@ namespace OwinFramework.AnalysisReporter
                 {
                     if (acceptFormat == "*/*")
                     {
-                        format = _configuration.DefaultFormat;
+                        mimeType = _configuration.DefaultFormat;
                         break;
                     }
                     if (_supportedFormats.Contains(acceptFormat))
                     {
-                        format = acceptFormat;
+                        mimeType = acceptFormat;
                         break;
                     }
                 }
             }
 
-            if (format == null)
+            if (mimeType == null)
             {
                 context.Response.StatusCode = 406;
                 context.Response.ReasonPhrase = "Not Acceptable";
@@ -100,7 +101,8 @@ namespace OwinFramework.AnalysisReporter
                     "The analysis reporter supports the following MIME types: " + 
                     string.Join(",", _supportedFormats));
             }
-            var reportFormat = (ReportFormat)_supportedFormats.IndexOf(format);
+            context.Response.ContentType = mimeType;
+            var reportFormat = (ReportFormat)_supportedFormats.IndexOf(mimeType);
 
             var analysis = GetAnalysisData(context);
 
@@ -108,11 +110,37 @@ namespace OwinFramework.AnalysisReporter
             {
                 case ReportFormat.Html:
                     return RenderHtml(context, analysis);
+                case ReportFormat.Text:
+                    return RenderText(context, analysis);
+                case ReportFormat.Markdown:
+                    return RenderMarkdown(context, analysis);
+                case ReportFormat.Json:
+                    return RenderJson(context, analysis);
+                case ReportFormat.Xml:
+                    return RenderXml(context, analysis);
             }
 
             context.Response.StatusCode = 406;
             context.Response.ReasonPhrase = "Not Acceptable";
             return context.Response.WriteAsync("The " + reportFormat + " format is currently under development.");
+        }
+
+        private Task RenderText(IOwinContext context, IEnumerable<AnalysableInfo> analysisData)
+        {
+            var pageTemplate = GetScriptResource("pageTemplate.txt");
+            var analysableTemplate = GetScriptResource("analysableTemplate.txt");
+            var statisticTemplate = GetScriptResource("statisticTemplate.txt");
+
+            return RenderTemplates(context, analysisData, pageTemplate, analysableTemplate, statisticTemplate);
+        }
+
+        private Task RenderMarkdown(IOwinContext context, IEnumerable<AnalysableInfo> analysisData)
+        {
+            var pageTemplate = GetScriptResource("pageTemplate.md");
+            var analysableTemplate = GetScriptResource("analysableTemplate.md");
+            var statisticTemplate = GetScriptResource("statisticTemplate.md");
+
+            return RenderTemplates(context, analysisData, pageTemplate, analysableTemplate, statisticTemplate);
         }
 
         private Task RenderHtml(IOwinContext context, IEnumerable<AnalysableInfo> analysisData)
@@ -121,12 +149,22 @@ namespace OwinFramework.AnalysisReporter
             var analysableTemplate = GetScriptResource("analysableTemplate.html");
             var statisticTemplate = GetScriptResource("statisticTemplate.html");
 
-            var analysablesHtml = new StringBuilder();
-            var statisticsHtml = new StringBuilder();
+            return RenderTemplates(context, analysisData, pageTemplate, analysableTemplate, statisticTemplate);
+        }
+
+        private Task RenderTemplates(
+            IOwinContext context, 
+            IEnumerable<AnalysableInfo> analysisData,
+            string pageTemplate,
+            string analysableTemplate,
+            string statisticTemplate)
+        {
+            var analysablesContent = new StringBuilder();
+            var statisticsContent = new StringBuilder();
 
             foreach (var analysable in analysisData)
             {
-                statisticsHtml.Clear();
+                statisticsContent.Clear();
                 foreach (var statistic in analysable.Statistics)
                 {
                     statistic.Statistic.Refresh();
@@ -135,18 +173,90 @@ namespace OwinFramework.AnalysisReporter
                         .Replace("{units}", statistic.Units)
                         .Replace("{description}", statistic.Description)
                         .Replace("{value}", statistic.Statistic.Formatted);
-                    statisticsHtml.AppendLine(statisticHtml);
+                    statisticsContent.AppendLine(statisticHtml);
                 }
 
                 var analysableHtml = analysableTemplate
                     .Replace("{name}", analysable.Name)
                     .Replace("{type}", analysable.Type)
                     .Replace("{description}", analysable.Description)
-                    .Replace("{statistics}", statisticsHtml.ToString());
-                analysablesHtml.AppendLine(analysableHtml);
+                    .Replace("{statistics}", statisticsContent.ToString());
+                analysablesContent.AppendLine(analysableHtml);
             }
 
-            return context.Response.WriteAsync(pageTemplate.Replace("{analysables}", analysablesHtml.ToString()));
+            return context.Response.WriteAsync(pageTemplate.Replace("{analysables}", analysablesContent.ToString()));
+        }
+
+        private Task RenderJson(IOwinContext context, IEnumerable<AnalysableInfo> analysisData)
+        {
+            var json = new JObject();
+            var analysablesArray = new JArray();
+            json.Add("middleware", analysablesArray);
+
+            foreach (var analysable in analysisData)
+            {
+                var analysableJson = new JObject();
+                analysableJson.Add("name", analysable.Name);
+                analysableJson.Add("type", analysable.Type);
+                analysableJson.Add("description", analysable.Description);
+                analysablesArray.Add(analysableJson);
+
+                var statisticsArray = new JArray();
+                analysableJson.Add("statistics", statisticsArray);
+
+                foreach (var statistic in analysable.Statistics)
+                {
+                    statistic.Statistic.Refresh();
+                    var statisticJson = new JObject();
+                    statisticJson.Add("name", statistic.Name);
+                    statisticJson.Add("units", statistic.Units);
+                    statisticJson.Add("description", statistic.Description);
+                    statisticJson.Add("value", statistic.Statistic.Value);
+                    statisticJson.Add("denominator", statistic.Statistic.Denominator);
+                    statisticJson.Add("formatted", statistic.Statistic.Formatted);
+                    statisticsArray.Add(statisticJson);
+                }
+            }
+
+            return context.Response.WriteAsync(json.ToString(Newtonsoft.Json.Formatting.Indented));
+        }
+
+        private Task RenderXml(IOwinContext context, IEnumerable<AnalysableInfo> analysisData)
+        {
+            var document = new XDocument(new XDeclaration("1.0", "utf-8", "true"));
+            var rootElement = new XElement("Analytics");
+            document.Add(rootElement);
+
+            foreach (var analysable in analysisData)
+            {
+                var middlewareElement = new XElement(
+                    "Middleware",
+                    new XAttribute("name", analysable.Name),
+                    new XAttribute("type", analysable.Type),
+                    new XElement("Description", analysable.Description)
+                );
+                rootElement.Add(middlewareElement);
+
+                var statisticsElement = new XElement("Statistics");
+                middlewareElement.Add(statisticsElement);
+
+                foreach (var statistic in analysable.Statistics)
+                {
+                    statistic.Statistic.Refresh();
+
+                    statisticsElement.Add(
+                        new XElement(
+                            "Statistic",
+                            new XAttribute("name", statistic.Name),
+                            new XElement("units", statistic.Units ?? ""),
+                            new XElement("value", statistic.Statistic.Value),
+                            new XElement("denominator", statistic.Statistic.Denominator),
+                            new XElement("formatted", statistic.Statistic.Formatted),
+                            new XElement("description", statistic.Description)));
+                }
+            }
+
+            return context.Response.WriteAsync(document.ToString(SaveOptions.None));
         }
 
         #region Gathering analysis information
