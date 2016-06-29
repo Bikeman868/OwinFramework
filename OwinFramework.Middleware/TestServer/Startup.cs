@@ -3,6 +3,7 @@ using System.IO;
 using Ioc.Modules;
 using Ninject;
 using Owin;
+using OwinFramework.AnalysisReporter;
 using OwinFramework.Builder;
 using OwinFramework.Configuration.Urchin;
 using OwinFramework.Interfaces.Builder;
@@ -43,6 +44,11 @@ namespace TestServer
                 .As("RouteVisualizer")
                 .ConfigureWith(urchin, "/middleware/visualizer")
                 .RunFirst();
+
+            // The route visualizer middleware will produce an SVG showing the Owin pipeline configuration
+            builder.Register(ninject.Get<AnalysisReporter>())
+                .As("AnalysisReporter")
+                .ConfigureWith(urchin, "/middleware/analysis");
 
             // Tell Owin to add our Owin Framework middleware to the Owin pipeline
             app.UseBuilder(builder);

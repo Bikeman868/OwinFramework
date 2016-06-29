@@ -143,7 +143,7 @@ namespace OwinFramework.RouteVisualizer
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(scriptResourceName))
             {
                 if (stream == null)
-                    throw new Exception("Failed to find embedded resource " + filename);
+                    throw new Exception("Failed to open embedded resource " + scriptResourceName);
 
                 using (var reader = new StreamReader(stream, Encoding.UTF8))
                 {
