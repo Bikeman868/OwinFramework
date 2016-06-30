@@ -131,8 +131,9 @@ namespace OwinFramework.AnalysisReporter
             var pageTemplate = GetScriptResource("pageTemplate.txt");
             var analysableTemplate = GetScriptResource("analysableTemplate.txt");
             var statisticTemplate = GetScriptResource("statisticTemplate.txt");
+            var linkTemplate = "";
 
-            return RenderTemplates(context, analysisData, pageTemplate, analysableTemplate, statisticTemplate);
+            return RenderTemplates(context, analysisData, pageTemplate, analysableTemplate, statisticTemplate, linkTemplate);
         }
 
         private Task RenderMarkdown(IOwinContext context, IEnumerable<AnalysableInfo> analysisData)
@@ -140,8 +141,9 @@ namespace OwinFramework.AnalysisReporter
             var pageTemplate = GetScriptResource("pageTemplate.md");
             var analysableTemplate = GetScriptResource("analysableTemplate.md");
             var statisticTemplate = GetScriptResource("statisticTemplate.md");
+            var linkTemplate = "";
 
-            return RenderTemplates(context, analysisData, pageTemplate, analysableTemplate, statisticTemplate);
+            return RenderTemplates(context, analysisData, pageTemplate, analysableTemplate, statisticTemplate, linkTemplate);
         }
 
         private Task RenderHtml(IOwinContext context, IEnumerable<AnalysableInfo> analysisData)
@@ -149,8 +151,9 @@ namespace OwinFramework.AnalysisReporter
             var pageTemplate = GetScriptResource("pageTemplate.html");
             var analysableTemplate = GetScriptResource("analysableTemplate.html");
             var statisticTemplate = GetScriptResource("statisticTemplate.html");
+            var linkTemplate = GetScriptResource("linkTemplate.html");
 
-            return RenderTemplates(context, analysisData, pageTemplate, analysableTemplate, statisticTemplate);
+            return RenderTemplates(context, analysisData, pageTemplate, analysableTemplate, statisticTemplate, linkTemplate);
         }
 
         private Task RenderTemplates(
@@ -158,10 +161,12 @@ namespace OwinFramework.AnalysisReporter
             IEnumerable<AnalysableInfo> analysisData,
             string pageTemplate,
             string analysableTemplate,
-            string statisticTemplate)
+            string statisticTemplate,
+            string linkTemplate)
         {
             var analysablesContent = new StringBuilder();
             var statisticsContent = new StringBuilder();
+            var linksContent = new StringBuilder();
 
             foreach (var analysable in analysisData)
             {
@@ -177,11 +182,24 @@ namespace OwinFramework.AnalysisReporter
                     statisticsContent.AppendLine(statisticHtml);
                 }
 
+                linksContent.Clear();
+                if (analysable.Links != null && analysable.Links.Count > 0)
+                {
+                    foreach (var link in analysable.Links)
+                    {
+                        var linkHtml = linkTemplate
+                            .Replace("{name}", link.Name)
+                            .Replace("{url}", link.Url);
+                        linksContent.Append(linkHtml);
+                    }
+                }
+
                 var analysableHtml = analysableTemplate
                     .Replace("{name}", analysable.Name)
                     .Replace("{type}", analysable.Type)
                     .Replace("{description}", analysable.Description)
-                    .Replace("{statistics}", statisticsContent.ToString());
+                    .Replace("{statistics}", statisticsContent.ToString())
+                    .Replace("{links}", linksContent.ToString());
                 analysablesContent.AppendLine(analysableHtml);
             }
 
@@ -317,6 +335,20 @@ namespace OwinFramework.AnalysisReporter
                 if (selfDocumenting != null)
                 {
                     analysableInfo.Description = selfDocumenting.ShortDescription;
+                    analysableInfo.Links = new List<DocumentationLink>();
+                    foreach (var documentTypeValue in Enum.GetValues(typeof(DocumentationTypes)))
+                    {
+                        var documentType = (DocumentationTypes)documentTypeValue;
+                        var url = selfDocumenting.GetDocumentation(documentType);
+                        if (url != null)
+                        {
+                            analysableInfo.Links.Add(new DocumentationLink 
+                            { 
+                                Name = documentType.ToString(),
+                                Url = url.ToString()
+                            });
+                        }
+                    }
                 }
 
                 foreach (var availableStatistic in analysable.AvailableStatistics)
@@ -342,6 +374,7 @@ namespace OwinFramework.AnalysisReporter
             public string Description;
             public string Type;
             public List<StatisticInfo> Statistics;
+            public List<DocumentationLink> Links;
         }
 
         private class StatisticInfo
@@ -350,6 +383,12 @@ namespace OwinFramework.AnalysisReporter
             public string Units;
             public string Description;
             public IStatistic Statistic;
+        }
+
+        private class DocumentationLink
+        {
+            public string Name;
+            public string Url;
         }
 
         #endregion

@@ -507,7 +507,7 @@ namespace OwinFramework.RouteVisualizer
                 case DocumentationTypes.Configuration:
                     return new Uri(_configuration.Path + ConfigDocsPath, UriKind.Relative);
                 case DocumentationTypes.Overview:
-                    return new Uri(_configuration.Path + "https://github.com/Bikeman868/OwinFramework/tree/master/OwinFramework.Middleware", UriKind.Absolute);
+                    return new Uri("https://github.com/Bikeman868/OwinFramework/tree/master/OwinFramework.Middleware", UriKind.Absolute);
             }
             return null;
         }

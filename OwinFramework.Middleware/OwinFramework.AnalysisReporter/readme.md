@@ -36,5 +36,5 @@ of the same middleware in your pipeline with different configurations).
 For supported configuration options see the `Configuration.cs` file in this folder. This
 middleware is also self documenting, and can produce configuration documentation from within.
 
-The most important configuration value is the `path` which defaults to `/owin/analysis`. 
+The most important configuration value is the `path` which defaults to `/owin/analytics`. 
 This is the URL within your application where the analysis reporter will be available.

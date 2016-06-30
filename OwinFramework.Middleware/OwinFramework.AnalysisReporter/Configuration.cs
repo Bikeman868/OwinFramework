@@ -12,7 +12,7 @@ namespace OwinFramework.AnalysisReporter
 
         public Configuration()
         {
-            Path = "/owin/analysis";
+            Path = "/owin/analytics";
             Enabled = true;
             DefaultFormat = "application/json";
         }

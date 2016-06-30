@@ -21,6 +21,7 @@ namespace TestServer
                 {
                     Console.WriteLine("Test server listening on " + url);
                     Console.WriteLine("Pipeline vizualizer is at " + url + "/owin/pipeline");
+                    Console.WriteLine("Pipeline analytics is at " + url + "/owin/analytics");
                     Console.WriteLine("Press any key to stop");
                     Console.ReadLine();
                 }
