@@ -10,9 +10,10 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
-using OwinFramework.Interfaces.Middleware;
 using OwinFramework.Interfaces.Routing;
-using OwinFramework.Interfaces.Upstream;
+using OwinFramework.InterfacesV1.Capability;
+using OwinFramework.InterfacesV1.Middleware;
+using OwinFramework.InterfacesV1.Upstream;
 using Svg;
 using Svg.Transforms;
 
