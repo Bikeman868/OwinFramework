@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Owin.Framework.RouteVisualizer</id>
-    <version>1.0.3</version>
+    <version>2.0.0</version>
     <title>Owin.Framework.RouteVisualizer</title>
     <authors>Martin Halliday</authors>
     <owners>Martin Halliday</owners>
@@ -17,8 +17,8 @@
     <dependencies>
       <dependency id="Owin" version="1.0" />
       <dependency id="Microsoft.Owin" version="2.1.0" />
-      <dependency id="Ioc.Modules" version="1.0.9" />
-      <dependency id="Owin.Framework" version="1.0.0" />
+      <dependency id="Ioc.Modules" version="1.1.0" />
+      <dependency id="Owin.Framework" version="2.0.0" />
       <dependency id="Svg" version="2.2.1" />
     </dependencies>
     <references>
