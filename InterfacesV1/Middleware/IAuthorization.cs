@@ -1,4 +1,4 @@
-﻿namespace OwinFramework.Interfaces.Middleware
+﻿namespace OwinFramework.InterfacesV1.Middleware
 {
     /// <summary>
     /// Defines the functionallity exposed by the authorization feature that

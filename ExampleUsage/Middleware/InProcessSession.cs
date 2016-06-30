@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
-using OwinFramework.Interfaces.Middleware;
-using OwinFramework.Interfaces.Upstream;
+using OwinFramework.InterfacesV1.Middleware;
+using OwinFramework.InterfacesV1.Upstream;
 
 namespace ExampleUsage.Middleware
 {
@@ -61,7 +61,7 @@ namespace ExampleUsage.Middleware
         {
             Console.WriteLine("PROCESS: In process session");
 
-            var upstreamSession = context.GetFeature<IUpstreamSession>();
+            var upstreamSession = context.GetFeature<IUpstreamSession>() as UpstreamSession;
             var sessionRequired = upstreamSession != null && upstreamSession.SessionRequired;
 
             DownstreamSession session = null;
@@ -98,12 +98,12 @@ namespace ExampleUsage.Middleware
         /// </summary>
         private class UpstreamSession : IUpstreamSession
         {
-            private bool _sessionRequired;
+            public bool SessionRequired;
 
-            public bool SessionRequired
+            public bool EstablishSession()
             {
-                get { return _sessionRequired; }
-                set { if (value) _sessionRequired = true; }
+                SessionRequired = true;
+                return true;
             }
         }
 

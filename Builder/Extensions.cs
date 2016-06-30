@@ -4,6 +4,7 @@ using Microsoft.Owin;
 using Owin;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Routing;
+using OwinFramework.InterfacesV1.Capability;
 
 namespace OwinFramework.Builder
 {

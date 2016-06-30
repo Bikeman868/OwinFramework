@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OwinFramework.Interfaces.Facilities
+namespace OwinFramework.InterfacesV1.Facilities
 {
     public enum TokenStatus
     {

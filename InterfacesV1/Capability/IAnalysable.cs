@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OwinFramework.Interfaces.Builder
+namespace OwinFramework.InterfacesV1.Capability
 {
     /// <summary>
     /// Middleware that implements this interface gather statictics at

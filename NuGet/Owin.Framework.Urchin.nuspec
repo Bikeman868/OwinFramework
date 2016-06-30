@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Owin.Framework.Urchin</id>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <title>Owin.Framework.Urchin</title>
     <authors>Martin Halliday</authors>
     <owners>Martin Halliday</owners>
@@ -22,7 +22,7 @@
       <dependency id="Owin" version="1.0" />
       <dependency id="Microsoft.Owin" version="2.1.0" />
       <dependency id="Ioc.Modules" version="1.0.9" />
-      <dependency id="Owin.Framework" version="1.0.0" />
+      <dependency id="Owin.Framework" version="2.0.0" />
     </dependencies>
     <references>
     </references>

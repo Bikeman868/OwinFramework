@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OwinFramework.Interfaces.Builder
+namespace OwinFramework.InterfacesV1.Capability
 {
     /// <summary>
     /// Defaines the types of documentation that Owin middleware can provide

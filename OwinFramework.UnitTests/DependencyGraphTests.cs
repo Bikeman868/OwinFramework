@@ -160,7 +160,7 @@ namespace UnitTests
             Assert.IsTrue(buildOrder.Contains("6"), "build includes 6");
         }
 
-        [Test]
+        [Test, Ignore("Requirements changed, this should no longer error")]
         public void Missing_required_dependencies_should_error()
         {
             _dependencyGraph.Add("1", "One", new[] { new DependencyGraphEdge { Key = "2" } }, PipelinePosition.Middle);

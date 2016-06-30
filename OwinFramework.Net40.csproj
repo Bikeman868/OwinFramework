@@ -56,10 +56,21 @@
   <ItemGroup>
     <Compile Include="Builder\Builder.cs" />
     <Compile Include="Configuration\DefaultValueConfiguration.cs" />
-    <Compile Include="Interfaces\Builder\IAnalysable.cs" />
-    <Compile Include="Interfaces\Builder\ISelfDocumenting.cs" />
-    <Compile Include="Interfaces\Facilities\IIdentityStore.cs" />
-    <Compile Include="Interfaces\Facilities\ITokenStore.cs" />
+    <Compile Include="InterfacesV1\Capability\IAnalysable.cs" />
+    <Compile Include="InterfacesV1\Capability\IConfigurable.cs" />
+    <Compile Include="InterfacesV1\Capability\ISelfDocumenting.cs" />
+    <Compile Include="InterfacesV1\Facilities\IIdentityStore.cs" />
+    <Compile Include="InterfacesV1\Facilities\ITokenStore.cs" />
+    <Compile Include="InterfacesV1\Middleware\IAuthorization.cs" />
+    <Compile Include="InterfacesV1\Middleware\IIdentification.cs" />
+    <Compile Include="InterfacesV1\Middleware\IOutputCache.cs" />
+    <Compile Include="InterfacesV1\Middleware\IPresentation.cs" />
+    <Compile Include="InterfacesV1\Middleware\ISession.cs" />
+    <Compile Include="InterfacesV1\Upstream\IUpstreamAuthorization.cs" />
+    <Compile Include="InterfacesV1\Upstream\IUpstreamIdentification.cs" />
+    <Compile Include="InterfacesV1\Upstream\IUpstreamOutputCache.cs" />
+    <Compile Include="InterfacesV1\Upstream\IUpstreamSession.cs" />
+    <Compile Include="Interfaces\Builder\IUpstreamCommunicator.cs" />
     <Compile Include="Interfaces\Utility\IDependencyGraphEdge.cs" />
     <Compile Include="Interfaces\Utility\ISegmenter.cs" />
     <Compile Include="Interfaces\Utility\ISegmenterFactory.cs" />
@@ -73,22 +84,13 @@
     <Compile Include="Builder\Extensions.cs" />
     <Compile Include="Interfaces\Utility\IDependencyGraph.cs" />
     <Compile Include="Interfaces\Utility\IDependencyGraphFactory.cs" />
-    <Compile Include="Interfaces\Middleware\IIdentification.cs" />
     <Compile Include="Interfaces\Routing\IRoute.cs" />
-    <Compile Include="Interfaces\Middleware\IPresentation.cs" />
-    <Compile Include="Interfaces\Middleware\IAuthorization.cs" />
     <Compile Include="Interfaces\Builder\IBuilder.cs" />
-    <Compile Include="Interfaces\Builder\IConfigurable.cs" />
     <Compile Include="Interfaces\Builder\IConfiguration.cs" />
     <Compile Include="Interfaces\Builder\IDependency.cs" />
     <Compile Include="Interfaces\Builder\IMiddleware.cs" />
-    <Compile Include="Interfaces\Middleware\ISession.cs" />
     <Compile Include="Interfaces\Routing\IRoutingSegment.cs" />
-    <Compile Include="Interfaces\Upstream\IUpstreamCommunicator.cs" />
-    <Compile Include="Interfaces\Upstream\IUpstreamIdentification.cs" />
-    <Compile Include="Interfaces\Upstream\IUpstreamAuthorization.cs" />
     <Compile Include="Interfaces\Routing\IRoutingProcessor.cs" />
-    <Compile Include="Interfaces\Upstream\IUpstreamSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Interfaces\Routing\IRouter.cs" />
     <Compile Include="Routing\Exceptions.cs" />
@@ -98,6 +100,8 @@
     <Compile Include="Utility\SegmenterFactory.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="InterfacesV1\readme.md" />
+    <None Include="Interfaces\readme.md" />
     <None Include="packages.OwinFramework.Net40.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

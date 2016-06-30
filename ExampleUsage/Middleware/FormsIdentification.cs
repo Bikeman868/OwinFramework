@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
-using OwinFramework.Interfaces.Middleware;
 using OwinFramework.Interfaces.Routing;
-using OwinFramework.Interfaces.Upstream;
+using OwinFramework.InterfacesV1.Capability;
+using OwinFramework.InterfacesV1.Middleware;
+using OwinFramework.InterfacesV1.Upstream;
 
 namespace ExampleUsage.Middleware
 {
@@ -50,7 +51,7 @@ namespace ExampleUsage.Middleware
 
             // Tell the session middleware that a session must be established for this request
             // because forms identification can not work without it.
-            upstreamSession.SessionRequired = true;
+            upstreamSession.EstablishSession();
 
             // Execute the next step in routing the request
             next();
