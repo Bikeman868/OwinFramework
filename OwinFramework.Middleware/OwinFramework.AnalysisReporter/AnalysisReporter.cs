@@ -307,6 +307,10 @@ namespace OwinFramework.AnalysisReporter
                     Type = middleware.GetType().FullName,
                     Statistics = new List<StatisticInfo>()
                 };
+
+                if (string.IsNullOrEmpty(analysableInfo.Name))
+                    analysableInfo.Name = middleware.GetType().Name;
+
                 stats.Add(analysableInfo);
 
                 var selfDocumenting = middleware as ISelfDocumenting;
