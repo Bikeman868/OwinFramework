@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace OwinFramework.InterfacesV1.Capability
 {
@@ -12,7 +13,8 @@ namespace OwinFramework.InterfacesV1.Capability
         GettingStarted,
         SampleCode,
         Configuration,
-        TechnicalDetails
+        TechnicalDetails,
+        SourceCode
     }
  
     /// <summary>
@@ -51,5 +53,81 @@ namespace OwinFramework.InterfacesV1.Capability
         /// URL can be the absolute URL of an external web page.
         /// </summary>
         Uri GetDocumentation(DocumentationTypes documentationType);
+
+        /// <summary>
+        /// Optionally returns API documentation for application 
+        /// developers or null if no documentation is available.
+        /// </summary>
+        IList<IEndpointDocumentation> Endpoints { get; }
+    }
+
+    /// <summary>
+    /// Provides application developer with information about an
+    /// endpoint that is supported by your middleware. The longer
+    /// descriptive properties support simple HTML. You can use:
+    /// &lt;p&gt;&lt;/p&gt;
+    /// &lt;b&gt;&lt;/b&gt;
+    /// &lt;i&gt;&lt;/i&gt;
+    /// &lt;span style=""&gt;&lt;/span&gt;
+    /// &lt;div stype=""&gt;&lt;/div&gt;
+    /// &lt;ul&gt;&lt;li&gt;&lt;/li&gt;&lt;/ul&gt;
+    /// </summary>
+    public interface IEndpointDocumentation
+    {
+        /// <summary>
+        /// The path of this endpoint in the web site. If the path
+        /// contains variable data such as the ID or name of something
+        /// then put the name of this variable in {}, for example
+        ///   /customer/{customerId}/address/{index}
+        /// Document the variable elements in curly brackets in the
+        /// Attributes property.
+        /// </summary>
+        string RelativePath { get; }
+
+        /// <summary>
+        /// A description of what this endpoint does and how/when to 
+        /// use it. You can use simple HTML markup here
+        /// </summary>
+        string Description { get; }
+
+        /// <summary>
+        /// Some examples of paths with a description of how these
+        /// will be interpreted by the endpoint. You can use simple 
+        /// HTML markup here
+        /// </summary>
+        string Examples { get; }
+
+        /// <summary>
+        /// A list of the optional parts of the request including
+        /// supported methods, variable path elements, HTTP headers
+        /// etc.
+        /// </summary>
+        IList<IEndpointAttributeDocumentation> Attributes { get; }
+    }
+
+    /// <summary>
+    /// Describes an attribute of an endpoint, for example a
+    /// supported HTTP method, query string parameter or header
+    /// </summary>
+    public interface IEndpointAttributeDocumentation
+    {
+        /// <summary>
+        /// The type of attribute. Can be 'Query string', 'Header',
+        /// 'Method' or any other type appropriate to your endpoint
+        /// </summary>
+        string Type { get; }
+
+        /// <summary>
+        /// The name of the attribute. If Type is 'Method' for example
+        /// then this should be the name of the method, for example 'POST'.
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// An explanation of when this attribute applies, what effect 
+        /// it has on the response, the possible values etc. You can use
+        /// simple HTML markup here
+        /// </summary>
+        string Description { get; }
     }
 }
