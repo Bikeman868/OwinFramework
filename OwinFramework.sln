@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EA4B6627-C89F-4E59-94B8-A6993D8C5833}"
 	ProjectSection(SolutionItems) = preProject
@@ -11,9 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet\Owin.Framework.nuspec = NuGet\Owin.Framework.nuspec
 		NuGet\Owin.Framework.Urchin.nuspec = NuGet\Owin.Framework.Urchin.nuspec
 		readme.md = readme.md
+		SharedVersionInfo.cs = SharedVersionInfo.cs
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Net45", "OwinFramework.Net45.csproj", "{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleUsage", "ExampleUsage\ExampleUsage.csproj", "{867FAE76-83F6-463A-A9AE-5CD079BB7832}"
 EndProject
@@ -23,9 +22,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Configuration
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Configuration.Urchin.Net45", "OwinFramework.Configuration.Urchin\OwinFramework.Configuration.Urchin.Net45.csproj", "{271C0BF8-A359-43F6-8780-725D2E25A0A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Net40", "OwinFramework.Net40.csproj", "{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Configuration.Urchin.Net40", "OwinFramework.Configuration.Urchin\OwinFramework.Configuration.Urchin.Net40.csproj", "{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Net40", "OwinFramework\OwinFramework.Net40.csproj", "{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Net45", "OwinFramework\OwinFramework.Net45.csproj", "{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +34,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Release|Any CPU.Build.0 = Release|Any CPU
 		{867FAE76-83F6-463A-A9AE-5CD079BB7832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{867FAE76-83F6-463A-A9AE-5CD079BB7832}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{867FAE76-83F6-463A-A9AE-5CD079BB7832}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -53,14 +50,18 @@ Global
 		{271C0BF8-A359-43F6-8780-725D2E25A0A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{271C0BF8-A359-43F6-8780-725D2E25A0A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{271C0BF8-A359-43F6-8780-725D2E25A0A8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA5541E8-8762-4B7F-94FD-44E88C5FBF77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

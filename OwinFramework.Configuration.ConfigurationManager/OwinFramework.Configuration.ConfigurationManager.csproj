@@ -33,9 +33,8 @@
     <Reference Include="AutoMapper">
       <HintPath>..\packages\AutoMapper.4.2.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Ioc.Modules, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ioc.Modules.1.0.9\lib\net45\Ioc.Modules.dll</HintPath>
+    <Reference Include="Ioc.Modules">
+      <HintPath>..\packages\Ioc.Modules.1.1.0\lib\net45\Ioc.Modules.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -47,18 +46,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedVersionInfo.cs">
+      <Link>Properties\SharedVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="ConfigurationManagerConfiguration.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OwinFramework.Net45.csproj">
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OwinFramework\OwinFramework.Net45.csproj">
       <Project>{16eac894-ec45-4bc7-9ef9-d36e4c27ec44}</Project>
       <Name>OwinFramework.Net45</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,9 +1,0 @@
-﻿{
-    "middleware": {
-        "visualizer": {
-            "path": "/owin/pipeline",
-            "enabled": true,
-            "requiredPermission": "administrator"
-        }
-    }
-}

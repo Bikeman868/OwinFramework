@@ -31,9 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ioc.Modules, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ioc.Modules.1.0.9\lib\net40\Ioc.Modules.dll</HintPath>
+    <Reference Include="Ioc.Modules">
+      <HintPath>..\packages\Ioc.Modules.1.1.0\lib\net40\Ioc.Modules.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -52,6 +51,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedVersionInfo.cs">
+      <Link>Properties\SharedVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="Package.cs" />
     <Compile Include="UrchinConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -60,7 +62,7 @@
     <None Include="packages.OwinFramework.Configuration.Urchin.Net40.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OwinFramework.Net40.csproj">
+    <ProjectReference Include="..\OwinFramework\OwinFramework.Net40.csproj">
       <Project>{e51dc357-1b49-48e7-9fca-b3a4061d94cc}</Project>
       <Name>OwinFramework.Net40</Name>
     </ProjectReference>

@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Owin.Framework</id>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <title>Owin.Framework</title>
     <authors>Martin Halliday</authors>
     <owners>Martin Halliday</owners>
@@ -22,14 +22,14 @@
     <dependencies>
       <dependency id="Owin" version="1.0" />
       <dependency id="Microsoft.Owin" version="2.1.0" />
-      <dependency id="Ioc.Modules" version="1.0.9" />
+      <dependency id="Ioc.Modules" version="1.1.0" />
     </dependencies>
     <references>
     </references>
   </metadata>
   <files>
-    <file src="..\bin\Net40\Release\OwinFramework.dll" target="lib\net40"/>
-    <file src="..\bin\Net45\Release\OwinFramework.dll" target="lib\net45"/>
+    <file src="..\OwinFramework\bin\Net40\Release\OwinFramework.dll" target="lib\net40"/>
+    <file src="..\OwinFramework\bin\Net45\Release\OwinFramework.dll" target="lib\net45"/>
     <file src="..\*.md" target=""/>
   </files>
 </package>

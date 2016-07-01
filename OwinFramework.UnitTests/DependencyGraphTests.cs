@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using NUnit.Framework;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Utility;
 using OwinFramework.Utility;
+using NUnit.Framework;
 
 namespace UnitTests
 {

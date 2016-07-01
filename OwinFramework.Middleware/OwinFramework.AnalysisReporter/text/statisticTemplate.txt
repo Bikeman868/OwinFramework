@@ -1,4 +1,0 @@
-﻿Name: {name}
-Units: {units}
-Value: {value}
-Description: {description}
