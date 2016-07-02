@@ -36,7 +36,7 @@ namespace ExampleUsage.Middleware
         /// This is called during the routing phase, before the request processing starts
         /// and allows this middleware to alter the behavour of middleware further up the pipeline
         /// </summary>
-        public void RouteRequest(IOwinContext context, Action next)
+        public Task RouteRequest(IOwinContext context, Func<Task> next)
         {
             Console.WriteLine("ROUTE: Template page rendering");
 
@@ -65,7 +65,7 @@ namespace ExampleUsage.Middleware
             }
 
             // Invoke the next middleware in the chain
-            next();
+            return next.Invoke();
         }
 
         public Task Invoke(IOwinContext context, Func<Task> next)

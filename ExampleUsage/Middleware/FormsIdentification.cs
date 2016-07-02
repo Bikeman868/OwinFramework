@@ -42,7 +42,7 @@ namespace ExampleUsage.Middleware
             registration.Dispose();
         }
 
-        public void RouteRequest(IOwinContext context, Action next)
+        public Task RouteRequest(IOwinContext context, Func<Task> next)
         {
             // Get a reference to the session middleware
             var upstreamSession = context.GetFeature<IUpstreamSession>();
@@ -54,7 +54,7 @@ namespace ExampleUsage.Middleware
             upstreamSession.EstablishSession();
 
             // Execute the next step in routing the request
-            next();
+            return next.Invoke();
         }
 
         public Task Invoke(IOwinContext context, Func<Task> next)

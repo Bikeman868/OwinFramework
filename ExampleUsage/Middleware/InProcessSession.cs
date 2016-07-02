@@ -42,14 +42,14 @@ namespace ExampleUsage.Middleware
         /// an opportunity to inject something into the OWIN context that downstream middleware
         /// can use to configure it's behaviour for this request.
         /// </summary>
-        public void RouteRequest(IOwinContext context, Action next)
+        public Task RouteRequest(IOwinContext context, Func<Task> next)
         {
             Console.WriteLine("ROUTE: In process session");
 
             context.SetFeature<IUpstreamSession>(new UpstreamSession());
 
             // Invoke the next middleware in the chain
-            next();
+            return next.Invoke();
         }
 
         /// <summary>

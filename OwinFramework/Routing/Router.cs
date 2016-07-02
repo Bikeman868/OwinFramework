@@ -41,18 +41,17 @@ namespace OwinFramework.Routing
             return this;
         }
 
-        public void RouteRequest(IOwinContext context, Action next)
+        public Task RouteRequest(IOwinContext context, Func<Task> next)
         {
             foreach (var segment in Segments)
             {
                 if (segment.Filter(context))
                 {
                     context.Set(_owinContextKey, segment);
-                    segment.RouteRequest(context, next);
-                    return;
+                    return segment.RouteRequest(context, next);
                 }
             }
-            next();
+            return next();
         }
 
         public Task Invoke(IOwinContext context, Func<Task> next)
@@ -209,23 +208,22 @@ namespace OwinFramework.Routing
                     .ToList();
             }
 
-            public void RouteRequest(IOwinContext context, Action next)
+            public Task RouteRequest(IOwinContext context, Func<Task> next)
             {
                 if (_routingProcessors == null)
                     throw new RoutingException("Requests can not be routed until dependencies have been resolved");
 
                 var nextIndex = 0;
-                Action nextAction = null;
+                Func<Task> getNext = null;
 
-                nextAction = () =>
+                getNext = () =>
                 {
                     if (nextIndex < _routingProcessors.Count)
-                        _routingProcessors[nextIndex++].RouteRequest(context, nextAction);
-                    else
-                        next();
+                        return _routingProcessors[nextIndex++].RouteRequest(context, getNext);
+                    return next();
                 };
 
-                nextAction();
+                return getNext();
             }
 
             public Task Invoke(IOwinContext context, Func<Task> next)

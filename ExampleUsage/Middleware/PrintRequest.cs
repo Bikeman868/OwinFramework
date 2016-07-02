@@ -29,11 +29,11 @@ namespace ExampleUsage.Middleware
             return next.Invoke();
         }
 
-        public void RouteRequest(IOwinContext context, Action next)
+        public Task RouteRequest(IOwinContext context, Func<Task> next)
         {
             Console.WriteLine();
             Console.WriteLine("Routing " + context.Request.Uri);
-            next();
+            return next.Invoke();
         }
     }
 }
