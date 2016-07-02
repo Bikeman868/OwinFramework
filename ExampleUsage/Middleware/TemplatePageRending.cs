@@ -65,7 +65,7 @@ namespace ExampleUsage.Middleware
             }
 
             // Invoke the next middleware in the chain
-            return next.Invoke();
+            return next();
         }
 
         public Task Invoke(IOwinContext context, Func<Task> next)

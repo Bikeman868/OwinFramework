@@ -37,7 +37,7 @@ namespace ExampleUsage.Middleware
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
             // Invoke the next middleware in the OWIN pipeline
-            return next.Invoke();
+            return next();
         }
     }
 }

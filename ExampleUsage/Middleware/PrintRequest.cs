@@ -26,14 +26,14 @@ namespace ExampleUsage.Middleware
         {
             Console.WriteLine();
             Console.WriteLine("Processing " + context.Request.Uri);
-            return next.Invoke();
+            return next();
         }
 
         public Task RouteRequest(IOwinContext context, Func<Task> next)
         {
             Console.WriteLine();
             Console.WriteLine("Routing " + context.Request.Uri);
-            return next.Invoke();
+            return next();
         }
     }
 }

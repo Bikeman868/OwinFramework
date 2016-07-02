@@ -49,7 +49,7 @@ namespace ExampleUsage.Middleware
             context.SetFeature<IUpstreamSession>(new UpstreamSession());
 
             // Invoke the next middleware in the chain
-            return next.Invoke();
+            return next();
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace ExampleUsage.Middleware
             context.SetFeature<ISession>(session);
 
             // Invoke the next middleware in the chain
-            return next.Invoke();
+            return next();
         }
 
         /// <summary>

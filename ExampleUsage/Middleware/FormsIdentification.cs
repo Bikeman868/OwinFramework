@@ -54,7 +54,7 @@ namespace ExampleUsage.Middleware
             upstreamSession.EstablishSession();
 
             // Execute the next step in routing the request
-            return next.Invoke();
+            return next();
         }
 
         public Task Invoke(IOwinContext context, Func<Task> next)
@@ -63,7 +63,7 @@ namespace ExampleUsage.Middleware
 
             context.SetFeature<IIdentification>(new Identification());
 
-            return next.Invoke();
+            return next();
         }
 
         /// <summary>

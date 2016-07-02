@@ -28,7 +28,7 @@ namespace ExampleUsage.Middleware
 
             context.SetFeature<IAuthorization>(this);
 
-            return next.Invoke();
+            return next();
         }
 
         public bool IsInRole(string roleName)

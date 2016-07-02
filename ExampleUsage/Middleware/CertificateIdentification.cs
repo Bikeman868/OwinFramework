@@ -44,7 +44,7 @@ namespace ExampleUsage.Middleware
             // the request at this point to establish user identification
             context.SetFeature<IIdentification>(new Identification());
 
-            return next.Invoke();
+            return next();
         }
 
         /// <summary>
