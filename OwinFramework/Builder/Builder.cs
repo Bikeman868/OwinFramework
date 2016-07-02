@@ -276,8 +276,9 @@ namespace OwinFramework.Builder
         private Task Invoke(IOwinContext context, Func<Task> next)
         {
             context.Set<IRouter>("OwinFramework.Router", _router);
-            _router.RouteRequest(context, () => { });
-            return _router.Invoke(context, next);
+            var result = new Task(() => { });
+            _router.RouteRequest(context, () => result = _router.Invoke(context, next));
+            return result;
         }
 
 #region Diagnostic dump

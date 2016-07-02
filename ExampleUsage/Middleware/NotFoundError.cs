@@ -26,6 +26,10 @@ namespace ExampleUsage.Middleware
         {
             // Tell the builder that this should be the last middleware to run
             this.RunLast();
+
+            // Establish default configuration for the case where the application
+            // does not provide a configuration mechanism
+            _configuration = new Configuration();
         }
 
         /// <summary>
