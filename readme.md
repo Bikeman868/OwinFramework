@@ -30,13 +30,12 @@ what my options are.
 Consider the following scenario: I have a UI and API way of accessing the
 functionallity of my web site. The UI and the API share functionallity at the
 model and business logic level and need shared caching, but they use different 
-rendering frameworks. We want to build this with OWIN because OWIN is great! The
-problem is that I want forms authentication for the UI and that depends on 
-session, but I want certificate based authentication for the API and that does 
-not require session. I want the UI and the API share the same session mechanism. 
-Each UI component and each API endpoint specifies whether it needs session or not, 
-it also specifies the user permissions required to access the functionallity 
-it provides. My UI is a composition built from multiple UI components.
+rendering frameworks. I want to build this with OWIN because OWIN is great! The
+problem is that I want forms authentication for the UI, and I want certificate 
+based authentication for the API. I want the UI and the API share the same session 
+mechanism. Each UI component and each API endpoint specifies whether it needs 
+session or not, it also specifies the user permissions required to access the 
+functionallity it provides. My UI is a composition built from multiple UI components.
 
 Katana can do this I hear you say! But for me Katana missed the whole point 
 of the open architecture that OWIN promised. Katana is an evolution of ASP.Net
@@ -44,12 +43,12 @@ and as such is a huge suite of middleware components that work together but do
 not work with anything else. Sure Microsoft provided specific points of
 extensibility like creating your own view engine, but these things are
 extremely complex and it takes many hours to understand enough about the
-Katana ecosystem to extend it in any meaningful way. I don't think Katans
+Katana ecosystem to extend it in any meaningful way. I don't think Katana
 is a good platform for everyone to use as a model for writing interoperable
 middleware components becuase it is full of details specific to the Microsoft
 implementation. In short I don't think Microsoft designed Katana to be
 the foundation of an open architecture for building middleware components, and
-I see that as a missed oportunity.
+I see that as a missed opportunity.
 
 This project set out to define an open architecture for building middleware
 components that work together, and in the spirit of the original OWIN
@@ -94,18 +93,19 @@ framework, the more useful it will be to everyone so please join in.
 with this framework. It is by no means trying to be an exhastive list
 of what can be done, but just a few variations to give a flavour.
 
-`OwinFramework.csproj` compiles to the DLL that gets installed from NuGet.
+`OwinFramework.Net40.csproj` compiles to the DLL that gets installed from NuGet.
 This is the core framework itself and consists mainly of interfaces but
 also has an OWIN pipeline builder that resolves dependencies and provides
-routing.
+routing. There is also a Net45 version of this project.
 
 `OwinFramework.Configuration.ConfigurationManager.csproj` is distributed as an
 optional extra NuGet package that provides middleware configuration
-via the web.config file using the `ConfigurationManager` class.
+via the web.config file using the `ConfigurationManager` class. I only built
+the .Net45 version so far.
 
-`OwinFramework.Configuration.Urchin.csproj` is distributed as an
+`OwinFramework.Configuration.Urchin.Net40.csproj` is distributed as an
 optional extra NuGet package that provides middleware configuration via
 the [Urchin](https://github.com/Bikeman868/urchin) rules based configuration 
-management system.
+management system. There is also a Net45 version of this project.
 
 `UnitTests.csproj` contains what you would expect!
