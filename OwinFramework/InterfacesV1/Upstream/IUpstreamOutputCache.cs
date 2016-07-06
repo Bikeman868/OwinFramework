@@ -1,4 +1,6 @@
-﻿namespace OwinFramework.InterfacesV1.Upstream
+﻿using System;
+
+namespace OwinFramework.InterfacesV1.Upstream
 {
     /// <summary>
     /// This interface is injected into the OWIN context by the output cache
@@ -18,10 +20,20 @@
         /// <summary>
         /// The output cache sets this to true if it has a cached version
         /// of the content available and false otherwise. Downstream
-        /// middleware should check this and perform no further processing
-        /// if it is False.
+        /// middleware should check this and perform no further checking
+        /// of cachability if it is false.
         /// </summary>
         bool CachedContentIsAvailable { get; }
+
+        /// <summary>
+        /// The output cache sets this to the amount of time that elapsed
+        /// since this content was added to the cache. Typically middleware
+        /// will be configured to cache different types of content for different
+        /// amounts of time. This type of middleware will look at the request
+        /// and the time it has been cacehd for, then set the UseCachedContent
+        /// property appropriately.
+        /// </summary>
+        TimeSpan? TimeInCache { get; }
 
         /// <summary>
         /// Middleware downstream of the output cache can set this to false
