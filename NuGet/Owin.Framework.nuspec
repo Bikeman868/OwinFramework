@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Owin.Framework</id>
-    <version>2.1.2</version>
+    <version>2.1.3</version>
     <title>Owin.Framework</title>
     <authors>Martin Halliday</authors>
     <owners>Martin Halliday</owners>
@@ -16,7 +16,7 @@
       the freedom to integrate any third-party middleware into their solution and
       have all the different pieces work together.
     </summary>
-    <projectUrl>https://github.com/Bikeman868/OwinFramework</projectUrl>
+    <projectUrl>https://github.com/Bikeman868/OwinFramework/wiki</projectUrl>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
     <tags>OWIN framework standards open architecture</tags>
     <dependencies>
@@ -29,7 +29,9 @@
   </metadata>
   <files>
     <file src="..\OwinFramework\bin\Net40\Release\OwinFramework.dll" target="lib\net40"/>
+    <file src="..\OwinFramework\bin\Net40\Release\OwinFramework.xml" target="lib\net40"/>
     <file src="..\OwinFramework\bin\Net45\Release\OwinFramework.dll" target="lib\net45"/>
+    <file src="..\OwinFramework\bin\Net45\Release\OwinFramework.xml" target="lib\net45"/>
     <file src="..\*.md" target=""/>
   </files>
 </package>

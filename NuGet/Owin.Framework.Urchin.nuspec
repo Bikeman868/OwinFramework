@@ -15,7 +15,7 @@
       that will use the Urchin rules-based configuration management system to 
       configure Owin middleware.
     </summary>
-    <projectUrl>https://github.com/Bikeman868/OwinFramework</projectUrl>
+    <projectUrl>https://github.com/Bikeman868/OwinFramework/wiki</projectUrl>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
     <tags>OWIN framework urchin</tags>
     <dependencies>
