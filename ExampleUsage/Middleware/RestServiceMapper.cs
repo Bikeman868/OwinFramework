@@ -18,12 +18,9 @@ namespace ExampleUsage.Middleware
     public class RestServiceMapper : IMiddleware<IPresentation>
     {
         public string Name { get; set; }
-        public IList<IDependency> Dependencies { get; private set; }
 
-        public RestServiceMapper()
-        {
-            Dependencies = new List<IDependency>();
-        }
+        private readonly IList<IDependency> _dependencies = new List<IDependency>();
+        public IList<IDependency> Dependencies { get { return _dependencies; } }
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {

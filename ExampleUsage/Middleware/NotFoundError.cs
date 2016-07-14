@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
+using OwinFramework.Interfaces.Routing;
 using OwinFramework.InterfacesV1.Capability;
 
 namespace ExampleUsage.Middleware
@@ -13,7 +14,7 @@ namespace ExampleUsage.Middleware
     /// pipeline after all other middleware has run. It will always return a 404 
     /// response
     /// </summary>
-    public class NotFoundError : IMiddleware<object>, IConfigurable
+    public class NotFoundError : IMiddleware<object>, IConfigurable, IRoutingProcessor
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get { return _dependencies; } }
@@ -47,6 +48,12 @@ namespace ExampleUsage.Middleware
                 new Configuration());
         }
 
+        public Task RouteRequest(IOwinContext context, Func<Task> next)
+        {
+            Console.WriteLine("ROUTE: Not found error");
+            return null;
+        }
+
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
             Console.WriteLine("PROCESS: Not found error " + Name);
@@ -67,5 +74,6 @@ namespace ExampleUsage.Middleware
                 Body = "The page was not found";
             }
         }
+
     }
 }

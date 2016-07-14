@@ -62,6 +62,9 @@ namespace ExampleUsage.Middleware
                 // Tell the identification middleware that a anonymous users are ok for this request
                 if (upstreamIdentification != null)
                     upstreamIdentification.AllowAnonymous = true;
+
+                // No more routing needed, this middleware will process the request
+                return null;
             }
 
             // Invoke the next middleware in the chain

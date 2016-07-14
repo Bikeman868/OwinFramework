@@ -48,7 +48,7 @@ namespace OwinFramework.Routing
                 if (segment.Filter(context))
                 {
                     context.Set(_owinContextKey, segment);
-                    return segment.RouteRequest(context, next);
+                    return segment.RouteRequest(context, next) ?? next();
                 }
             }
             return next();
@@ -219,7 +219,7 @@ namespace OwinFramework.Routing
                 getNext = () =>
                 {
                     if (nextIndex < _routingProcessors.Count)
-                        return _routingProcessors[nextIndex++].RouteRequest(context, getNext);
+                        return _routingProcessors[nextIndex++].RouteRequest(context, getNext) ?? next();
                     return next();
                 };
 
