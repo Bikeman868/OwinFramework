@@ -6,7 +6,7 @@ using OwinFramework.Interfaces.Utility;
 
 namespace OwinFramework.Utility
 {
-    public class Segmenter: ISegmenter
+    internal class Segmenter: ISegmenter
     {
         private readonly IDependencyGraphFactory _dependencyGraphFactory;
 

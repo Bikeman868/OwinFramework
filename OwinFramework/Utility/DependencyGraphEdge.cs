@@ -3,7 +3,7 @@ using OwinFramework.Interfaces.Utility;
 
 namespace OwinFramework.Utility
 {
-    public class DependencyGraphEdge: IDependencyGraphEdge
+    internal class DependencyGraphEdge: IDependencyGraphEdge
     {
         public string Key { get; set; }
         public bool Required { get; set; }

@@ -7,15 +7,23 @@ using OwinFramework.Utility;
 
 namespace OwinFramework
 {
+    /// <summary>
+    /// Configures IoC modules with IoC container needs
+    /// </summary>
     [Package]
     public class Package : IPackage
     {
-        public string Name { get { return "Owin framework"; } }
-        public IList<IocRegistration> IocRegistrations { get; private set; }
+        string IPackage.Name { get { return "Owin framework"; } }
+        IList<IocRegistration> IPackage.IocRegistrations { get { return _iocRegistrations; } }
 
+        private readonly IList<IocRegistration> _iocRegistrations;
+
+        /// <summary>
+        /// Consutucts this IoC.Modules package definition
+        /// </summary>
         public Package()
         {
-            IocRegistrations = new List<IocRegistration>
+            _iocRegistrations = new List<IocRegistration>
             {
                 new IocRegistration().Init<IDependencyGraphFactory, DependencyGraphFactory>(),
                 new IocRegistration().Init<ISegmenterFactory, SegmenterFactory>(),

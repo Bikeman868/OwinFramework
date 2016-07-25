@@ -19,31 +19,37 @@ namespace OwinFramework.Routing
     /// </summary>
     public class Router : IRouter
     {
-        public string Name { get; set; }
-        public IList<IDependency> Dependencies { get; private set; }
-        public IList<IRoutingSegment> Segments { get; private set; }
+        string IMiddleware.Name { get; set; }
+        IList<IDependency> IMiddleware.Dependencies { get { return _dependencies; } }
+        IList<IRoutingSegment> IRouter.Segments { get { return _segments; } }
 
+        private readonly IList<IDependency> _dependencies;
+        private readonly IList<IRoutingSegment> _segments;
         private readonly string _owinContextKey;
         private readonly IDependencyGraphFactory _dependencyGraphFactory;
 
+        /// <summary>
+        /// Constructs a new router
+        /// </summary>
+        /// <param name="dependencyGraphFactory"></param>
         public Router(IDependencyGraphFactory dependencyGraphFactory)
         {
             _dependencyGraphFactory = dependencyGraphFactory;
 
             _owinContextKey = "R:" + Guid.NewGuid().ToShortString(false);
-            Dependencies = new List<IDependency>();
-            Segments = new List<IRoutingSegment>();
+            _dependencies = new List<IDependency>();
+            _segments = new List<IRoutingSegment>();
         }
 
-        public IRouter Add(string routeName, Func<IOwinContext, bool> filterExpression)
+        IRouter IRouter.Add(string routeName, Func<IOwinContext, bool> filterExpression)
         {
-            Segments.Add(new RoutingSegment(_dependencyGraphFactory).Initialize(routeName, filterExpression));
+            _segments.Add(new RoutingSegment(_dependencyGraphFactory).Initialize(routeName, filterExpression));
             return this;
         }
 
-        public Task RouteRequest(IOwinContext context, Func<Task> next)
+        Task IRoutingProcessor.RouteRequest(IOwinContext context, Func<Task> next)
         {
-            foreach (var segment in Segments)
+            foreach (var segment in _segments)
             {
                 if (segment.Filter(context))
                 {
@@ -54,7 +60,7 @@ namespace OwinFramework.Routing
             return next();
         }
 
-        public Task Invoke(IOwinContext context, Func<Task> next)
+        Task IMiddleware.Invoke(IOwinContext context, Func<Task> next)
         {
             var segment = context.Get<IRoutingSegment>(_owinContextKey);
 

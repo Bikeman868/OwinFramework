@@ -8,8 +8,12 @@ namespace OwinFramework.InterfacesV1.Capability
     /// </summary>
     public interface IConfigurable
     {
-        // The pipeline builder will call this method of the middleware once at startup to give it
-        // a chance grab configuration data.
+        /// <summary>
+        /// The pipeline builder will call this method of the middleware once at startup to give it
+        /// a chance grab configuration data.
+        /// </summary>
+        /// <param name="configuration">The configuration mechanism used by the application</param>
+        /// <param name="path">The path to this middleware's configuration in the configuration file</param>
         void Configure(IConfiguration configuration, string path);
     }
 }

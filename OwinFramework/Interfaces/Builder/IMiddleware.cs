@@ -12,9 +12,23 @@ namespace OwinFramework.Interfaces.Builder
     /// </summary>
     public interface IMiddleware
     {
+        /// <summary>
+        /// A unique name for this middleware instance
+        /// </summary>
         string Name { get; set; }
+
+        /// <summary>
+        /// A list of the other middleware that this one directly depends on
+        /// </summary>
         IList<IDependency> Dependencies { get; }
 
+        /// <summary>
+        /// Standard OWIN function for invoking middleware
+        /// </summary>
+        /// <param name="context">The context of this request</param>
+        /// <param name="next">A function pointer that will execute the next
+        /// middleware in the OWIN pipeline</param>
+        /// <returns></returns>
         Task Invoke(IOwinContext context, Func<Task> next);
     }
 

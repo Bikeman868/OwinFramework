@@ -2,10 +2,35 @@
 
 namespace OwinFramework.Interfaces.Builder
 {
-    // Note that the order of this enumeration is important because
-    // middleware components are sorted by position and added to the
-    // pipeline in that order.
-    public enum PipelinePosition { Front, Middle, Back }
+    /// <summary>
+    /// Note that the order of this enumeration is important because
+    /// middleware components are sorted by position and added to the
+    /// pipeline in that order.
+    /// </summary>
+    public enum PipelinePosition 
+    { 
+        /// <summary>
+        /// Specifies that the middleware should handle requests before
+        /// any routing takes place, in other words all requests will come
+        /// through this middleware regardless of how they are routed
+        /// afterwards.
+        /// </summary>
+        Front, 
+
+        /// <summary>
+        /// Specifies that the middleware should run in the middle of
+        /// the OWIN pipeline. This is the appropriate value for most
+        /// middleware.
+        /// </summary>
+        Middle, 
+
+        /// <summary>
+        /// Specifies that the middleware should run after all other
+        /// middleware. In this case the middleware will only see
+        /// requests that all other middleware chose not to handle.
+        /// </summary>
+        Back 
+    }
 
 
     /// <summary>

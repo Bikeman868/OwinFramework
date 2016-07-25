@@ -14,14 +14,21 @@ using OwinFramework.Utility;
 
 namespace OwinFramework.Builder
 {
+    /// <summary>
+    /// This is the class that builds an OWIN pipeline with routing and
+    /// dependencies between middleware
+    /// </summary>
     public class Builder: IBuilder
     {
         private readonly IList<Component> _components;
         private readonly IDependencyGraphFactory _dependencyGraphFactory;
         private readonly ISegmenterFactory _segmenterFactory;
 
-        private Router _router;
+        private IRouter _router;
 
+        /// <summary>
+        /// Constructs a new OWIN pipeline builder
+        /// </summary>
         public Builder(
             IDependencyGraphFactory dependencyGraphFactory,
             ISegmenterFactory segmenterFactory)
@@ -31,7 +38,7 @@ namespace OwinFramework.Builder
             _components = new List<Component>();
         }
 
-        public IMiddleware<T> Register<T>(IMiddleware<T> middleware)
+        IMiddleware<T> IBuilder.Register<T>(IMiddleware<T> middleware)
         {
             var component = typeof(T) == typeof(IRoute) 
                 ? (Component)(new RouterComponent())
@@ -44,7 +51,7 @@ namespace OwinFramework.Builder
             return middleware;
         }
 
-        public void Build(IAppBuilder app)
+        void IBuilder.Build(IAppBuilder app)
         {
             // Ensure components have unique names
             var componentNames = new SortedList(new CaseInsensitiveComparer());
@@ -377,11 +384,11 @@ namespace OwinFramework.Builder
                 _dependencyGraphFactory = dependencyGraphFactory;
             }
 
-            public Router BuildRoutes(IList<RouterComponent> routerComponents)
+            public IRouter BuildRoutes(IList<RouterComponent> routerComponents)
             {
                 // Create a root level router as a container for everythinng that's not on a route. 
                 // When the application does not use routing everything ends up in here
-                var rootRouter = new Router(_dependencyGraphFactory);
+                IRouter rootRouter = new Router(_dependencyGraphFactory);
 
                 // Add a root segment called with a pass everything filter
                 rootRouter.Add("root", owinContext => true);

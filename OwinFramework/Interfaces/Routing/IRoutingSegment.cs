@@ -6,10 +6,26 @@ using OwinFramework.Interfaces.Builder;
 
 namespace OwinFramework.Interfaces.Routing
 {
+    /// <summary>
+    /// Represents a list of middleware that all execute or none execute
+    /// for a given route.
+    /// </summary>
     public interface IRoutingSegment : IRoutingProcessor, IRoute
     {
+        /// <summary>
+        /// Returns the name of this segment of the routing graph
+        /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// Returns the filter expression that determines is this segment should be
+        /// executed for a request.
+        /// </summary>
         Func<IOwinContext, bool> Filter { get; }
+
+        /// <summary>
+        /// A list of the middleware to execute if the filter matches the request
+        /// </summary>
         IList<IMiddleware> Middleware { get; }
 
         /// <summary>

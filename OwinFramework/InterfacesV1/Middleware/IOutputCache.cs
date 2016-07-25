@@ -56,6 +56,10 @@ namespace OwinFramework.InterfacesV1.Middleware
         void Clear(string urlRegex);
     }
 
+    /// <summary>
+    /// Defines possible values for specifying cache priority to the output 
+    /// caching middleware
+    /// </summary>
     public enum CachePriority
     {
         /// <summary>

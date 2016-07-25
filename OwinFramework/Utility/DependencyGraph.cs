@@ -5,7 +5,7 @@ using OwinFramework.Interfaces.Utility;
 
 namespace OwinFramework.Utility
 {
-    public class DependencyGraph<T> : IDependencyGraph<T> 
+    internal class DependencyGraph<T> : IDependencyGraph<T> 
     {
         private readonly IDictionary<string, GraphNode> _nodeIndex;
         private bool _graphBuilt;
@@ -84,9 +84,9 @@ namespace OwinFramework.Utility
 
         /// <summary>
         /// Implements depth first topological sort. There is a small variation in this
-        /// version because nodes can be defined as being fin first or last
+        /// version because nodes can be defined as being fin first or last.
+        /// See https://en.wikipedia.org/wiki/Topological_sorting
         /// </summary>
-        /// <see cref="https://en.wikipedia.org/wiki/Topological_sorting"/>
         private IList<GraphNode> GetSortedList()
         {
             var nodes = _nodeIndex.Values.OrderBy(n => n.Position).ToList();

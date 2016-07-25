@@ -25,6 +25,9 @@ namespace OwinFramework.InterfacesV1.Capability
         IStatistic GetStatistic(string id);
     }
 
+    /// <summary>
+    /// Static information about a statistic that does not change as the application rune
+    /// </summary>
     public interface IStatisticInformation
     {
         /// <summary>
@@ -36,9 +39,9 @@ namespace OwinFramework.InterfacesV1.Capability
 
         /// <summary>
         /// A short lingle line name of this statistic. This is used in drop-down lists
-        /// when the user is asked to choose a statistic
+        /// when the user is asked to choose a statistic.
+        /// See https://www.vicimediainc.com/google-analytics-cheat-sheet-2/
         /// </summary>
-        /// <see cref="https://www.vicimediainc.com/google-analytics-cheat-sheet-2/"/>
         string Name { get; }
 
         /// <summary>
@@ -58,6 +61,9 @@ namespace OwinFramework.InterfacesV1.Capability
         string Explanation { get; }
     }
 
+    /// <summary>
+    /// Dynamic information about a statistic that changes as the application runs.
+    /// </summary>
     public interface IStatistic
     {
         /// <summary>

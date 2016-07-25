@@ -29,6 +29,9 @@ namespace OwinFramework.InterfacesV1.Facilities
         Unsupported
     }
 
+    /// <summary>
+    /// The result of an authentication attempt
+    /// </summary>
     public interface IAuthenticationResult
     {
         /// <summary>
@@ -57,6 +60,11 @@ namespace OwinFramework.InterfacesV1.Facilities
         IList<string> Purposes { get; }
     }
 
+    /// <summary>
+    /// When users create shared secrets that provide access to their account, they
+    /// need to be able to go back later and delete or deactivate these secrets, hence
+    /// these have to be given names.
+    /// </summary>
     public interface ISharedSecret
     {
         /// <summary>
@@ -216,7 +224,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         string AddSharedSecret(string identity, string name, IList<string> purposes);
 
         /// <summary>
-        /// Removes a social login account from an identity preventing login with this social account
+        /// Removes a shared secret from an identity preventing login with this shared secret in future
         /// </summary>
         bool DeleteSharedSecret(string sharedSecret);
 

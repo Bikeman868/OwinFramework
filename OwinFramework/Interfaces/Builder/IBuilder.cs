@@ -9,7 +9,19 @@ namespace OwinFramework.Interfaces.Builder
     /// </summary>
     public interface IBuilder
     {
+        /// <summary>
+        /// Adds a middleware component to the list of middleware to build into
+        /// the OWIN ippeline
+        /// </summary>
+        /// <typeparam name="T">The type of middleware or 'object' if this is generic middleware</typeparam>
+        /// <param name="middleware">The middleware instance to include in the OWIN pipeline</param>
+        /// <returns>The middleware for fluid syntax</returns>
         IMiddleware<T> Register<T>(IMiddleware<T> middleware);
+
+        /// <summary>
+        /// Figures out middleware dependencies and route assigmnents and builds
+        /// an OWIN pipeline
+        /// </summary>
         void Build(IAppBuilder app);
     }
 }

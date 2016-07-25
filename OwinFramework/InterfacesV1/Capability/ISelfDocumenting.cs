@@ -9,11 +9,40 @@ namespace OwinFramework.InterfacesV1.Capability
     /// </summary>
     public enum DocumentationTypes
     {
+        /// <summary>
+        /// A high level description of why this middleware exists, the 
+        /// circumstances where it is useful and what it depends on.
+        /// </summary>
         Overview,
+
+        /// <summary>
+        /// Step by step instructions for downloading, installing and 
+        /// configuring this middleware for a simple 'hello world' type
+        /// application.
+        /// </summary>
         GettingStarted,
+
+        /// <summary>
+        /// Source code recipies for some typical situations.
+        /// </summary>
         SampleCode,
+
+        /// <summary>
+        /// Reference information for all configuration options provided
+        /// by this middleware
+        /// </summary>
         Configuration,
+
+        /// <summary>
+        /// Descriptions and diagrams explaining how this middleware works
+        /// and exactly what it does.
+        /// </summary>
         TechnicalDetails,
+
+        /// <summary>
+        /// If this middleware is open source then this should point
+        /// to the web site where the source code can be obtained
+        /// </summary>
         SourceCode
     }
  

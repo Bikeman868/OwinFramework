@@ -2,6 +2,8 @@
 using Owin;
 using OwinFramework.Builder;
 using OwinFramework.Configuration;
+using OwinFramework.Interfaces.Builder;
+using OwinFramework.Interfaces.Utility;
 using OwinFramework.Routing;
 using OwinFramework.Utility;
 
@@ -32,10 +34,10 @@ namespace ExampleUsage
         {
             // This demonstrates how you would configure the builder without using IoC
             // There are other startup examples in this project that demonstrate the IoC version
-            var dependencyGraphFactory = new DependencyGraphFactory();
-            var segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
-            var builder = new Builder(dependencyGraphFactory, segmenterFactory);
-            var configuration = new DefaultValueConfiguration();
+            IDependencyGraphFactory dependencyGraphFactory = new DependencyGraphFactory();
+            ISegmenterFactory segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
+            IBuilder builder = new Builder(dependencyGraphFactory, segmenterFactory);
+            IConfiguration configuration = new DefaultValueConfiguration();
 
             // Note that the middleware components below can be registerd with the builder
             // in any order. The builder will resolve dependencies and add middleware into 

@@ -2,6 +2,9 @@
 
 namespace OwinFramework.InterfacesV1.Facilities
 {
+    /// <summary>
+    /// Defines the possible results of trying to use a token for a specific purpose
+    /// </summary>
     public enum TokenStatus
     {
         /// <summary>
@@ -12,7 +15,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <summary>
         /// This token is not allowed to be used for the specified
         /// purpose at this time but it could be valid in the future 
-        /// for this purpose or for other purposes.
+        /// for this purpose or for another purposes.
         /// When this status is returned it could be that the token has expired,
         /// been used too many times, has been used too frequently, or
         /// it was not created for this purpose
@@ -85,7 +88,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <param name="identity">Optional identity associated with the token. This
         /// can be thought of as a user id except that it's not always a user, it
         /// could just as easily be a service, machine etc.</param>
-        /// <returns>A unique short string containing with none of the url reserved characters</returns>
+        /// <returns>A unique short string containing none of the url reserved characters</returns>
         string CreateToken(string tokenType, IEnumerable<string> purpose = null, string identity = null);
 
         /// <summary>
@@ -125,7 +128,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <param name="identity">An optional identity. If you pass this then the token
         /// store will check that this is the identity associated with the token. If you
         /// pass null then this check will be skipped</param>
-        /// <returns>Information about the validity of this token</returns>
+        /// <returns>Information about the validity of this token for this purpose by this identity</returns>
         IToken GetToken(string tokenType, string token, string purpose = null, string identity = null);
     }
 }

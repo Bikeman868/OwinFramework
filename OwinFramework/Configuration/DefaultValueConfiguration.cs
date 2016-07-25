@@ -11,7 +11,7 @@ namespace OwinFramework.Configuration
     /// </summary>
     public class DefaultValueConfiguration: IConfiguration
     {
-        public IDisposable Register<T>(string path, Action<T> onChangeAction, T defaultValue = default(T))
+        IDisposable IConfiguration.Register<T>(string path, Action<T> onChangeAction, T defaultValue)
         {
             onChangeAction(defaultValue);
             return new ChangeRegistration();
