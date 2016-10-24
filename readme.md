@@ -1,5 +1,7 @@
 # OWIN Framework
 
+> Note there is an extensive Wiki for this project on GitHub at https://github.com/Bikeman868/OwinFramework/wiki
+
 OWIN represents a great leap forward in standardizing the interface bewteen
 the hosting environment and the web application. It allows any web application
 to run on any hosting platform, and this standardization is helpful to
