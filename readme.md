@@ -6,7 +6,7 @@ to run on any hosting platform, and this standardization is helpful to
 everyone involved in web development.
 
 Another great thing about OWIN is that it defines only one very straightforward
-interface that does not place any constraints on the shaps of the application
+interface that does not place any constraints on the shape of the application
 or the hosting platform, constraining only those things that absolutely have
 to be constrained to make OWIN possible.
 
@@ -53,9 +53,9 @@ I see that as a missed opportunity.
 This project set out to define an open architecture for building middleware
 components that work together, and in the spirit of the original OWIN
 design it comprises mostly interfaces that do not place constraints on the
-shape of the middleware compoennts.
+shape of the middleware components.
 
-Using this framework I can I source UI components from other developers that 
+Using this framework I can source UI components from other developers that 
 know how to specify session and authentication without knowing which session 
 provider or authentication provider I chose, and the session provider knows 
 whether it needs to establish session or not without knowing anything about
