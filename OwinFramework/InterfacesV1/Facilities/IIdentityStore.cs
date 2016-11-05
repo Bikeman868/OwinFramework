@@ -75,7 +75,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <summary>
         /// The secret that can be shared to provide access to the system
         /// </summary>
-        string SharedSecret { get; }
+        string Secret { get; }
 
         /// <summary>
         /// Contains the purposes that this shared secret can be used for
