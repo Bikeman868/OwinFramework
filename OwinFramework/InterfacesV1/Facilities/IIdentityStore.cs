@@ -152,7 +152,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <summary>
         /// Deletes a specific certificate from the identity store
         /// </summary>
-        bool DeleteCertificate(byte[] cerificate);
+        bool DeleteCertificate(byte[] certificate);
 
         /// <summary>
         /// Deletes all of the certificates associated with an identity

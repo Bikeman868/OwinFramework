@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EA4B6627-C89F-4E59-94B8-A6993D8C5833}"
 	ProjectSection(SolutionItems) = preProject
@@ -27,6 +27,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Net40", "OwinFramework\OwinFramework.Net40.csproj", "{E51DC357-1B49-48E7-9FCA-B3A4061D94CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Net45", "OwinFramework\OwinFramework.Net45.csproj", "{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Mocks.Net45", "OwinFramework.Mocks\OwinFramework.Mocks.Net45.csproj", "{72C036C8-7F39-4311-9033-32E6AC38034D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +64,10 @@ Global
 		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72C036C8-7F39-4311-9033-32E6AC38034D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72C036C8-7F39-4311-9033-32E6AC38034D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72C036C8-7F39-4311-9033-32E6AC38034D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72C036C8-7F39-4311-9033-32E6AC38034D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
