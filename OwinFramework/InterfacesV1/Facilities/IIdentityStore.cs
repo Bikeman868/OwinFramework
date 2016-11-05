@@ -75,7 +75,12 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <summary>
         /// The secret that can be shared to provide access to the system
         /// </summary>
-        string Value { get; }
+        string SharedSecret { get; }
+
+        /// <summary>
+        /// Contains the purposes that this shared secret can be used for
+        /// </summary>
+        IList<string> Purposes { get; }
     }
 
     /// <summary>
@@ -107,7 +112,9 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <param name="userName">The username that they will use to login</param>
         /// <param name="password">The password that they will use to login</param>
         /// <param name="replaceExisting">True to delete all existing credentials. This
-        /// will not delete any secret keys, certificates etc</param>
+        /// will not delete any secret keys, certificates etc. False to add this as a
+        /// new login but keep the old credentials still active, this allows different
+        /// credentials to have different purposes on the same account.</param>
         /// <param name="purposes">Optional list of purposes to restrict what is allowed
         /// when a user logs in with these credentials. If this is null then the 
         /// login is unrestricted</param>
@@ -166,7 +173,8 @@ namespace OwinFramework.InterfacesV1.Facilities
 
         /// <summary>
         /// Returns a list of the domain names for social services that can be used to 
-        /// authenticate through this identity store
+        /// authenticate through this identity store. If the identity store dows not support
+        /// social login then this list will be empty.
         /// </summary>
         IList<string> SocialServices { get; }
         

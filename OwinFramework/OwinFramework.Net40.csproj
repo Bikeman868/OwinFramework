@@ -60,6 +60,7 @@
     <Compile Include="InterfacesV1\Capability\IConfigurable.cs" />
     <Compile Include="InterfacesV1\Capability\ISelfDocumenting.cs" />
     <Compile Include="InterfacesV1\Facilities\IIdentityStore.cs" />
+    <Compile Include="InterfacesV1\Facilities\ICache.cs" />
     <Compile Include="InterfacesV1\Facilities\ITokenStore.cs" />
     <Compile Include="InterfacesV1\Middleware\IAuthorization.cs" />
     <Compile Include="InterfacesV1\Middleware\IIdentification.cs" />
