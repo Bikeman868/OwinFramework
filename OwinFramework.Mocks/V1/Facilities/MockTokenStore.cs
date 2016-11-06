@@ -31,7 +31,7 @@ namespace OwinFramework.Mocks.V1.Facilities
                 {
                     Value = Guid.NewGuid().ToString("N"),
                     TokenType = tokenType,
-                    Purpose = purpose == null ? new List<string>() : purpose.ToList(),
+                    Purpose = purpose == null ? new List<string>() : purpose.Where(p => !string.IsNullOrEmpty(p)).ToList(),
                     Identity = identity
                 };
                 _tokens.Add(token.Value, token);

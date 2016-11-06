@@ -23,48 +23,64 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         private class TestCache: ICache
         {
-            private readonly IDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
+            private readonly IDictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
 
             public void Clear()
             {
-                _cache.Clear();
+                lock(_cache)
+                    _cache.Clear();
             }
 
             bool ICache.Delete(string key)
             {
-                return _cache.Remove(key);
+                lock (_cache)
+                    return _cache.Remove(key);
             }
 
             T ICache.Get<T>(string key, T defaultValue, TimeSpan? lockTime)
             {
                 while (true)
                 {
-                    CacheEntry cacheEntry;
-                    if (!_cache.TryGetValue(key, out cacheEntry))
-                        return defaultValue;
-
-                    if (cacheEntry.Expires.HasValue && DateTime.UtcNow > cacheEntry.Expires)
-                        return defaultValue;
-
-                    if (!cacheEntry.LockedUntil.HasValue || DateTime.UtcNow > cacheEntry.LockedUntil)
+                    lock (_cache)
                     {
-                        cacheEntry.LockedUntil = DateTime.UtcNow + lockTime;
-                        return (T)cacheEntry.Data;
-                    }
+                        CacheEntry cacheEntry;
+                        if (!_cache.TryGetValue(key, out cacheEntry) 
+                            || (cacheEntry.Expires.HasValue && DateTime.UtcNow > cacheEntry.Expires))
+                        {
+                            if (lockTime.HasValue)
+                            {
+                                _cache[key] = new CacheEntry
+                                {
+                                    Data = defaultValue,
+                                    Expires = DateTime.UtcNow + lockTime,
+                                    LockedUntil = DateTime.UtcNow + lockTime
+                                };
+                            }
+                            return defaultValue;
+                        }
 
-                    Thread.Sleep(1);
+                        if (!cacheEntry.LockedUntil.HasValue || DateTime.UtcNow > cacheEntry.LockedUntil)
+                        {
+                            cacheEntry.LockedUntil = DateTime.UtcNow + lockTime;
+                            return (T) cacheEntry.Data;
+                        }
+                    }
+                    Thread.Sleep(5);
                 }
             }
 
             bool ICache.Put<T>(string key, T value, TimeSpan? lifespan)
             {
-                var exists = _cache.ContainsKey(key);
-                _cache[key] = new CacheEntry
+                lock (_cache)
                 {
-                    Data = value,
-                    Expires = DateTime.UtcNow + lifespan
-                };
-                return exists;
+                    var exists = _cache.ContainsKey(key);
+                    _cache[key] = new CacheEntry
+                    {
+                        Data = value,
+                        Expires = DateTime.UtcNow + lifespan
+                    };
+                    return exists;
+                }
             }
 
             private class CacheEntry
