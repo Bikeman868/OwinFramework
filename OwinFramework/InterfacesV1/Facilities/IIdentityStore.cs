@@ -120,7 +120,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// login is unrestricted</param>
         /// <returns>True if sucessful. Returns false if the identity was not found or the
         /// password does not meet requirements for password complexity</returns>
-        bool AddCredentials(string identity, string userName, string password, bool replaceExisting, IList<string> purposes);
+        bool AddCredentials(string identity, string userName, string password, bool replaceExisting = true, IEnumerable<string> purposes = null);
 
         /// <summary>
         /// Checks user supplied credentials and returns the identity of the user
@@ -147,7 +147,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <param name="purposes">Optional list of purposes to limit the scope of this certificate</param>
         /// <returns>A certificate that a 3rd party can store on their system and use to access
         /// services for specific purposes</returns>
-        byte[] AddCertificate(string identity, TimeSpan lifetime, IList<string> purposes);
+        byte[] AddCertificate(string identity, TimeSpan? lifetime = null, IEnumerable<string> purposes = null);
 
         /// <summary>
         /// Deletes a specific certificate from the identity store
@@ -186,7 +186,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <param name="socialService">The domain name of the social service</param>
         /// <param name="purposes">Optional list of purposes to limit the scope of this login</param>
         /// <returns>True if the social account was succesfully associated</returns>
-        bool AddSocial(string identity, string userName, string socialService, IList<string> purposes);
+        bool AddSocial(string identity, string userName, string socialService, IEnumerable<string> purposes = null);
  
         /// <summary>
         /// Removes a social login account from an identity preventing login with this social account

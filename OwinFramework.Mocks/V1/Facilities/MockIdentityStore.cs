@@ -44,7 +44,7 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         #region Certificates
 
-        public byte[] AddCertificate(string identity, TimeSpan lifetime, IList<string> purposes)
+        public byte[] AddCertificate(string identity, TimeSpan? lifetime, IEnumerable<string> purposes)
         {
             var id = Guid.NewGuid().ToString("N");
             var certificateText = identity + ":" + id;
@@ -53,8 +53,8 @@ namespace OwinFramework.Mocks.V1.Facilities
                 Identity = identity,
                 Id = id,
                 Certificate = Encoding.UTF8.GetBytes(certificateText),
-                Expiry = DateTime.UtcNow + lifetime,
-                Purposes = purposes
+                Expiry = lifetime.HasValue ? DateTime.UtcNow + lifetime : null,
+                Purposes = purposes == null ? new List<string>() : purposes.Where(p => !string.IsNullOrEmpty(p)).ToList()
             };
             _identities[identity].Certificates.Add(certificate);
             return certificate.Certificate;
@@ -73,7 +73,7 @@ namespace OwinFramework.Mocks.V1.Facilities
 
             result.Identity = identity.Identity;
             result.Purposes = testCertificate.Purposes;
-            result.Status = DateTime.UtcNow > testCertificate.Expiry
+            result.Status = testCertificate.Expiry.HasValue && (DateTime.UtcNow > testCertificate.Expiry)
                 ? AuthenticationStatus.InvalidCredentials
                 : AuthenticationStatus.Authenticated;
 
@@ -240,7 +240,7 @@ namespace OwinFramework.Mocks.V1.Facilities
             public string Identity;
             public string Id;
             public byte[] Certificate;
-            public DateTime Expiry;
+            public DateTime? Expiry;
             public IList<string> Purposes;
         }
 
