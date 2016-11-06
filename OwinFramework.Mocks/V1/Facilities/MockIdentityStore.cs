@@ -5,12 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Moq.Modules;
+using OwinFramework.Builder;
 using OwinFramework.InterfacesV1.Facilities;
 
 namespace OwinFramework.Mocks.V1.Facilities
 {
     public class MockIdentityStore : ConcreteImplementationProvider<IIdentityStore>, IIdentityStore
     {
+        public MockIdentityStore()
+        {
+            SocialServices = new List<string> {"Facebook", "Google+", "LinkedIn", "Twitter"};
+        }
+
         protected override IIdentityStore GetImplementation(IMockProducer mockProducer)
         {
             return this;
@@ -18,6 +24,8 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         private readonly IDictionary<string, TestIdentity> _identities = new ConcurrentDictionary<string, TestIdentity>();
         private readonly IList<TestSharedSecret> _sharedSecrets = new List<TestSharedSecret>();
+        private IList<TestCredential> _credentials = new List<TestCredential>();
+        private IList<TestSocial> _socialIds = new List<TestSocial>();
 
         #region Methods to control mock behaviour in unit tests
 
@@ -32,6 +40,9 @@ namespace OwinFramework.Mocks.V1.Facilities
         }
 
         public bool SupportsCertificates { get; set; }
+        public bool SupportsCredentials { get; set; }
+        public bool SupportsSharedSecrets { get; set; }
+        public IList<string> SocialServices { get; set; }
 
         #endregion
 
@@ -148,19 +159,67 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         #region Credentials
 
-        public bool AddCredentials(string identity, string userName, string password, bool replaceExisting, IList<string> purposes)
+        public bool AddCredentials(string identity, string userName, string password, bool replaceExisting, IEnumerable<string> purposes)
         {
-            throw new NotImplementedException();
+            var purposeList = purposes == null
+                        ? new List<string>()
+                        : purposes.Where(p => !string.IsNullOrEmpty(p)).ToList();
+
+            var existing = _credentials.FirstOrDefault(c => string.Equals(c.UserName, userName, StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                if (string.Equals(identity, existing.Identity, StringComparison.OrdinalIgnoreCase))
+                {
+                    existing.Password = password;
+                    existing.Purposes = purposeList;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            if (replaceExisting)
+            {
+                _credentials = _credentials
+                    .Where(c => !string.Equals(c.Identity, identity, StringComparison.OrdinalIgnoreCase) 
+                        || ReferenceEquals(c, existing))
+                    .ToList();
+            }
+
+            if (existing == null)
+            {
+                var newCredential = new TestCredential
+                {
+                    Identity = identity,
+                    UserName = userName,
+                    Password = password,
+                    Purposes = purposeList
+                };
+                _credentials.Add(newCredential);
+            }
+            return true;
         }
 
         public IAuthenticationResult AuthenticateWithCredentials(string userName, string password)
         {
-            throw new NotImplementedException();
-        }
+            var result = new AuthenticationResult
+            {
+                Status = AuthenticationStatus.NotFound
+            };
 
-        public bool SupportsCredentials
-        {
-            get { throw new NotImplementedException(); }
+            var existing = _credentials.FirstOrDefault(c => string.Equals(c.UserName, userName, StringComparison.OrdinalIgnoreCase));
+
+            if (existing == null)
+                return result;
+
+            result.Identity = existing.Identity;
+            result.Purposes = existing.Purposes;
+
+            result.Status = password == existing.Password
+                ? AuthenticationStatus.Authenticated
+                : AuthenticationStatus.InvalidCredentials;
+            return result;
         }
 
         #endregion
@@ -169,56 +228,169 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         public string AddSharedSecret(string identity, string name, IList<string> purposes)
         {
-            throw new NotImplementedException();
+            var purposeList = purposes == null
+                ? new List<string>()
+                : purposes.Where(p => !string.IsNullOrEmpty(p)).ToList();
+
+            var secret = Guid.NewGuid().ToShortString();
+            _sharedSecrets.Add(
+                new TestSharedSecret
+                {
+                    Identity = identity,
+                    Name = name,
+                    Secret = secret,
+                    Purposes = purposeList
+                });
+            return secret;
         }
 
         public IAuthenticationResult AuthenticateWithSharedSecret(string sharedSecret)
         {
-            throw new NotImplementedException();
+            var result = new AuthenticationResult
+            {
+                Status = AuthenticationStatus.NotFound
+            };
+
+            var secret = _sharedSecrets
+                .FirstOrDefault(s => string.Equals(s.Secret, sharedSecret, StringComparison.Ordinal));
+            if (secret == null)
+                return result;
+
+            result.Identity = secret.Identity;
+            result.Purposes = secret.Purposes;
+            result.Status = AuthenticationStatus.Authenticated;
+            return result;
         }
 
         public bool DeleteSharedSecret(string sharedSecret)
         {
-            throw new NotImplementedException();
+            var index = -1;
+            for (var i = 0; i < _sharedSecrets.Count; i++)
+                if (string.Equals(_sharedSecrets[i].Secret, sharedSecret, StringComparison.Ordinal))
+                    index = i;
+
+            if (index >= 0)
+            {
+                _sharedSecrets.RemoveAt(index);
+                return true;
+            }
+
+            return false;
         }
 
         public IList<ISharedSecret> GetAllSharedSecrets(string identity)
         {
-            throw new NotImplementedException();
-        }
-
-        public bool SupportsSharedSecrets
-        {
-            get { throw new NotImplementedException(); }
+            return _sharedSecrets
+                .Where(s => string.Equals(s.Identity, identity, StringComparison.OrdinalIgnoreCase))
+                .Select(s => 
+                    new SharedSecret
+                    {
+                        Name = s.Name,
+                        Secret = s.Secret,
+                        Purposes = s.Purposes
+                    })
+                .Cast<ISharedSecret>()
+                .ToList();
         }
 
         #endregion
 
         #region Social
 
-        public bool AddSocial(string identity, string userName, string socialService, IList<string> purposes)
+        public bool AddSocial(
+            string identity,
+            string userId,
+            string socialService,
+            string authenticationToken,
+            IEnumerable<string> purposes = null,
+            bool replaceExisting = true)
         {
-            throw new NotImplementedException();
+            var purposeList = purposes == null
+                ? new List<string>()
+                : purposes.Where(p => !string.IsNullOrEmpty(p)).ToList();
+
+            var existing = _socialIds
+                .FirstOrDefault(s =>
+                    string.Equals(s.SocialService, socialService, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(s.UserId, userId, StringComparison.Ordinal));
+
+            if (existing != null)
+            {
+                existing.Identity = identity;
+                existing.Purposes = purposeList;
+                existing.AuthenticationToken = authenticationToken;
+            }
+
+            if (replaceExisting)
+            {
+                _socialIds = _socialIds
+                    .Where(s => 
+                        !string.Equals(identity, s.Identity, StringComparison.OrdinalIgnoreCase)
+                        || ReferenceEquals(s, existing)
+                        || !string.Equals(socialService, s.SocialService, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            if (existing == null)
+            {
+                var social = new TestSocial
+                {
+                    Identity = identity,
+                    SocialService = socialService,
+                    UserId = userId,
+                    Purposes = purposeList,
+                    AuthenticationToken = authenticationToken
+                };
+                _socialIds.Add(social);
+                return true;
+            }
+            return false;
         }
 
-        public IAuthenticationResult AuthenticateWithSocial(string userName, string socialService, string authenticationToken)
+        public ISocialAuthentication GetSocialAuthentication(string userId, string socialService)
         {
-            throw new NotImplementedException();
+            var existing = _socialIds
+                .FirstOrDefault(s =>
+                    string.Equals(s.SocialService, socialService, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(s.UserId, userId, StringComparison.Ordinal));
+
+            return existing == null 
+                ? null 
+                : new SocialAuthentication 
+                {
+                    Identity = existing.Identity,
+                    Purposes = existing.Purposes,
+                    AuthenticationToken = existing.AuthenticationToken
+                };
         }
 
         public bool DeleteAllSocial(string identity)
         {
-            throw new NotImplementedException();
+            _socialIds = _socialIds
+                .Where(s => !string.Equals(identity, s.Identity, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            return true;
         }
 
-        public bool DeleteSocial(string identity, string userName, string socialService)
+        public bool DeleteSocial(string identity, string socialService)
         {
-            throw new NotImplementedException();
-        }
+            var index = -1;
+            for (var i = 0; i < _socialIds.Count; i++)
+            {
+                if (string.Equals(_socialIds[i].SocialService, socialService, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(_socialIds[i].Identity, identity, StringComparison.OrdinalIgnoreCase))
+                {
+                    index = i;
+                    break;
+                }
+            }
 
-        public IList<string> SocialServices
-        {
-            get { throw new NotImplementedException(); }
+            if (index >= 0)
+            {
+                _socialIds.RemoveAt(index);
+                return true;
+            }
+            return false;
         }
 
         #endregion
@@ -228,11 +400,15 @@ namespace OwinFramework.Mocks.V1.Facilities
             public string Identity;
             public string Name;
             public readonly IList<TestCertificate> Certificates = new List<TestCertificate>();
+            public readonly IList<TestCredential> Credentials = new List<TestCredential>();
         }
 
         private class TestCredential
         {
-
+            public string Identity;
+            public string UserName;
+            public string Password;
+            public IList<string> Purposes;
         }
 
         private class TestCertificate
@@ -246,12 +422,19 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         private class TestSharedSecret
         {
-
+            public string Identity;
+            public string Name;
+            public string Secret;
+            public IList<string> Purposes;
         }
 
         private class TestSocial
         {
-
+            public string Identity;
+            public string SocialService;
+            public string UserId;
+            public string AuthenticationToken;
+            public IList<string> Purposes;
         }
 
         private class AuthenticationResult : IAuthenticationResult
@@ -259,6 +442,20 @@ namespace OwinFramework.Mocks.V1.Facilities
             public string Identity { get; set; }
             public IList<string> Purposes { get; set; }
             public AuthenticationStatus Status { get; set; }
+        }
+
+        private class SocialAuthentication: ISocialAuthentication
+        {
+            public string Identity { get; set; }
+            public IList<string> Purposes { get; set; }
+            public string AuthenticationToken { get; set; }
+        }
+
+        private class SharedSecret: ISharedSecret
+        {
+            public string Name { get; set; }
+            public string Secret { get; set; }
+            public IList<string> Purposes { get; set; }
         }
     }
 }

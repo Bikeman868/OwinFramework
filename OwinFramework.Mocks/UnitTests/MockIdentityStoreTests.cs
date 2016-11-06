@@ -71,12 +71,11 @@ namespace OwinFramework.Mocks.UnitTests
             Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
 
             result = _identityStore.AuthenticateWithSharedSecret(Guid.NewGuid().ToString());
-            Assert.AreNotEqual(AuthenticationStatus.Authenticated, result.Status);
+            Assert.AreEqual(AuthenticationStatus.NotFound, result.Status);
 
             _identityStore.DeleteSharedSecret(secret);
-
-            result = _identityStore.AuthenticateWithSharedSecret(Guid.NewGuid().ToString());
-            Assert.AreNotEqual(AuthenticationStatus.Authenticated, result.Status);
+            result = _identityStore.AuthenticateWithSharedSecret(secret);
+            Assert.AreEqual(AuthenticationStatus.NotFound, result.Status);
         }
 
         [Test]
@@ -105,42 +104,145 @@ namespace OwinFramework.Mocks.UnitTests
             result = _identityStore.AuthenticateWithCredentials("wrong username", password);
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(identity, result.Identity);
             Assert.AreEqual(AuthenticationStatus.NotFound, result.Status);
+        }
+
+        [Test]
+        public void Should_allow_password_change()
+        {
+            const string userName = "martin@gmail.com";
+            const string oldPassword = "somethingHardT0Gu3$$";
+            const string newPassword = "evenHarderT0Gu3$$2016";
+
+            var identity = _identityStore.CreateIdentity();
+            _identityStore.AddCredentials(identity, userName, oldPassword);
+
+            var result = _identityStore.AuthenticateWithCredentials(userName, oldPassword);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
+
+            _identityStore.AddCredentials(identity, userName, newPassword);
+
+            result = _identityStore.AuthenticateWithCredentials(userName, newPassword);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
+
+            result = _identityStore.AuthenticateWithCredentials(userName, oldPassword);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.InvalidCredentials, result.Status);
+        }
+
+        [Test]
+        public void Should_allow_change_username()
+        {
+            const string oldUserName = "martin@gmail.com";
+            const string newUserName = "martin@hotmail.com";
+            const string password = "somethingHardT0Gu3$$";
+
+            var identity = _identityStore.CreateIdentity();
+            _identityStore.AddCredentials(identity, oldUserName, password);
+
+            var result = _identityStore.AuthenticateWithCredentials(oldUserName, password);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
+
+            _identityStore.AddCredentials(identity, newUserName, password);
+
+            result = _identityStore.AuthenticateWithCredentials(newUserName, password);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
+
+            result = _identityStore.AuthenticateWithCredentials(oldUserName, password);
+            Assert.AreEqual(AuthenticationStatus.NotFound, result.Status);
+        }
+
+        [Test]
+        public void Should_allow_multiple_usernames()
+        {
+            const string fullAccessUserName = "martin@gmail.com";
+            const string restrictedUserName = "martin@hotmail.com";
+            const string fullAccessPassword = "somethingHardT0Gu3$$";
+            const string restrictedAccessPassword = "EasyToGuess";
+
+            var identity = _identityStore.CreateIdentity();
+            _identityStore.AddCredentials(identity, fullAccessUserName, fullAccessPassword);
+            _identityStore.AddCredentials(identity, restrictedUserName, restrictedAccessPassword, false, new[]{"view", "report"});
+
+            var result = _identityStore.AuthenticateWithCredentials(fullAccessUserName, fullAccessPassword);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(0, result.Purposes.Count);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
+
+            result = _identityStore.AuthenticateWithCredentials(restrictedUserName, restrictedAccessPassword);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(2, result.Purposes.Count);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
         }
 
         [Test]
         public void Should_provide_social_login()
         {
-            const string userName = "martin@gmail.com";
-
             var socialServices = _identityStore.SocialServices;
 
             Assert.IsNotNull(socialServices);
             Assert.IsTrue(socialServices.Count > 0);
 
+            var socialService = socialServices[0];
+            const string userId = "martin@gmail.com";
+            var authenticationToken = Guid.NewGuid().ToString();
+
             var identity = _identityStore.CreateIdentity();
-            var success = _identityStore.AddSocial(identity, userName, socialServices[0]);
+            var isNew = _identityStore.AddSocial(identity, userId, socialService, authenticationToken);
 
-            Assert.IsTrue(success);
+            Assert.IsTrue(isNew);
 
-            var result = _identityStore.AuthenticateWithSocial(userName, socialServices[0], Guid.NewGuid().ToString());
+            var result = _identityStore.GetSocialAuthentication(userId, socialService);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(authenticationToken, result.AuthenticationToken);
+
+            result = _identityStore.GetSocialAuthentication("invalid user id", socialService);
+
+            Assert.IsNull(result);
+
+            result = _identityStore.GetSocialAuthentication(userId, socialServices[1]);
+
+            Assert.IsNull(result);
+
+            var deleted = _identityStore.DeleteSocial(identity, socialService);
+
+            Assert.IsTrue(deleted);
+
+            result = _identityStore.GetSocialAuthentication(userId, socialService);
+
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void Should_allow_multiple_identification_mechanisms()
+        {
+            const string userName = "martin@gmail.com";
+            const string password = "somethingHardT0Gu3$$";
+
+            var identity = _identityStore.CreateIdentity();
+            _identityStore.AddCredentials(identity, userName, password);
+            var sharedSecret = _identityStore.AddSharedSecret(identity, "3rd party API access", new[] { "api" });
+
+            var result = _identityStore.AuthenticateWithCredentials(userName, password);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(0, result.Purposes.Count);
             Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
 
-            result = _identityStore.AuthenticateWithSocial(userName, "wrong social", Guid.NewGuid().ToString());
+            result = _identityStore.AuthenticateWithSharedSecret(sharedSecret);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(identity, result.Identity);
-            Assert.AreNotEqual(AuthenticationStatus.Authenticated, result.Status);
-
-            result = _identityStore.AuthenticateWithSocial("wrong username", socialServices[0], Guid.NewGuid().ToString());
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(identity, result.Identity);
-            Assert.AreNotEqual(AuthenticationStatus.Authenticated, result.Status);
+            Assert.AreEqual(1, result.Purposes.Count);
+            Assert.AreEqual("api", result.Purposes[0]);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
         }
     }
 }

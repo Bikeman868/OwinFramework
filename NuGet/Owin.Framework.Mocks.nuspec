@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Owin.Framework.Mocks</id>
+    <version>2.2.0</version>
+    <title>Owin.Framework.Mocks</title>
+    <authors>Martin Halliday</authors>
+    <owners>Martin Halliday</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Mocks of Owin Framework interfaces to use in your unit tests</description>
+    <copyright>Copyright 2016</copyright>
+    <releaseNotes>First release</releaseNotes>
+    <summary>
+      Uses Moq.Modules to provide a set of plug-in Mocks that can seamlessly
+      integrate into your unit tests. These are useful if you are writing
+      Middleware that uses the facilities defined by Owin Framework interfaces.
+    </summary>
+    <projectUrl>https://github.com/Bikeman868/OwinFramework/wiki</projectUrl>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <tags>OWIN framework moq modules mock</tags>
+    <dependencies>
+      <dependency id="Owin.Framework" version="2.2.0" />
+      <dependency id="Moq.Modules" version="1.0.0" />
+      <dependency id="NUnit" version="3.5.0" />
+    </dependencies>
+    <references>
+    </references>
+  </metadata>
+  <files>
+    <file src="..\OwinFramework.Mocks\bin\Net40\Release\OwinFramework.Mocks.dll" target="lib\net40"/>
+    <file src="..\OwinFramework.Mocks\bin\Net45\Release\OwinFramework.Mocks.dll" target="lib\net45"/>
+    <file src="..\*.md" target=""/>
+  </files>
+</package>

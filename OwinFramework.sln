@@ -8,8 +8,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		application_developer.md = application_developer.md
 		middleware_developer.md = middleware_developer.md
 		NuGet\Owin.Framework.ConfigurationManager.nuspec = NuGet\Owin.Framework.ConfigurationManager.nuspec
+		NuGet\Owin.Framework.Mocks.nuspec = NuGet\Owin.Framework.Mocks.nuspec
 		NuGet\Owin.Framework.nuspec = NuGet\Owin.Framework.nuspec
 		NuGet\Owin.Framework.Urchin.nuspec = NuGet\Owin.Framework.Urchin.nuspec
+		NuGet\Package.cmd = NuGet\Package.cmd
 		readme.md = readme.md
 		SharedVersionInfo.cs = SharedVersionInfo.cs
 	EndProjectSection
@@ -29,6 +31,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Net45", "OwinFramework\OwinFramework.Net45.csproj", "{16EAC894-EC45-4BC7-9EF9-D36E4C27EC44}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Mocks.Net45", "OwinFramework.Mocks\OwinFramework.Mocks.Net45.csproj", "{72C036C8-7F39-4311-9033-32E6AC38034D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinFramework.Mocks.Net40", "OwinFramework.Mocks\OwinFramework.Mocks.Net40.csproj", "{08BE0734-6C33-4874-B904-FCBD644D435D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +72,10 @@ Global
 		{72C036C8-7F39-4311-9033-32E6AC38034D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72C036C8-7F39-4311-9033-32E6AC38034D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72C036C8-7F39-4311-9033-32E6AC38034D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08BE0734-6C33-4874-B904-FCBD644D435D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08BE0734-6C33-4874-B904-FCBD644D435D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08BE0734-6C33-4874-B904-FCBD644D435D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08BE0734-6C33-4874-B904-FCBD644D435D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
