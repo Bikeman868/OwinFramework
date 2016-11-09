@@ -66,6 +66,8 @@
     <Compile Include="..\SharedVersionInfo.cs">
       <Link>Properties\SharedVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="Builder\MockConfiguration.cs" />
+    <Compile Include="Owin\MockOwinContextNet40.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTests\MockCacheTests.cs" />
     <Compile Include="UnitTests\MockIdentityStoreTests.cs" />
