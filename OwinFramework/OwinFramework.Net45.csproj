@@ -64,11 +64,13 @@
     <Compile Include="InterfacesV1\Middleware\IOutputCache.cs" />
     <Compile Include="InterfacesV1\Upstream\IUpstreamOutputCache.cs" />
     <Compile Include="Interfaces\Utility\IDependencyGraphEdge.cs" />
+    <Compile Include="Interfaces\Utility\IHostingEnvironment.cs" />
     <Compile Include="Interfaces\Utility\ISegmenter.cs" />
     <Compile Include="Interfaces\Utility\ISegmenterFactory.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="Utility\DuplicateKeyException.cs" />
     <Compile Include="Utility\CircularDependencyException.cs" />
+    <Compile Include="Utility\HostingEnvironment.cs" />
     <Compile Include="Utility\MissingDependencyException.cs" />
     <Compile Include="Utility\DependencyGraph.cs" />
     <Compile Include="Utility\DependencyGraphFactory.cs" />

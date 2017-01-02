@@ -83,6 +83,10 @@ namespace OwinFramework.InterfacesV1.Facilities
         IList<string> Purposes { get; }
     }
 
+    /// <summary>
+    /// Used to provide information about a sucesful login to a social network site
+    /// such as Google, facebook Twitter etc
+    /// </summary>
     public interface ISocialAuthentication
     {
         /// <summary>
