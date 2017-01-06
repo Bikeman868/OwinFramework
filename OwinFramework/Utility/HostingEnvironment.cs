@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using OwinFramework.Interfaces.Utility;
 
@@ -11,7 +11,7 @@ namespace OwinFramework.Utility
     public class HostingEnvironment: IHostingEnvironment
     {
         /// <summary>
-        /// There is no own method that works for all environments. The safest way is to provide
+        /// There is no known method that works for all environments. The safest way is to provide
         /// an implementation of this method within your application. The OWIN Framework will use
         /// your implementation wherever it needs to resolve a relative path into a physical file
         /// location.
