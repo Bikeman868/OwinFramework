@@ -15,8 +15,9 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <param name="key">A key that identifies a piece of data in the cache</param>
         /// <param name="defaultValue">The value to return if the cache does not contain this key</param>
         /// <param name="lockTime">Optional time to lock the value in the cache. Updating the cache will clear the lock</param>
+        /// <param name="category">Optional category. Cache implementations can choose different caching strategies for different categories of data</param>
         /// <returns>The cached value or the default value if not in cache</returns>
-        T Get<T>(string key, T defaultValue = default(T), TimeSpan? lockTime = null);
+        T Get<T>(string key, T defaultValue = default(T), TimeSpan? lockTime = null, string category = null);
 
         /// <summary>
         /// Overwrites data in the cache and unlocks it if locked
@@ -25,14 +26,16 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <param name="key">A key that identifies a piece of data in the cache</param>
         /// <param name="value">The data to store in the cache</param>
         /// <param name="lifespan">How long to keep the data in cache. If you pass null the cache will decide</param>
+        /// <param name="category">Optional category. Cache implementations can choose different caching strategies for different categories of data</param>
         /// <returns>True if the data was overwritten and False if data was inserted</returns>
-        bool Put<T>(string key, T value, TimeSpan? lifespan = null);
+        bool Put<T>(string key, T value, TimeSpan? lifespan = null, string category = null);
 
         /// <summary>
         /// Deletes an entry in the cache
         /// </summary>
         /// <param name="key">A key that identifies a piece of data in the cache</param>
+        /// <param name="category">Optional category. Cache implementations can choose different caching strategies for different categories of data</param>
         /// <returns>True if the data was deleted and False if data was not in the cache</returns>
-        bool Delete(string key);
+        bool Delete(string key, string category = null);
     }
 }
