@@ -1,4 +1,7 @@
-﻿using ExampleUsage.Middleware;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using ExampleUsage.Middleware;
 using Owin;
 using OwinFramework.Builder;
 using OwinFramework.Configuration;
@@ -145,9 +148,22 @@ namespace ExampleUsage
             // This is an example of how to include middleware that was not built to work
             // with the OWIN Framework. This technique allows any other middleware to work
             // with the OWIN Framework without modification.
-            var welcomePageWrapper = new LegacyMiddlewareWrapper();
-            welcomePageWrapper.UseWelcomePage("/");
-            builder.Register(welcomePageWrapper)
+            builder.Register(new LegacyMiddlewareWrapper().UseWelcomePage("/"))
+                .RunFirst();
+
+            // Demostrates legacy middleware using AppFunc
+            builder.Register(((IAppBuilder)new LegacyMiddlewareWrapper()).Use(typeof(LegacyMiddleware1)))
+                .As("Legacy 1")
+                .RunFirst();
+
+            // Demostrates legacy middleware inheriting from OwinMiddleware
+            builder.Register(((IAppBuilder)new LegacyMiddlewareWrapper()).Use(typeof(LegacyMiddleware2)))
+                .As("Legacy 2")
+                .RunFirst();
+
+            // Demostrates passing an instance of legacy middleware
+            builder.Register(((IAppBuilder)new LegacyMiddlewareWrapper()).Use(new LegacyMiddleware3()))
+                .As("Legacy 3")
                 .RunFirst();
 
             // This statement will add all of the middleware registered with the builder into

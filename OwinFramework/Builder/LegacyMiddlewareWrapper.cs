@@ -99,7 +99,6 @@ namespace OwinFramework.Builder
                 .FirstOrDefault(m =>
                 {
                     if (m.Name != "Initialize") return false;
-                    if (m.ReturnType != typeof(Task)) return false;
                     var invokeParams = m.GetParameters();
                     if (invokeParams == null || invokeParams.Length != 1) return false;
                     return invokeParams[0].ParameterType == typeof(Func<IDictionary<string, object>, Task>);

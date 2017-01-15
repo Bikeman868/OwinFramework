@@ -139,6 +139,17 @@ namespace OwinFramework.Builder
             return middleware;
         }
 
+        /// <summary>
+        /// Use this method to register instances of the LegacyMiddlewareWrapper
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="legacyMiddleware"></param>
+        /// <returns></returns>
+        public static IMiddleware Register(this IBuilder builder, IAppBuilder legacyMiddleware)
+        {
+            return builder.Register(legacyMiddleware as IMiddleware<object>);
+        }
+
         private class Dependency : IDependency
         {
             public PipelinePosition Position { get; set; }
