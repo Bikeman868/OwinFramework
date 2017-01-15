@@ -21,7 +21,7 @@ switch out the hosting service.
 Using only the OWIN specification I can't use any session or authentication 
 middleware I like and have it work with any output rendering framework I like
 because these things don't know how to talk to each other. In addition as a
-developer I have to undestand all the dependencies bewteen middleware
+developer I have to understand all the dependencies bewteen middleware
 components from different sources to be able to configure a working application.
 
 I think we can do much better than this. I want to be able to choose any middleware

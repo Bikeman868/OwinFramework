@@ -52,7 +52,7 @@ namespace OwinFramework.Builder
             get { return _properties; }
         }
 
-        IAppBuilder IAppBuilder.Use(object middleware, params object[] args)
+        public IAppBuilder Use(object middleware, params object[] args)
         {
             // See https://msdn.microsoft.com/en-us/library/microsoft.owin.builder.appbuilder.use(v=vs.113).aspx#M:Microsoft.Owin.Builder.AppBuilder.Use(System.Object,System.Object[])
             // See http://benfoster.io/blog/how-to-write-owin-middleware-in-5-different-steps

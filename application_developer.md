@@ -190,6 +190,67 @@ This very complex configuration might look like this:
       app.UseBuilder(builder);
     }
 ```
+
+## Legacy Middleware
+
+In order to support all of the features of the OWIN Framework, middleware components
+need to implement `IMiddleware<T>`. This is great going forward but what about existing
+middleware that wasn't written with OWIN Framework in mind?
+
+The OWIN Framework contains a `LegacyMiddlewareWrapper` class that can be used to bridge
+the gap between earlier standards and the OWIN Framework.
+
+In OWIN itself middleware is defined as a function taking `IDictionary<string, object>` and 
+returning `Task`. Katana adds `IAppBuilder` extension methods to supprt 5 different ways of 
+adding middleware to the pipeline see
+(http://benfoster.io/blog/how-to-write-owin-middleware-in-5-different-steps) and
+all 5 of these are supported by the `LegacyMiddlewareWrapper` class.
+
+If you have existing code like the sample below that uses Katana middleware or middleware
+that does not directly support the OWIN Framework:
+
+```
+    public static Configuration(IAppBuilder app)
+    {
+      app.UseWelcomePage("/")
+    }
+```
+
+You can use it with the OWIN Framework using the `LegacyMiddlewareWrapper` class like this:
+
+
+```
+    public static Configuration(IAppBuilder app)
+    {
+      var builder = new Builder();
+	  
+      builder.Register(new LegacyMiddlewareWrapper().UseWelcomePage("/"));
+	  
+      app.UseBuilder(builder);
+    }
+```
+
+This code can be used in conjunction with the fluid syntax for setting up the pipeline:
+
+```
+    public static Configuration(IAppBuilder app)
+    {
+      var builder = new Builder();
+	  
+      builder.Register(new LegacyMiddlewareWrapper().UseWelcomePage("/"))
+		.As("OWIN welcome page")
+		.RunFirst();
+	  
+      app.UseBuilder(builder);
+    }
+```
+
+> Note that legacy middleware will not play nicely with the OWIN Framework because the OWIN
+> Framework doesn't know anything about this middleware. Legacy middleware is just a function 
+> with an AppFunc signature. This means for example that if you include authentication 
+> middleware in your pipeline the OWIN Framework will not know that it provides authentication 
+> and will not automatically ensure that the dependencies of other middleware components have been met.
+
 ## Pipeline Configuration Syntax
 
 The steps to configuring the OWIN pipeline are

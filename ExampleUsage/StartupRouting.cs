@@ -152,17 +152,17 @@ namespace ExampleUsage
                 .RunFirst();
 
             // Demostrates legacy middleware using AppFunc
-            builder.Register(((IAppBuilder)new LegacyMiddlewareWrapper()).Use(typeof(LegacyMiddleware1)))
+            builder.Register(new LegacyMiddlewareWrapper().Use(typeof(LegacyMiddleware1)))
                 .As("Legacy 1")
                 .RunFirst();
 
             // Demostrates legacy middleware inheriting from OwinMiddleware
-            builder.Register(((IAppBuilder)new LegacyMiddlewareWrapper()).Use(typeof(LegacyMiddleware2)))
+            builder.Register(new LegacyMiddlewareWrapper().Use(typeof(LegacyMiddleware2)))
                 .As("Legacy 2")
                 .RunFirst();
 
             // Demostrates passing an instance of legacy middleware
-            builder.Register(((IAppBuilder)new LegacyMiddlewareWrapper()).Use(new LegacyMiddleware3()))
+            builder.Register(new LegacyMiddlewareWrapper().Use(new LegacyMiddleware3()))
                 .As("Legacy 3")
                 .RunFirst();
 
