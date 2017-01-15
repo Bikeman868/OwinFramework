@@ -55,6 +55,7 @@
       <Link>Properties\SharedVersionInfo.cs</Link>
     </Compile>
     <Compile Include="Builder\Builder.cs" />
+    <Compile Include="Builder\LegacyMiddlewareWrapper.cs" />
     <Compile Include="Configuration\DefaultValueConfiguration.cs" />
     <Compile Include="InterfacesV1\Capability\IAnalysable.cs" />
     <Compile Include="InterfacesV1\Capability\ISelfDocumenting.cs" />

@@ -142,6 +142,14 @@ namespace ExampleUsage
                 .RunOnRoute("api")
                 .ConfigureWith(configuration, "/owin/rest");
 
+            // This is an example of how to include middleware that was not built to work
+            // with the OWIN Framework. This technique allows any other middleware to work
+            // with the OWIN Framework without modification.
+            var welcomePageWrapper = new LegacyMiddlewareWrapper();
+            welcomePageWrapper.UseWelcomePage("/");
+            builder.Register(welcomePageWrapper)
+                .RunFirst();
+
             // This statement will add all of the middleware registered with the builder into
             // the OWIN pipeline. The builder will add middleware to the pipeline in an order
             // that ensures all dependencies are met.
