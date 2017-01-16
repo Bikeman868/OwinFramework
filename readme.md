@@ -1,6 +1,15 @@
 # OWIN Framework
 
-> Note there is an extensive Wiki for this project on GitHub at https://github.com/Bikeman868/OwinFramework/wiki
+If you are writing middleware components to share with others please read
+[the middleware development guide](middleware_developer.md).
+
+If you are writing an OWIN application and want to consume components 
+and configure your OWIN pipeline please read
+[the application development guide](application_developer.md).
+
+Note that there is a comprehensive [Wiki for this project](https://github.com/Bikeman868/OwinFramework/wiki).
+
+## Why does this project exist
 
 OWIN represents a great leap forward in standardizing the interface bewteen
 the hosting environment and the web application. It allows any web application
@@ -64,13 +73,6 @@ whether it needs to establish session or not without knowing anything about
 the middleware downstream. This is just one example of the class of problems
 that this framework solves.
 
-If you are writing middleware components to share with others please read
-[the middleware development guide](middleware_developer.md).
-
-If you are writing an OWIN application and want to consume components 
-and configure your OWIN pipeline please read
-[the application development guide](application_developer.md).
-
 ## What is in this project
 
 This project mostly consists of interface definitions. These interfaces 
@@ -89,7 +91,7 @@ Note that this is a work in progress, and I would welcome contributions
 from  as many other developers as possible. The more people who use this
 framework, the more useful it will be to everyone so please join in.
 
-## Solution contents
+## Projects in this solution
 
 `ExampleUsage.csproj` is a project that demonstrates some of what is possible
 with this framework. It is by no means trying to be an exhastive list
