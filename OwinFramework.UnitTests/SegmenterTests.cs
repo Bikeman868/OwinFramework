@@ -279,5 +279,62 @@ namespace UnitTests
             Assert.IsTrue(sessionSegments.Contains("modify"));
         }
 
+        [Test]
+        public void Should_segment_dependency_graph_for_real_world_example3()
+        {
+            // See https://github.com/Bikeman868/OwinFramework/issues/1
+
+            _segmenter.AddSegment("ui");
+
+            // Output cache has no dependencies
+            _segmenter.AddNode(
+                "outputCache",
+                null,
+                new[] { "ui" });
+
+            // Less must be after output cache if output cache is configured
+            _segmenter.AddNode(
+                "versioning",
+                new[] { 
+                    new List<string> { "outputCache", null } },
+                new[] { "ui" });
+
+            // Dart must be after output cache if output cache is configured
+            _segmenter.AddNode(
+                "dart",
+                new[] { 
+                    new List<string> { "outputCache", null } },
+                new[] { "ui" });
+
+            // Less must be after output cache if output cache is configured
+            // And must run after versioning and dart
+            _segmenter.AddNode(
+                "less",
+                new[] { 
+                    new List<string> { "outputCache", null },
+                    new List<string> { "dart" },
+                    new List<string> { "versioning" } },
+                new[] { "ui" });
+
+            // Static files must be after output cache if output cache is configured
+            // And must run after versioning and dart
+            _segmenter.AddNode(
+                "staticFiles",
+                new[] { 
+                    new List<string> { "outputCache", null },
+                    new List<string> { "dart" },
+                    new List<string> { "versioning" } },
+                new[] { "ui" });
+
+            var staticFilesSegments = _segmenter.GetNodeSegments("staticFiles");
+            var lessSegments = _segmenter.GetNodeSegments("less");
+
+            Assert.AreEqual(1, staticFilesSegments.Count, "Number of segments static files is assigned to");
+            Assert.AreEqual("ui", staticFilesSegments[0], "Static files on UI route");
+
+            Assert.AreEqual(1, lessSegments.Count, "Number of segments less is assigned to");
+            Assert.AreEqual("ui", lessSegments[0], "Less on UI route");
+        }
+
     }
 }

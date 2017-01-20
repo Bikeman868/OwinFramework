@@ -72,14 +72,15 @@ namespace OwinFramework.Builder
             {
                 foreach (var dependency in component.Middleware.Dependencies)
                 {
-                    if (dependency.DependentType == null && !string.IsNullOrEmpty(dependency.Name))
+                    var dependencyName = dependency.Name;
+                    if (dependency.DependentType == null && !string.IsNullOrEmpty(dependencyName))
                     {
                         var dependent = _components.FirstOrDefault(
-                            c => string.Equals(c.Name, dependency.Name, StringComparison.OrdinalIgnoreCase));
+                            c => string.Equals(c.Name, dependencyName, StringComparison.OrdinalIgnoreCase));
                         if (dependent == null)
                         {
                             if (dependency.Required)
-                                throw new MissingDependencyException("There are no middleware components called \"" + dependency.Name + "\"");
+                                throw new MissingDependencyException("There are no middleware components called \"" + dependencyName + "\"");
                         }
                         else
                         {
@@ -124,9 +125,51 @@ namespace OwinFramework.Builder
                     .Where(c => !backComponents.Contains(c))
                     .ToList();
 
+#if DEBUG
+                Action<MiddlewareComponent> p = c =>
+                {
+                    var l = "   " + c.Name;
+                    l += " IMiddleware<" + c.MiddlewareType.Name + ">";
+                    l += " {";
+                    var sep = "";
+                    foreach (var d in c.Middleware.Dependencies)
+                    {
+                        l += sep + (d.Required ? "" : "(optional)") + (d.DependentType == null ? "" : d.DependentType.Name) + "[" + d.Name + "]";
+                        sep = ", ";
+                    }
+                    l += "}";
+                    l += " {";
+                    sep = "";
+                    foreach (var s in c.SegmentAssignments)
+                    {
+                        l += sep + s.Name;
+                        sep = ", ";
+                    }
+                    l += "}";
+                    Trace.WriteLine(l);
+                };
+                Trace.WriteLine("== Before segmentation ==");
+                Trace.WriteLine("Components at the front of the pipeline");
+                foreach (var c in frontComponents) p(c);
+                Trace.WriteLine("Components in the middle of the pipeline");
+                foreach (var c in middleComponents) p(c);
+                Trace.WriteLine("Components at the back of the pipeline");
+                foreach (var c in backComponents) p(c);
+#endif
+
                 AddToFront(routerComponents, frontComponents);
                 AddToMiddle(routerComponents, middleComponents);
                 AddToBack(routerComponents, backComponents);
+
+#if DEBUG
+                Trace.WriteLine("== After segmentation ==");
+                Trace.WriteLine("Components at the front of the pipeline");
+                foreach (var c in frontComponents) p(c);
+                Trace.WriteLine("Components in the middle of the pipeline");
+                foreach (var c in middleComponents) p(c);
+                Trace.WriteLine("Components at the back of the pipeline");
+                foreach (var c in backComponents) p(c);
+#endif
             }
 
             // Add components to the segments they were assigned to

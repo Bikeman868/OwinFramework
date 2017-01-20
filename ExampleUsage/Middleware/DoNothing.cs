@@ -13,12 +13,13 @@ namespace ExampleUsage.Middleware
     public class DoNothing : IMiddleware<object>
     {
         /// <summary>
-        /// The Name property is required for all middleware using this Framework.
+        /// The Name property is used to specify dependencies and also for documentation
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// The Dependencies property is required for all middleware using this Framework.
+        /// The Dependencies property is required so that the application can specify
+        /// dependencies between middleware components.
         /// </summary>
         public IList<IDependency> Dependencies { get; private set; }
 

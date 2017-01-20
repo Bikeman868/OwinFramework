@@ -39,6 +39,12 @@ namespace ExampleUsage
                             waitForExit();
                         }
                         break;
+                    case "test":
+                        using (WebApp.Start<StartupTest>(url))
+                        {
+                            waitForExit();
+                        }
+                        break;
                 }
             }
             catch (Exception ex)
