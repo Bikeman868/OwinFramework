@@ -13,5 +13,10 @@ namespace OwinFramework.Utility
             if (ReferenceEquals(other, null)) return false;
             return string.Equals(Key, other.Key, StringComparison.OrdinalIgnoreCase);
         }
+
+        public override string ToString()
+        {
+            return Required ? Key : "~" + Key;
+        }
     }
 }
