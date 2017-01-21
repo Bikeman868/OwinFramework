@@ -66,7 +66,9 @@
     <Compile Include="InterfacesV1\Middleware\IAuthorization.cs" />
     <Compile Include="InterfacesV1\Middleware\IIdentification.cs" />
     <Compile Include="InterfacesV1\Middleware\IOutputCache.cs" />
-    <Compile Include="InterfacesV1\Middleware\IPresentation.cs" />
+    <Compile Include="InterfacesV1\Middleware\IResponseRewriter.cs" />
+    <Compile Include="InterfacesV1\Middleware\IRequestRewriter.cs" />
+    <Compile Include="InterfacesV1\Middleware\IResponseProducer.cs" />
     <Compile Include="InterfacesV1\Middleware\ISession.cs" />
     <Compile Include="InterfacesV1\Upstream\IUpstreamAuthorization.cs" />
     <Compile Include="InterfacesV1\Upstream\IUpstreamIdentification.cs" />

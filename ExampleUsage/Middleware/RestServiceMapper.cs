@@ -15,7 +15,7 @@ namespace ExampleUsage.Middleware
     /// In a real application the middleware would examine the OWIN context and produce 
     /// different output for different requests.
     /// </summary>
-    public class RestServiceMapper : IMiddleware<IPresentation>
+    public class RestServiceMapper : IMiddleware<IResponseProducer>
     {
         public string Name { get; set; }
 

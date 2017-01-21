@@ -63,6 +63,9 @@
     <Compile Include="InterfacesV1\Facilities\IIdentityStore.cs" />
     <Compile Include="InterfacesV1\Facilities\ITokenStore.cs" />
     <Compile Include="InterfacesV1\Middleware\IOutputCache.cs" />
+    <Compile Include="InterfacesV1\Middleware\IRequestRewriter.cs" />
+    <Compile Include="InterfacesV1\Middleware\IResponseProducer.cs" />
+    <Compile Include="InterfacesV1\Middleware\IResponseRewriter.cs" />
     <Compile Include="InterfacesV1\Upstream\IUpstreamOutputCache.cs" />
     <Compile Include="Interfaces\Utility\IDependencyGraphEdge.cs" />
     <Compile Include="Interfaces\Utility\IHostingEnvironment.cs" />
@@ -81,7 +84,6 @@
     <Compile Include="Interfaces\Utility\IDependencyGraphFactory.cs" />
     <Compile Include="InterfacesV1\Middleware\IIdentification.cs" />
     <Compile Include="Interfaces\Routing\IRoute.cs" />
-    <Compile Include="InterfacesV1\Middleware\IPresentation.cs" />
     <Compile Include="InterfacesV1\Middleware\IAuthorization.cs" />
     <Compile Include="Interfaces\Builder\IBuilder.cs" />
     <Compile Include="InterfacesV1\Capability\IConfigurable.cs" />

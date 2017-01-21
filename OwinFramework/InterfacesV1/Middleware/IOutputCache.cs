@@ -15,7 +15,7 @@ namespace OwinFramework.InterfacesV1.Middleware
     /// As an application developer you should test a few alternatives
     /// with production traffic.
     /// </summary>
-    public interface IOutputCache
+    public interface IOutputCache : IResponseRewriter
     {
         /// <summary>
         /// Rendering middleware should set this to indicate how valulable
