@@ -6,7 +6,7 @@ using OwinFramework.Utility;
 namespace UnitTests
 {
     [TestFixture]
-    public class Segmenter_tests
+    public class SegmenterTests
     {
         private ISegmenter _segmenter;
 

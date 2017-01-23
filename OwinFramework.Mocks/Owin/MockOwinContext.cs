@@ -20,10 +20,10 @@ namespace OwinFramework.Mocks.Owin
         public Microsoft.Owin.Security.IAuthenticationManager Authentication { get { return _authenticationManager; } }
 #endif
 
-        private readonly IDictionary<string, object> _properties = new Dictionary<string, object>();
-        private readonly IDictionary<string, object> _environment = new Dictionary<string, object>();
-        private readonly MockOwinRequest _request;
-        private readonly MockOwinResponse _response;
+        private IDictionary<string, object> _properties;
+        private IDictionary<string, object> _environment;
+        private MockOwinRequest _request;
+        private MockOwinResponse _response;
 
         public IDictionary<string, object> Environment { get { return _environment; } }
 
@@ -32,10 +32,18 @@ namespace OwinFramework.Mocks.Owin
 
         public MockOwinContext()
         {
+            Clear();
+        }
+
+        public void Clear()
+        {
             ResponseStream = new MemoryStream();
 
             _request = new MockOwinRequest(this);
             _response = new MockOwinResponse(this, ResponseStream);
+
+            _properties = new Dictionary<string, object>();
+            _environment = new Dictionary<string, object>();
 
             Set("server.RemoteIpAddress", "192.168.0.1");
             Set("server.RemotePort", "80");
@@ -53,6 +61,7 @@ namespace OwinFramework.Mocks.Owin
                     {"path", "/"}
                 }
             };
+
 
             var capabilities = new Dictionary<string, object>
             {

@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace UnitTests
 {
     [TestFixture]
-    public class Dependency_graph_tests
+    public class DependencyGraphTests
     {
         private IDependencyGraph<string> _dependencyGraph;
 

@@ -56,6 +56,7 @@
     </Compile>
     <Compile Include="Builder\Builder.cs" />
     <Compile Include="Builder\LegacyMiddlewareWrapper.cs" />
+    <Compile Include="MiddlewareHelpers\ResponseCapture.cs" />
     <Compile Include="Configuration\DefaultValueConfiguration.cs" />
     <Compile Include="InterfacesV1\Capability\IAnalysable.cs" />
     <Compile Include="InterfacesV1\Capability\IConfigurable.cs" />

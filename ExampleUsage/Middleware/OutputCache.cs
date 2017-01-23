@@ -8,6 +8,8 @@ using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Routing;
 using OwinFramework.InterfacesV1.Middleware;
 using OwinFramework.InterfacesV1.Upstream;
+using OwinFramework.MiddlewareHelpers;
+using OwinFramework.MiddlewareHelpers.ResponseRewriter;
 
 namespace ExampleUsage.Middleware
 {
@@ -39,7 +41,6 @@ namespace ExampleUsage.Middleware
                 TimeInCache = TimeSpan.FromMinutes(3),
                 UseCachedContent = false,
                 CachedContent = Encoding.UTF8.GetBytes("This is some cached content"),
-                ResponseRewriter = context.GetFeature<IResponseRewriter>()
             };
 
             context.SetFeature<IUpstreamOutputCache>(cacheContext);
@@ -63,31 +64,23 @@ namespace ExampleUsage.Middleware
 
             if (cacheContext.CachedContentIsAvailable && cacheContext.UseCachedContent)
             {
-                if (cacheContext.ResponseRewriter == null)
-                {
-                    // If there is no proir response writer then we have to write the response.
-                    Console.WriteLine("Responding with cached content");
-                    return context.Response.WriteAsync(cacheContext.CachedContent);
-                }
-                // If there is a prior response writer then we need to replace the contents
-                // of the output buffer so that it will send this back to the browser
-                return Task.Factory.StartNew(() =>
-                {
-                    cacheContext.ResponseRewriter.OutputBuffer = cacheContext.CachedContent;
-                });
+                Console.WriteLine("Responding with cached content");
+                return context.Response.WriteAsync(cacheContext.CachedContent);
             }
 
             context.SetFeature<IOutputCache>(cacheContext);
+            cacheContext.StartCapture(context);
+
             return next().ContinueWith(t =>
             {
-                if (cacheContext.ResponseRewriter == null)
+                var updateCache = cacheContext.Priority != CachePriority.Never;
+                cacheContext.Send(updateCache);
+
+                if (updateCache)
                 {
-                    // Since we captured the output from downstream, we are responsible for sending it to the browser
-                    // TODO: Set the response body back to the original stream
-                    context.Response.Write(cacheContext.OutputBuffer);
+                    Console.WriteLine("Updating cache with new content");
+                    // TODO: Write cacheContext.CachedContent to the cache
                 }
-                if (cacheContext.Priority != CachePriority.Never)
-                    Console.WriteLine("Saving response in output cache");
             });
         }
 
@@ -99,41 +92,35 @@ namespace ExampleUsage.Middleware
             public bool CachedContentIsAvailable { get; set; }
             public TimeSpan? TimeInCache { get; set; }
             public bool UseCachedContent { get; set; }
-            public IResponseRewriter ResponseRewriter { get; set; }
+            public ResponseCapture ResponseCapture { get; set; }
             public byte[] CachedContent { get; set; }
 
-            /// <summary>
-            /// This only gets used when there is no other response rewriter further upstream
-            /// </summary>
-            private byte[] _outputBuffer;
-
-            /// <summary>
-            /// When there is a long chain of middleware that buffers the output and
-            /// modifies it before sending the response to the broswer then these should
-            /// refer upstream to the first middleware of this type so that the output
-            /// is only captured once and only sent back to the browser once.
-            /// </summary>
             public byte[] OutputBuffer 
             {
-                get 
-                {
-                    return ResponseRewriter == null ? _outputBuffer : ResponseRewriter.OutputBuffer; 
-                }
-                set
-                {
-                    if (ResponseRewriter == null)
-                        _outputBuffer = value;
-                    else
-                        ResponseRewriter.OutputBuffer = value;
-                }
+                get { return ResponseCapture.OutputBuffer; }
+                set { ResponseCapture.OutputBuffer = value; }
             }
 
-            public CacheContext()
+            public void StartCapture(IOwinContext owinContext)
             {
-                if (ResponseRewriter == null)
+                ResponseCapture = new ResponseCapture(owinContext);
+            }
+
+            public void Send(bool copyToCache)
+            {
+                if (ResponseCapture == null)
+                    return;
+
+                if (copyToCache)
                 {
-                    // TODO: Capture the output from the downstream middleware into _outputBuffer;
+                    // We need to copy the output buffer because other middleware upstream
+                    // might make further modifications - compression, encryption etc
+                    var buffer = ResponseCapture.OutputBuffer;
+                    CachedContent = new byte[buffer.Length];
+                    buffer.CopyTo(CachedContent, 0);
                 }
+
+                ResponseCapture.Send();
             }
 
             void IOutputCache.Clear()
