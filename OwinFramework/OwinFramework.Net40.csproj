@@ -56,7 +56,6 @@
     </Compile>
     <Compile Include="Builder\Builder.cs" />
     <Compile Include="Builder\LegacyMiddlewareWrapper.cs" />
-    <Compile Include="MiddlewareHelpers\ResponseCapture.cs" />
     <Compile Include="Configuration\DefaultValueConfiguration.cs" />
     <Compile Include="InterfacesV1\Capability\IAnalysable.cs" />
     <Compile Include="InterfacesV1\Capability\IConfigurable.cs" />
@@ -80,6 +79,15 @@
     <Compile Include="Interfaces\Utility\IHostingEnvironment.cs" />
     <Compile Include="Interfaces\Utility\ISegmenter.cs" />
     <Compile Include="Interfaces\Utility\ISegmenterFactory.cs" />
+    <Compile Include="MiddlewareHelpers\Analysable\CountPerTimeSpanStatistic.cs" />
+    <Compile Include="MiddlewareHelpers\Analysable\FloatStatistic.cs" />
+    <Compile Include="MiddlewareHelpers\Analysable\IntStatistic.cs" />
+    <Compile Include="MiddlewareHelpers\Analysable\LongStatistic.cs" />
+    <Compile Include="MiddlewareHelpers\Analysable\Statistic.cs" />
+    <Compile Include="MiddlewareHelpers\Analysable\StatisticInformation.cs" />
+    <Compile Include="MiddlewareHelpers\Analysable\TimeSpanPerCountStatistic.cs" />
+    <Compile Include="MiddlewareHelpers\Analysable\TimespanStatistic.cs" />
+    <Compile Include="MiddlewareHelpers\ResponseRewriter\ResponseCapture.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="Utility\DuplicateKeyException.cs" />
     <Compile Include="Utility\CircularDependencyException.cs" />
@@ -109,6 +117,7 @@
   <ItemGroup>
     <None Include="InterfacesV1\readme.md" />
     <None Include="Interfaces\readme.md" />
+    <None Include="MiddlewareHelpers\readme.md" />
     <None Include="packages.OwinFramework.Net40.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
