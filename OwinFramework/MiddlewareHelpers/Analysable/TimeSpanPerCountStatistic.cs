@@ -16,6 +16,10 @@ namespace OwinFramework.MiddlewareHelpers.Analysable
         /// </summary>
         protected abstract void GetValue(out TimeSpan time, out int count);
 
+        /// <summary>
+        /// Updates the properties with the latest statistic
+        /// </summary>
+        /// <returns>this for fluid syntax</returns>
         public override IStatistic Refresh()
         {
             TimeSpan timeSpan;

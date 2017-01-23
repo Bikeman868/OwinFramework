@@ -52,6 +52,9 @@ namespace OwinFramework.Builder
             get { return _properties; }
         }
 
+        /// <summary>
+        /// Registers legacy middleware with the Owin Framework builder
+        /// </summary>
         public IAppBuilder Use(object middleware, params object[] args)
         {
             // See https://msdn.microsoft.com/en-us/library/microsoft.owin.builder.appbuilder.use(v=vs.113).aspx#M:Microsoft.Owin.Builder.AppBuilder.Use(System.Object,System.Object[])

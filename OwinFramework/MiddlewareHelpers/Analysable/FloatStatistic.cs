@@ -11,11 +11,19 @@ namespace OwinFramework.MiddlewareHelpers.Analysable
     {
         private readonly Func<float> _getValue;
 
+        /// <summary>
+        /// Constructs a new floating point statistic
+        /// </summary>
+        /// <param name="getValue">A lambda expression that will get the current value of this statistic</param>
         public FloatStatistic(Func<float> getValue)
         {
             _getValue = getValue;
         }
 
+        /// <summary>
+        /// Updates the properties with the latest statistic
+        /// </summary>
+        /// <returns>this for fluid syntax</returns>
         public override IStatistic Refresh()
         {
             Value = _getValue();
