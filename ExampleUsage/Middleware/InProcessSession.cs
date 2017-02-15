@@ -99,9 +99,11 @@ namespace ExampleUsage.Middleware
         private class UpstreamSession : IUpstreamSession
         {
             public bool SessionRequired;
+            public string SessionId { get; private set; }
 
-            public bool EstablishSession()
+            public bool EstablishSession(string sessionId)
             {
+                SessionId = sessionId;
                 SessionRequired = true;
                 return true;
             }

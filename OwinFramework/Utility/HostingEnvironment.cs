@@ -14,9 +14,8 @@ namespace OwinFramework.Utility
         /// There is no known method that works for all environments. The safest way is to provide
         /// an implementation of this method within your application. The OWIN Framework will use
         /// your implementation wherever it needs to resolve a relative path into a physical file
-        /// location.
+        /// location. See http://stackoverflow.com/questions/24571258/how-do-you-resolve-a-virtual-path-to-a-file-under-an-owin-host
         /// </summary>
-        /// <seealso cref="http://stackoverflow.com/questions/24571258/how-do-you-resolve-a-virtual-path-to-a-file-under-an-owin-host"/>
         string IHostingEnvironment.MapPath(string path)
         {
             path = path.Replace("/", "\\");
