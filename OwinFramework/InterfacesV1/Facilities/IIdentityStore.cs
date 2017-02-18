@@ -9,24 +9,48 @@ namespace OwinFramework.InterfacesV1.Facilities
     public enum AuthenticationStatus
     {
         /// <summary>
-        /// The requestor sucesfully authenticated and should be given access
+        /// The evidence provided represents the anonymous user
         /// </summary>
-        Authenticated,
+        Anonymous = 0,
 
         /// <summary>
-        /// The information provided by the requestor was not valid
+        /// The requestor sucesfully authenticated and should be given access
         /// </summary>
-        InvalidCredentials,
+        Authenticated = 1,
+
+        /// <summary>
+        /// The information provided by the requestor was not valid. This could be
+        /// incorrect password, invalid shared secret, invalid cerificate signature etc.
+        /// </summary>
+        InvalidCredentials = 2,
 
         /// <summary>
         /// The supplied information did not match any identity
         /// </summary>
-        NotFound,
+        NotFound = 3,
+
+        /// <summary>
+        /// This result is returned after too many failed login attempts. The
+        /// implementor of this factiity can decide the business rules around
+        /// locking and unlocking users because of failed logins. Generic middleware
+        /// should provide configuration options to allow the application developer
+        /// to choose the behavour they want. This should be considered a temporary
+        /// failure, trying again later might succeed.
+        /// </summary>
+        Locked = 4,
+
+        /// <summary>
+        /// Some implementations might have time-limited user accounts, secret keys etc.
+        /// Certificates also have an expiration date. In all of these circumstances the
+        /// Expired result is returned. This should be considered a permenant failure,
+        /// ie trying again later will produce the same result.
+        /// </summary>
+        Expired = 5,
 
         /// <summary>
         /// The requested authentication method is not supported by this identity store
         /// </summary>
-        Unsupported
+        Unsupported = 6
     }
 
     /// <summary>
@@ -40,7 +64,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         AuthenticationStatus Status { get; }
 
         /// <summary>
-        /// A URL friendly string that uniquely identifies a consumer of this service.
+        /// A URL friendly string that uniquely identifies a consumer of this service (user).
         /// Other facilities and middleware should use this to associate other information
         /// with the caller. For example the Authorization middleware should associate
         /// group membership with this identity and a user store can use this to 
@@ -48,6 +72,17 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// identity of the caller.
         /// </summary>
         string Identity { get; }
+
+        /// <summary>
+        /// An opaque token that uniquely identifies this authentication result. If the
+        /// application supports a 'Remember Me' feature where they store a cookie on
+        /// the broswer to avoid the user having to log in each time, then this token
+        /// is designed to be stored in that cookie.
+        /// The implementation of this token can be a secure encryption of the Identity 
+        /// and Purposes properties combined, or a random key that is a lookup for this
+        /// information.
+        /// </summary>
+        string RememberMeToken { get; }
 
         /// <summary>
         /// Returns a list of optional purposes associated with this login. 
@@ -85,7 +120,7 @@ namespace OwinFramework.InterfacesV1.Facilities
 
     /// <summary>
     /// Used to provide information about a sucesful login to a social network site
-    /// such as Google, facebook Twitter etc
+    /// such as Google, Facebook Twitter etc
     /// </summary>
     public interface ISocialAuthentication
     {
@@ -163,6 +198,15 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// <param name="password">The user's password</param>
         /// <returns>The results of checking the user's credentials</returns>
         IAuthenticationResult AuthenticateWithCredentials(string userName, string password);
+
+        /// <summary>
+        /// Logs the user in using a stored Remember Me Token. This token
+        /// can be obtained from a full login with credentials or a secret key
+        /// </summary>
+        /// <param name="rememberMeToken">The remember me token from a succesful
+        /// login</param>
+        /// <returns>Details about the user and purposes permitted by this login</returns>
+        IAuthenticationResult RememberMe(string rememberMeToken);
 
         #endregion
 

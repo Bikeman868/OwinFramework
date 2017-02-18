@@ -53,6 +53,32 @@ namespace OwinFramework.Mocks.V1.Facilities
             return identity.Identity;
         }
 
+        public IAuthenticationResult RememberMe(string rememberMeToken)
+        {
+            if (string.IsNullOrEmpty(rememberMeToken))
+                return new AuthenticationResult
+                {
+                    Status = AuthenticationStatus.InvalidCredentials
+                };
+
+            var colonIndex = rememberMeToken.IndexOf(":", StringComparison.Ordinal);
+            if (colonIndex < 1)
+                return new AuthenticationResult
+                {
+                    Status = AuthenticationStatus.InvalidCredentials
+                };
+
+            return new AuthenticationResult
+            {
+                Status = AuthenticationStatus.Authenticated,
+                RememberMeToken = rememberMeToken,
+                Identity = rememberMeToken.Substring(0, colonIndex),
+                Purposes = colonIndex < rememberMeToken.Length 
+                    ? rememberMeToken.Substring(colonIndex + 1).Split(',').ToList() 
+                    : new List<string>()
+            };
+        }
+
         #region Certificates
 
         public byte[] AddCertificate(string identity, TimeSpan? lifetime, IEnumerable<string> purposes)
@@ -215,6 +241,7 @@ namespace OwinFramework.Mocks.V1.Facilities
 
             result.Identity = existing.Identity;
             result.Purposes = existing.Purposes;
+            result.RememberMeToken = existing.Identity + ":" + string.Join(",", existing.Purposes ?? new List<string>());
 
             result.Status = password == existing.Password
                 ? AuthenticationStatus.Authenticated
@@ -442,6 +469,7 @@ namespace OwinFramework.Mocks.V1.Facilities
             public string Identity { get; set; }
             public IList<string> Purposes { get; set; }
             public AuthenticationStatus Status { get; set; }
+            public string RememberMeToken { get; set; }
         }
 
         private class SocialAuthentication: ISocialAuthentication
@@ -457,5 +485,7 @@ namespace OwinFramework.Mocks.V1.Facilities
             public string Secret { get; set; }
             public IList<string> Purposes { get; set; }
         }
+
+
     }
 }

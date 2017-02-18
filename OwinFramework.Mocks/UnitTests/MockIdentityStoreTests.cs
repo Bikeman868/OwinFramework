@@ -108,6 +108,59 @@ namespace OwinFramework.Mocks.UnitTests
         }
 
         [Test]
+        public void Should_remember_me()
+        {
+            const string userName = "martin@gmail.com";
+            const string password = "somethingHardT0Gu3$$";
+
+            var identity = _identityStore.CreateIdentity();
+            var success = _identityStore.AddCredentials(identity, userName, password);
+
+            Assert.IsTrue(success);
+
+            var result = _identityStore.AuthenticateWithCredentials(userName, password);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
+
+            var result2 = _identityStore.RememberMe(result.RememberMeToken);
+
+            Assert.IsNotNull(result2);
+            Assert.AreEqual(identity, result2.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result2.Status);
+        }
+
+        [Test]
+        public void Should_remember_third_party()
+        {
+            const string userName = "martin@gmail.com";
+            const string password = "somethingHardT0Gu3$$";
+
+            const string delegateUserName = "fred@gmail.com";
+            const string delegatePassword = "NotSoHard";
+            var delegatePurposes = new List<string> {"ManageContacts"};
+
+            var identity = _identityStore.CreateIdentity();
+            Assert.IsTrue(_identityStore.AddCredentials(identity, userName, password));
+            Assert.IsTrue(_identityStore.AddCredentials(identity, delegateUserName, delegatePassword, false, delegatePurposes));
+
+            var result = _identityStore.AuthenticateWithCredentials(delegateUserName, delegatePassword);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
+            Assert.AreEqual(delegatePurposes[0], result.Purposes[0]);
+
+            var result2 = _identityStore.RememberMe(result.RememberMeToken);
+
+            Assert.IsNotNull(result2);
+            Assert.AreEqual(identity, result2.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result2.Status);
+            Assert.AreEqual(delegatePurposes[0], result2.Purposes[0]);
+        }
+
+        [Test]
         public void Should_allow_password_change()
         {
             const string userName = "martin@gmail.com";
