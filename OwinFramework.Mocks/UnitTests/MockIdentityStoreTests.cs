@@ -297,5 +297,81 @@ namespace OwinFramework.Mocks.UnitTests
             Assert.AreEqual("api", result.Purposes[0]);
             Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
         }
+
+        [Test]
+        public void Should_return_list_of_credentials()
+        {
+            const string username1 = "martin1@gmail.com";
+            const string username2 = "martin2@gmail.com";
+            const string password = "somethingHardT0Gu3$$";
+
+            var identity = _identityStore.CreateIdentity();
+            _identityStore.AddCredentials(identity, username1, password);
+            _identityStore.AddCredentials(identity, username2, password, false, new[]{"contacts"});
+
+            var credentials = _identityStore.GetCredentials(identity).ToList();
+
+            Assert.AreEqual(2, credentials.Count());
+
+            var credential1 = credentials.FirstOrDefault(c => c.Username == username1);
+            var credential2 = credentials.FirstOrDefault(c => c.Username == username2);
+
+            Assert.IsNotNull(credential1);
+            Assert.AreEqual(identity, credential1.Identity);
+
+            Assert.IsNotNull(credential2);
+            Assert.AreEqual(identity, credential2.Identity);
+            Assert.AreEqual(1, credential2.Purposes.Count);
+            Assert.AreEqual("contacts", credential2.Purposes[0]);
+        }
+
+        [Test]
+        public void Should_delete_credentials()
+        {
+            const string username1 = "martin1@gmail.com";
+            const string username2 = "martin2@gmail.com";
+            const string password = "somethingHardT0Gu3$$";
+
+            var identity = _identityStore.CreateIdentity();
+            _identityStore.AddCredentials(identity, username1, password);
+            _identityStore.AddCredentials(identity, username2, password, false, new[] { "contacts" });
+
+            var credential = _identityStore.GetUsernameCredential(username2);
+            _identityStore.DeleteCredential(credential);
+
+            var credentials = _identityStore.GetCredentials(identity).ToList();
+            var credential1 = credentials.FirstOrDefault(c => c.Username == username1);
+            var credential2 = credentials.FirstOrDefault(c => c.Username == username2);
+
+            Assert.AreEqual(1, credentials.Count());
+            Assert.IsNotNull(credential1);
+            Assert.IsNull(credential2);
+        }
+
+        [Test]
+        public void Should_change_password()
+        {
+            const string userName = "martin@gmail.com";
+            const string oldPassword = "somethingHardT0Gu3$$";
+            const string newPassword = "evenHarderT0Gu3$$2016";
+
+            var identity = _identityStore.CreateIdentity();
+            _identityStore.AddCredentials(identity, userName, oldPassword);
+
+            var result = _identityStore.AuthenticateWithCredentials(userName, oldPassword);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
+
+            var credential = _identityStore.GetRememberMeCredential(result.RememberMeToken);
+            _identityStore.ChangePassword(credential, newPassword);
+
+            result = _identityStore.AuthenticateWithCredentials(userName, newPassword);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.Authenticated, result.Status);
+
+            result = _identityStore.AuthenticateWithCredentials(userName, oldPassword);
+            Assert.AreEqual(identity, result.Identity);
+            Assert.AreEqual(AuthenticationStatus.InvalidCredentials, result.Status);
+        }
     }
 }

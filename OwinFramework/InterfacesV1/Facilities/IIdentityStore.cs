@@ -119,6 +119,27 @@ namespace OwinFramework.InterfacesV1.Facilities
     }
 
     /// <summary>
+    /// Encapsulates the information stored about a username/password combination
+    /// </summary>
+    public interface ICredential
+    {
+        /// <summary>
+        /// The unique identifier for the identity this credential belongs to
+        /// </summary>
+        string Identity { get; }
+
+        /// <summary>
+        /// The username used to sign in with this credential
+        /// </summary>
+        string Username { get; }
+
+        /// <summary>
+        /// The actions that are permitted on the identity by this credential
+        /// </summary>
+        List<string> Purposes { get; }
+    }
+
+    /// <summary>
     /// Used to provide information about a sucesful login to a social network site
     /// such as Google, Facebook Twitter etc
     /// </summary>
@@ -207,6 +228,45 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// login</param>
         /// <returns>Details about the user and purposes permitted by this login</returns>
         IAuthenticationResult RememberMe(string rememberMeToken);
+
+        /// <summary>
+        /// Retrieves the username that was used to log in using credentials
+        /// </summary>
+        /// <param name="rememberMeToken">A token returned from a sucessful login</param>
+        /// <returns>Credentials if this login was a creddentials login, or null
+        /// if the user identified in some other way (for example with a cert)</returns>
+        ICredential GetRememberMeCredential(string rememberMeToken);
+
+        /// <summary>
+        /// Retrieves the username that was used to log in using credentials
+        /// </summary>
+        /// <param name="username">A username that is used to login to the system</param>
+        /// <returns>Credentials if this username exists in the system, or null
+        /// if there is no such user</returns>
+        ICredential GetUsernameCredential(string username);
+
+        /// <summary>
+        /// Retrieves a list of the credentials associated with an identity
+        /// </summary>
+        /// <param name="identity">The unique identifier for the identity</param>
+        /// <returns>A list of credentials</returns>
+        IEnumerable<ICredential> GetCredentials(string identity);
+
+        /// <summary>
+        /// Deletes a user credential from the system preventing any further login
+        /// attempts with that username.
+        /// </summary>
+        /// <param name="credential">The credential to delete</param>
+        /// <returns>True if the deletion was sucessful and false if not found</returns>
+        bool DeleteCredential(ICredential credential);
+
+        /// <summary>
+        /// Changes the password for a credential
+        /// </summary>
+        /// <param name="credential"></param>
+        /// <param name="newPassword"></param>
+        /// <returns></returns>
+        bool ChangePassword(ICredential credential, string newPassword);
 
         #endregion
 

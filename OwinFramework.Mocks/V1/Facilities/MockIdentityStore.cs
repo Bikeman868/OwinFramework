@@ -191,7 +191,7 @@ namespace OwinFramework.Mocks.V1.Facilities
                         ? new List<string>()
                         : purposes.Where(p => !string.IsNullOrEmpty(p)).ToList();
 
-            var existing = _credentials.FirstOrDefault(c => string.Equals(c.UserName, userName, StringComparison.OrdinalIgnoreCase));
+            var existing = _credentials.FirstOrDefault(c => string.Equals(c.Username, userName, StringComparison.OrdinalIgnoreCase));
             if (existing != null)
             {
                 if (string.Equals(identity, existing.Identity, StringComparison.OrdinalIgnoreCase))
@@ -218,7 +218,7 @@ namespace OwinFramework.Mocks.V1.Facilities
                 var newCredential = new TestCredential
                 {
                     Identity = identity,
-                    UserName = userName,
+                    Username = userName,
                     Password = password,
                     Purposes = purposeList
                 };
@@ -234,7 +234,7 @@ namespace OwinFramework.Mocks.V1.Facilities
                 Status = AuthenticationStatus.NotFound
             };
 
-            var existing = _credentials.FirstOrDefault(c => string.Equals(c.UserName, userName, StringComparison.OrdinalIgnoreCase));
+            var existing = _credentials.FirstOrDefault(c => string.Equals(c.Username, userName, StringComparison.OrdinalIgnoreCase));
 
             if (existing == null)
                 return result;
@@ -247,6 +247,46 @@ namespace OwinFramework.Mocks.V1.Facilities
                 ? AuthenticationStatus.Authenticated
                 : AuthenticationStatus.InvalidCredentials;
             return result;
+        }
+
+        public ICredential GetRememberMeCredential(string rememberMeToken)
+        {
+            var identity = rememberMeToken.Substring(0, rememberMeToken.IndexOf(':'));
+            return _credentials.FirstOrDefault(c => string.Equals(c.Identity, identity, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public ICredential GetUsernameCredential(string username)
+        {
+            return _credentials.FirstOrDefault(c => string.Equals(c.Username, username, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public IEnumerable<ICredential> GetCredentials(string identity)
+        {
+            return _credentials.Where(c => string.Equals(c.Identity, identity, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public bool DeleteCredential(ICredential credential)
+        {
+            var startCount = _credentials.Count;
+            _credentials = _credentials
+                .Where(c => !string.Equals(c.Username, credential.Username, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            return _credentials.Count != startCount;
+        }
+
+        public bool ChangePassword(ICredential credential, string newPassword)
+        {
+            if (!_identities.ContainsKey(credential.Identity))
+                return false;
+
+            var identity = _identities.FirstOrDefault(i => i.Key == credential.Identity).Value;
+
+            var foundCredential = _credentials.FirstOrDefault(c => string.Equals(c.Username, credential.Username));
+            if (foundCredential == null) return false;
+
+            foundCredential.Password = newPassword;
+
+            return true;
         }
 
         #endregion
@@ -430,12 +470,12 @@ namespace OwinFramework.Mocks.V1.Facilities
             public readonly IList<TestCredential> Credentials = new List<TestCredential>();
         }
 
-        private class TestCredential
+        private class TestCredential : ICredential
         {
-            public string Identity;
-            public string UserName;
-            public string Password;
-            public IList<string> Purposes;
+            public string Identity { get; set; }
+            public string Username { get; set; }
+            public string Password { get; set; }
+            public List<string> Purposes { get; set; }
         }
 
         private class TestCertificate
@@ -485,7 +525,6 @@ namespace OwinFramework.Mocks.V1.Facilities
             public string Secret { get; set; }
             public IList<string> Purposes { get; set; }
         }
-
 
     }
 }
