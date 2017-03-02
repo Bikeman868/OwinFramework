@@ -42,7 +42,7 @@ namespace UnitTests
             var nodes = _segmenter.GetSegmentNodes("S0");
 
             Assert.IsNotNull(nodes);
-            Assert.AreEqual(3, nodes.Count);
+            Assert.AreEqual(4, nodes.Count);
         }
 
         [Test]
@@ -336,5 +336,261 @@ namespace UnitTests
             Assert.AreEqual("ui", lessSegments[0], "Less on UI route");
         }
 
+        [Test]
+        public void Should_segment_white_paper_additional_segments_use_case()
+        {
+            // See https://github.com/Bikeman868/OwinFramework/blob/master/Segmentation%20White%20Paper.pdf
+
+            _segmenter.AddSegment("S0", new[] { "S1", "S2", "S3" });
+
+            _segmenter.AddNode(
+                "A",
+                new[] { new List<string> { "D" } },
+                new[] { "S1" });
+
+            _segmenter.AddNode(
+                "B",
+                new[] { new List<string> { "D" } },
+                new[] { "S2" });
+
+            _segmenter.AddNode(
+                "C",
+                null,
+                new[] { "S3" });
+
+            _segmenter.AddNode("D");
+
+            var aSegments = _segmenter.GetNodeSegments("A");
+            var bSegments = _segmenter.GetNodeSegments("B");
+            var cSegments = _segmenter.GetNodeSegments("C");
+            var dSegments = _segmenter.GetNodeSegments("D");
+
+            Assert.AreEqual(1, aSegments.Count, "Number of segments A is assigned to");
+            Assert.AreEqual("S1", aSegments[0], "A on S1");
+
+            Assert.AreEqual(1, bSegments.Count, "Number of segments B is assigned to");
+            Assert.AreEqual("S2", bSegments[0], "B on S2");
+
+            Assert.AreEqual(1, cSegments.Count, "Number of segments C is assigned to");
+            Assert.AreEqual("S3", cSegments[0], "C on S3");
+
+            Assert.AreEqual(1, dSegments.Count, "Number of segments D is assigned to");
+            Assert.AreNotEqual("S0", dSegments[0], "D not on S0");
+            Assert.AreNotEqual("S1", dSegments[0], "D not on S1");
+            Assert.AreNotEqual("S2", dSegments[0], "D not on S2");
+            Assert.AreNotEqual("S3", dSegments[0], "D not on S3");
+        }
+
+        [Test]
+        public void Should_segment_white_paper_optional_dependency_use_case()
+        {
+            // See https://github.com/Bikeman868/OwinFramework/blob/master/Segmentation%20White%20Paper.pdf
+
+            _segmenter.AddSegment("S0", new[] { "S1", "S2" });
+            _segmenter.AddSegment("S1", new[] { "S3", "S4" });
+
+            _segmenter.AddNode(
+                "A",
+                null,
+                new[] { "S3" });
+
+            _segmenter.AddNode(
+                "B",
+                new[] { new List<string> { "E", null } },
+                new[] { "S4" });
+
+            _segmenter.AddNode(
+                "C",
+                new[]
+                { 
+                    new List<string> { "E", null },
+                    new List<string> { "F", null }
+                },
+                new[] { "S2" });
+
+            _segmenter.AddNode(
+                "D",
+                new[] { new List<string> { "E" } },
+                new[] { "S1" });
+
+            _segmenter.AddNode(
+                "E",
+                new[] { new List<string> { "F" } });
+
+            _segmenter.AddNode("F");
+
+            var aSegments = _segmenter.GetNodeSegments("A");
+            var bSegments = _segmenter.GetNodeSegments("B");
+            var cSegments = _segmenter.GetNodeSegments("C");
+            var dSegments = _segmenter.GetNodeSegments("D");
+            var eSegments = _segmenter.GetNodeSegments("E");
+            var fSegments = _segmenter.GetNodeSegments("F");
+
+            Assert.AreEqual(1, aSegments.Count, "Number of segments A is assigned to");
+            Assert.AreEqual("S3", aSegments[0], "A on S3");
+
+            Assert.AreEqual(1, bSegments.Count, "Number of segments B is assigned to");
+            Assert.AreEqual("S4", bSegments[0], "B on S4");
+
+            Assert.AreEqual(1, cSegments.Count, "Number of segments C is assigned to");
+            Assert.AreEqual("S2", cSegments[0], "C on S2");
+
+            Assert.AreEqual(1, dSegments.Count, "Number of segments D is assigned to");
+            Assert.AreEqual("S1", dSegments[0], "D on S1");
+
+            Assert.AreEqual(1, eSegments.Count, "Number of segments E is assigned to");
+            Assert.AreEqual("S1", eSegments[0], "E on S1");
+
+            Assert.AreEqual(1, fSegments.Count, "Number of segments F is assigned to");
+            Assert.AreEqual("S1", fSegments[0], "F on S1");
+
+            var s0 = _segmenter.GetSegmentNodes("S0");
+            var s1 = _segmenter.GetSegmentNodes("S1");
+            var s2 = _segmenter.GetSegmentNodes("S2");
+            var s3 = _segmenter.GetSegmentNodes("S3");
+            var s4 = _segmenter.GetSegmentNodes("S4");
+
+            Assert.AreEqual(0, s0.Count, "Number of nodes in S0");
+            Assert.AreEqual(3, s1.Count, "Number of nodes in S1");
+            Assert.AreEqual(1, s2.Count, "Number of nodes in S2");
+            Assert.AreEqual(1, s3.Count, "Number of nodes in S3");
+            Assert.AreEqual(1, s4.Count, "Number of nodes in S4");
+        }
+
+        [Test]
+        public void Should_segment_white_paper_required_dependency_use_case()
+        {
+            // See https://github.com/Bikeman868/OwinFramework/blob/master/Segmentation%20White%20Paper.pdf
+
+            _segmenter.AddSegment("S0", new[] { "S1", "S2" });
+            _segmenter.AddSegment("S1", new[] { "S3", "S4" });
+
+            _segmenter.AddNode(
+                "A",
+                null,
+                new[] { "S3" });
+
+            _segmenter.AddNode(
+                "B",
+                new[] { new List<string> { "E", null } },
+                new[] { "S4" });
+
+            _segmenter.AddNode(
+                "C",
+                new[]
+                { 
+                    new List<string> { "E", null },
+                    new List<string> { "F" }
+                },
+                new[] { "S2" });
+
+            _segmenter.AddNode(
+                "D",
+                new[] { new List<string> { "E" } },
+                new[] { "S1" });
+
+            _segmenter.AddNode(
+                "E",
+                new[] { new List<string> { "F" } });
+
+            _segmenter.AddNode("F");
+
+            var aSegments = _segmenter.GetNodeSegments("A");
+            var bSegments = _segmenter.GetNodeSegments("B");
+            var cSegments = _segmenter.GetNodeSegments("C");
+            var dSegments = _segmenter.GetNodeSegments("D");
+            var eSegments = _segmenter.GetNodeSegments("E");
+            var fSegments = _segmenter.GetNodeSegments("F");
+
+            Assert.AreEqual(1, aSegments.Count, "Number of segments A is assigned to");
+            Assert.AreEqual("S3", aSegments[0], "A on S3");
+
+            Assert.AreEqual(1, bSegments.Count, "Number of segments B is assigned to");
+            Assert.AreEqual("S4", bSegments[0], "B on S4");
+
+            Assert.AreEqual(1, cSegments.Count, "Number of segments C is assigned to");
+            Assert.AreEqual("S2", cSegments[0], "C on S2");
+
+            Assert.AreEqual(1, dSegments.Count, "Number of segments D is assigned to");
+            Assert.AreEqual("S1", dSegments[0], "D on S1");
+
+            Assert.AreEqual(1, eSegments.Count, "Number of segments E is assigned to");
+            Assert.AreEqual("S1", eSegments[0], "E on S1");
+
+            Assert.AreEqual(1, fSegments.Count, "Number of segments F is assigned to");
+            Assert.AreEqual("S0", fSegments[0], "F on S0");
+
+            var s0 = _segmenter.GetSegmentNodes("S0");
+            var s1 = _segmenter.GetSegmentNodes("S1");
+            var s2 = _segmenter.GetSegmentNodes("S2");
+            var s3 = _segmenter.GetSegmentNodes("S3");
+            var s4 = _segmenter.GetSegmentNodes("S4");
+
+            Assert.AreEqual(1, s0.Count, "Number of nodes in S0");
+            Assert.AreEqual(2, s1.Count, "Number of nodes in S1");
+            Assert.AreEqual(1, s2.Count, "Number of nodes in S2");
+            Assert.AreEqual(1, s3.Count, "Number of nodes in S3");
+            Assert.AreEqual(1, s4.Count, "Number of nodes in S4");
+        }
+
+        [Test]
+        public void Should_segment_white_paper_duplicate_for_optional_dependency_use_case()
+        {
+            // See https://github.com/Bikeman868/OwinFramework/blob/master/Segmentation%20White%20Paper.pdf
+
+            _segmenter.AddSegment("S0", new[] { "S1", "S2" });
+      
+            _segmenter.AddNode(
+                "A",
+                new[] { new List<string> { "E" } },
+                new[] { "S1" });
+
+            _segmenter.AddNode(
+                "B",
+                null,
+                new[] { "S2" });
+
+            _segmenter.AddNode(
+                "C",
+                new[] { new List<string> { "D" } },
+                new[] { "S0" });
+
+            _segmenter.AddNode(
+                "D",
+                new[] { new List<string> { "E", null } });
+
+            _segmenter.AddNode("E");
+
+            var aSegments = _segmenter.GetNodeSegments("A");
+            var bSegments = _segmenter.GetNodeSegments("B");
+            var cSegments = _segmenter.GetNodeSegments("C");
+            var dSegments = _segmenter.GetNodeSegments("D");
+            var eSegments = _segmenter.GetNodeSegments("E");
+
+            Assert.AreEqual(1, aSegments.Count, "Number of segments A is assigned to");
+            Assert.AreEqual("S1", aSegments[0], "A on S3");
+
+            Assert.AreEqual(1, bSegments.Count, "Number of segments B is assigned to");
+            Assert.AreEqual("S2", bSegments[0], "B on S4");
+
+            Assert.AreEqual(2, cSegments.Count, "Number of segments C is assigned to");
+            Assert.IsTrue(cSegments[0] == "S1" || cSegments[1] == "S1");
+            Assert.IsTrue(cSegments[0] == "S2" || cSegments[1] == "S2");
+
+            Assert.AreEqual(2, dSegments.Count, "Number of segments D is assigned to");
+            Assert.IsTrue(dSegments[0] == "S1" || dSegments[1] == "S1");
+            Assert.IsTrue(dSegments[0] == "S2" || dSegments[1] == "S2");
+
+            Assert.AreEqual(1, eSegments.Count, "Number of segments E is assigned to");
+            Assert.AreEqual("S1", eSegments[0], "E on S1");
+
+            var s0 = _segmenter.GetSegmentNodes("S0");
+            var s1 = _segmenter.GetSegmentNodes("S1");
+            var s2 = _segmenter.GetSegmentNodes("S2");
+
+            Assert.AreEqual(0, s0.Count, "Number of nodes in S0");
+            Assert.AreEqual(4, s1.Count, "Number of nodes in S1");
+            Assert.AreEqual(3, s2.Count, "Number of nodes in S2");
+        }
     }
 }

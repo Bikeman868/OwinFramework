@@ -24,7 +24,10 @@ namespace OwinFramework.Interfaces.Utility
         /// to be met.</param>
         /// <param name="segments">A list of the names of the route segments that must 
         /// include this node when traversed</param>
-        void AddNode(string key, IEnumerable<IList<string>> dependencies = null, IEnumerable<string> segments = null);
+        void AddNode(
+            string key, 
+            IEnumerable<IList<string>> dependencies = null, 
+            IEnumerable<string> segments = null);
 
         /// <summary>
         /// Adds a route segment
@@ -47,6 +50,14 @@ namespace OwinFramework.Interfaces.Utility
         /// <param name="nodeKey">The unique key identifying a node</param>
         /// <returns>A list of the names of the segments that this node is in</returns>
         IList<string> GetNodeSegments(string nodeKey);
+
+        /// <summary>
+        /// Returns a list of the child segments
+        /// </summary>
+        /// <param name="segmentName">The name of the parent segment or null
+        /// to get the root segment</param>
+        /// <returns>A list of the child segment names</returns>
+        IList<string> GetSegmentChildren(string segmentName);
     }
 
 }

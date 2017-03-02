@@ -67,6 +67,17 @@ namespace OwinFramework.Utility
             _modified = true;
         }
 
+        public IList<string> GetSegmentChildren(string segmentName)
+        {
+            Recalculate();
+            
+            var parent = string.IsNullOrEmpty(segmentName) 
+            ? _segments.Values.First(s => s.Parent == null)
+            : _segments[segmentName];
+
+            return parent.ChildSegmentNames;
+        }
+
         public IList<string> GetSegmentNodes(string segmentName)
         {
             Recalculate();
