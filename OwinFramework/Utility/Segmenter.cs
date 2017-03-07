@@ -89,8 +89,8 @@ namespace OwinFramework.Utility
             Recalculate();
 
             return _segments[segmentName]
-                .Nodes
-                .Select(n => n.Key)
+                .AssignedNodes
+                .Select(a => a.Node.Key)
                 .ToList();
         }
 
@@ -101,6 +101,24 @@ namespace OwinFramework.Utility
             return _nodes[nodeKey]
                 .AssignedSegments
                 .Select(s => s.Segment.Name)
+                .ToList();
+        }
+
+        public IList<string> GetNodeSegmentDependencies(string nodeKey, string segmentName)
+        {
+            Recalculate();
+
+            var assignment = _nodes[nodeKey]
+                .AssignedSegments
+                .FirstOrDefault(a => a.Segment.Name == segmentName);
+            if (assignment == null) return null;
+
+            var segmentNodes = GetSegmentNodes(segmentName);
+
+            return assignment
+                .DependentNodes
+                .Select(n => n[0].Key)
+                .Where(segmentNodes.Contains)
                 .ToList();
         }
 
@@ -115,14 +133,16 @@ namespace OwinFramework.Utility
                 foreach (var childName in segment.ChildSegmentNames)
                 {
                     if (!_segments.ContainsKey(childName))
+                    {
                         _segments[childName] = new Segment
                         {
                             Name = childName,
                             ChildSegmentNames = new List<string>(),
-                            Nodes = new List<Node>()
+                            AssignedNodes = new List<NodeSegmentAssignment>()
                         };
+                    }
                 }
-                segment.Nodes = new List<Node>();
+                segment.AssignedNodes = new List<NodeSegmentAssignment>();
             }
 
             foreach (var segment in _segments.Values.ToList())
@@ -155,11 +175,18 @@ namespace OwinFramework.Utility
         {
             if (!_modified) return;
 
+            // Initialization
             PopulateSegments();
             PopulateNodes();
+
+            // Segmentation algorithm
             AssignRequiredSegments();
+            FixMissingDependencies();
+            DuplicateHardDependencies();
+            AssignUnassignedNodes();
             ResolveMultiChoiceDependencies();
             ConsolidateCommonNodes();
+            CheckOptionalDependancies();
 
             _modified = false;
         }
@@ -178,56 +205,122 @@ namespace OwinFramework.Utility
                 foreach (var segment in node.RequiredSegments)
                     Assign(node, _segments[segment]);
             }
+        }
 
-            // Add dependencies to nodes where they have the same nodes
-            // asigned to all ancestor segments
+        private void AssignUnassignedNodes()
+        {
+            var count = -1;
+            while (count != 0)
+            {
+                count = 0;
+                foreach (var node in _nodes.Values.Where(n => n.AssignedSegments.Count == 0))
+                {
+                    var segment = FindHighestSegment(node);
+                    if (segment != null)
+                    {
+                        AddAssignment(node, segment);
+                        count++;
+                    }
+                }
+            }
+        }
+
+        private void CheckOptionalDependancies()
+        {
+        }
+
+        /// <summary>
+        /// Add dependencies to nodes where they have the same nodes
+        /// asigned to all ancestor segments. If the application configured
+        /// nodes in all of the parent segments it must intend these to run first.
+        /// </summary>
+        private void FixMissingDependencies()
+        {
             foreach (var node in _nodes.Values)
             {
-                var existingDependencies = node.Dependencies.SelectMany(d => d).ToList();
-                List<Node> additionalDependants = null;
-                foreach (var segment in _segments.Values.Where(s => s.Nodes.Contains(node)))
+                var nodeDependencies = node
+                    .Dependencies
+                    .SelectMany(d => d)
+                    .Where(d => d != null)
+                    .ToList();
+
+                IList<Node> additionalNodeDependants = null;
+
+                foreach (var assignment in node.AssignedSegments)
                 {
-                    var ancestorNodes = new List<Node>();
-                    foreach (var ancestorSegment in SegmentAncestors(segment))
+                    var ancestorNodes = NodeAncestors(assignment.Segment);
+
+                    if (additionalNodeDependants == null)
                     {
+                        additionalNodeDependants = ancestorNodes;
+                        for (var i = 0; i < additionalNodeDependants.Count; i++)
                         {
-                            foreach (var ancestorNode in ancestorSegment.Nodes)
+                            if (nodeDependencies.Contains(additionalNodeDependants[i].Key))
                             {
-                                if (!ancestorNodes.Contains(ancestorNode))
-                                    ancestorNodes.Add(ancestorNode);
-                            }
-                        }
-                    }
-                    
-                    if (additionalDependants == null)
-                    {
-                        additionalDependants = ancestorNodes;
-                        for (var i = 0; i < additionalDependants.Count; i++)
-                        {
-                            if (existingDependencies.Contains(additionalDependants[i].Key))
-                            {
-                                additionalDependants.RemoveAt(i);
+                                additionalNodeDependants.RemoveAt(i);
                                 i--;
                             }
                         }
                     }
                     else
                     {
-                        for (var i = 0; i < additionalDependants.Count; i++)
+                        for (var i = 0; i < additionalNodeDependants.Count; i++)
                         {
-                            if (!ancestorNodes.Contains(additionalDependants[i]))
+                            if (!ancestorNodes.Contains(additionalNodeDependants[i]))
                             {
-                                additionalDependants.RemoveAt(i);
+                                additionalNodeDependants.RemoveAt(i);
                                 i--;
                             }
                         }
                     }
                 }
 
-                if (additionalDependants != null)
-                    foreach (var additionalDependant in additionalDependants)
+                if (additionalNodeDependants != null)
+                    foreach (var additionalDependant in additionalNodeDependants)
                         node.Dependencies.Add(new List<string> { additionalDependant.Key });
             }
+        }
+
+        /// <summary>
+        /// Where the application defines a hard dependency that is not met by
+        /// segment assigmnents, duplicate the dependant nodes onto the same
+        /// segments as the nodes that depend on them.
+        /// </summary>
+        private void DuplicateHardDependencies()
+        {
+            int count = -1;
+            while (count != 0)
+            {
+                count = 0;
+                foreach (var segment in _segments.Values)
+                    count += DuplicateHardDependencies(segment);
+            }
+        }
+
+        /// <summary>
+        /// Where the application defines a hard dependency that is not met by
+        /// segment assigmnents, duplicate the dependant nodes onto the same
+        /// segments as the nodes that depend on them.
+        /// </summary>
+        private int DuplicateHardDependencies(Segment segment)
+        {
+            var ancestorNodes = NodeAncestors(segment);
+            var nodesToAdd = new List<Node>();
+
+            foreach(var node in segment
+                .AssignedNodes
+                .SelectMany(n => n.DependentNodes)
+                .Where(d => d.Count == 1)
+                .Select(d => d[0]))
+            {
+                if (!ancestorNodes.Contains(node) && !nodesToAdd.Contains(node))
+                    nodesToAdd.Add(node);
+            }
+
+            foreach (var node in nodesToAdd)
+                Assign(node, segment);
+
+            return nodesToAdd.Count;
         }
 
         /// <summary>
@@ -284,8 +377,7 @@ namespace OwinFramework.Utility
         /// <summary>
         /// Recursively traverses the segmentation graph moving nodes into
         /// the parent segment where they are present in all child segments
-        /// and where moving them would not break any of their dependency
-        /// constraints.
+        /// and where moving them would not break any of their dependencies
         /// </summary>
         private void ConsolidateCommonNodes()
         {
@@ -303,20 +395,26 @@ namespace OwinFramework.Utility
             IList<Node> choices)
         {
             // First look for a dependant in the same segment
-            var result = assignment.Segment.Nodes.FirstOrDefault(choices.Contains);
+            var result = assignment.Segment.AssignedNodes.Select(a => a.Node).FirstOrDefault(choices.Contains);
 
             // Second look for a dependant in an ancestor segment
             if (result == null)
             {
                 var ancestor = SegmentAncestors(assignment.Segment)
-                    .FirstOrDefault(s => s.Nodes.Any(choices.Contains));
+                    .FirstOrDefault(s => s.AssignedNodes.Select(a => a.Node).Any(choices.Contains));
                 if (ancestor != null)
-                    result = ancestor.Nodes.FirstOrDefault(choices.Contains);
+                    result = ancestor.AssignedNodes.Select(a => a.Node).FirstOrDefault(choices.Contains);
             }
 
             return result;
         }
 
+        /// <summary>
+        /// Recursively traverses the segmentation graph from a starting 
+        /// parent node moving nodes into the parent segment where they are 
+        /// present in all child segments and where moving them would not 
+        /// break any of their dependencies
+        /// </summary>
         private void ConsolidateCommonNodes(Segment segment)
         {
             // Recursively traverse the tree bottom up
@@ -325,14 +423,14 @@ namespace OwinFramework.Utility
 
             // Sort the nodes by their dependencies. You can't move a node up to
             // the parent unless you also move its dependents
-            if (segment.Nodes.Count > 1)
+            if (segment.AssignedNodes.Count > 1)
             {
                 var dependencyTree = _dependencyGraphFactory.Create<Node>();
-                foreach (var node in segment.Nodes)
+                foreach (var node in segment.AssignedNodes.Select(a => a.Node))
                 {
                     var dependents = node.DependentNodes
                         .SelectMany(nl => nl)
-                        .Where(n => segment.Nodes.Contains(n))
+                        .Where(n => segment.AssignedNodes.Select(a => a.Node).Contains(n))
                         .Select(n => new DependencyGraphEdge { Key = n.Key });
                     dependencyTree.Add(
                         node.Key, 
@@ -388,9 +486,40 @@ namespace OwinFramework.Utility
 
         #region Segmentation graph manipulation
 
+        private void RemoveAllDuplicates()
+        {
+            var removedCount = -1;
+            while (removedCount != 0)
+            {
+                removedCount = 0;
+                foreach (var segment in _segments.Values)
+                    removedCount += RemoveDuplicates(segment);
+            }
+        }
+
+        /// <summary>
+        /// Removes nodes from child segments if these nodes are already
+        /// included in an ancestor segment.
+        /// </summary>
+        private int RemoveDuplicates(Segment segment)
+        {
+            var ancestorNodes = NodeAncestors(segment);
+            var nodesToRemove = segment
+                .AssignedNodes
+                .Select(a => a.Node)
+                .Where(ancestorNodes.Contains)
+                .ToList();
+
+            foreach (var node in nodesToRemove)
+                RemoveAssignment(node, segment);
+
+            return nodesToRemove.Count;
+        }
+
         /// <summary>
         /// Assigns a node to a segment if it is not already assigned to
-        /// it, and adds any hard dependencies to the same segment
+        /// it, and adds any hard dependencies to the same segment unless
+        /// the dependants are already in a parent segment
         /// </summary>
         private void Assign(Node node, Segment segment)
         {
@@ -402,13 +531,66 @@ namespace OwinFramework.Utility
                     if (dependantList.Count == 1)
                         Assign(dependantList[0], segment);
                 }
+                RemoveDuplicates(segment);
             }
+        }
+
+        /// <summary>
+        /// Finds the segment closest to the root where all of a nodes
+        /// dependencies have been met.
+        /// </summary>
+        private Segment FindHighestSegment(Node node)
+        {
+            
+            var unsatisfiedDependencies = node.Dependencies.Where(d => !d.Contains(null)).ToList();
+            var rootSegment = _segments.Values.First(s => s.Parent == null);
+
+            int depth;
+            return FindHighestSegment(unsatisfiedDependencies, rootSegment, out depth);
+        }
+
+        /// <summary>
+        /// Recursively traverses the segment tree finding the segment closest to
+        /// the start segment that satisfies all of the dependancies
+        /// </summary>
+        private Segment FindHighestSegment(IList<IList<string>> dependencies, Segment segment, out int depth)
+        {
+            depth = 0;
+            if (dependencies.Count == 0)
+                return segment;
+
+            var segmentNodes = segment
+                .AssignedNodes
+                .Select(a => a.Node.Key)
+                .ToList();
+
+            var unsatisfiedDependencies = dependencies
+                .Where(d => !d.Any(segmentNodes.Contains))
+                .ToList();
+
+            if (unsatisfiedDependencies.Count == 0)
+                return segment;
+
+            depth = int.MaxValue;
+            Segment shallowestChild = null;
+            foreach(var child in segment.Children)
+            {
+                int childDepth;
+                var childSegment = FindHighestSegment(unsatisfiedDependencies, child, out childDepth);
+                if (childSegment != null && (childDepth + 1) < depth)
+                {
+                    shallowestChild = childSegment;
+                    depth = childDepth + 1;
+                }
+            }
+
+            return shallowestChild;
         }
         
         /// <summary>
         /// Adds a node to a segment in the graph
         /// </summary>
-        private void AddAssignment(Node node, Segment segment)
+        private NodeSegmentAssignment AddAssignment(Node node, Segment segment)
         {
             var assignment = new NodeSegmentAssignment
             {
@@ -421,7 +603,9 @@ namespace OwinFramework.Utility
                 assignment.DependentNodes.Add(dependentNode.ToList());
 
             node.AssignedSegments.Add(assignment);
-            segment.Nodes.Add(node);
+            segment.AssignedNodes.Add(assignment);
+
+            return assignment;
         }
 
         /// <summary>
@@ -429,7 +613,10 @@ namespace OwinFramework.Utility
         /// </summary>
         private void RemoveAssignment(Node node, Segment segment)
         {
-            segment.Nodes.Remove(node);
+            segment.AssignedNodes = segment.AssignedNodes
+                .Where(s => s.Node != node || s.Segment != segment)
+                .ToList();
+
             node.AssignedSegments = node.AssignedSegments
                 .Where(s => s.Node != node || s.Segment != segment)
                 .ToList();
@@ -441,33 +628,72 @@ namespace OwinFramework.Utility
         /// specific dependencies they will be reset back to the node 
         /// dependencies.
         /// </summary>
-        private void MoveFromChildrenToParent(Segment parentSegment, Node node)
+        private void MoveFromChildrenToParent(Segment segment, Node node)
         {
-            // TODO: Combine segment assignment depdendencies
-            foreach (var child in parentSegment.Children)
+            foreach (var child in segment.Children)
             {
-                if (child.Nodes.Contains(node))
+                if (child.AssignedNodes.Select(a => a.Node).Contains(node))
                     RemoveAssignment(node, child);
             }
-            AddAssignment(node, parentSegment);
+            AddAssignment(node, segment);
+        }
+
+        /// <summary>
+        /// Removes a node from a parent segment and duplicates it in all the
+        /// child segments.
+        /// </summary>
+        private void MoveFromParentToChildren(Segment segment, Node node)
+        {
+            var parentAssignment = segment.AssignedNodes.FirstOrDefault(a => a.Node == node);
+            if (parentAssignment == null) return;
+
+            foreach (var child in segment.Children)
+            {
+                if (!child.AssignedNodes.Select(a => a.Node).Contains(node))
+                {
+                    var childAssignment = AddAssignment(node, child);
+
+                    childAssignment.DependentNodes = new List<IList<Node>>();
+                    foreach (var dependentNode in parentAssignment.DependentNodes)
+                        childAssignment.DependentNodes.Add(dependentNode.ToList());
+                }
+            }
+            RemoveAssignment(node, segment);
         }
 
         /// <summary>
         /// Returns a list of all nodes that appear before the specified node
-        /// in ther segment graph
+        /// in any part of the segment graph
         /// </summary>
-        private IEnumerable<Node> NodeAncestors(Node node)
+        private IList<Node> NodeAncestors(Node node)
         {
             var result = new List<Node>();
-            foreach (var segment in _segments.Values.Where(s => s.Nodes.Contains(node)))
+            foreach (var segment in _segments.Values.Where(s => s.AssignedNodes.Select(a => a.Node).Contains(node)))
             {
                 foreach (var ancestorSegment in SegmentAncestors(segment))
                 {
-                    foreach (var ancestorNode in ancestorSegment.Nodes)
+                    foreach (var ancestorNode in ancestorSegment.AssignedNodes.Select(a => a.Node))
                     {
                         if (!result.Contains(ancestorNode))
                             result.Add(ancestorNode);
                     }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a list of all nodes that appear before the specified segment
+        /// </summary>
+        private IList<Node> NodeAncestors(Segment segment)
+        {
+            var result = new List<Node>();
+            foreach (var ancestorSegment in SegmentAncestors(segment))
+            {
+                foreach (var assignment in ancestorSegment.AssignedNodes)
+                {
+                    if (!result.Contains(assignment.Node))
+                        result.Add(assignment.Node);
                 }
             }
             return result;
@@ -489,13 +715,20 @@ namespace OwinFramework.Utility
 
         #region Segment graph components
 
+        private class NodeSegmentAssignment
+        {
+            public Node Node;
+            public Segment Segment;
+            public IList<IList<Node>> DependentNodes;
+        }
+
         private class Segment : IEquatable<Segment>
         {
             public string Name;
             public IList<string> ChildSegmentNames;
             public IList<Segment> Children;
             public Segment Parent;
-            public IList<Node> Nodes;
+            public IList<NodeSegmentAssignment> AssignedNodes;
 
             public bool Equals(Segment other)
             {
@@ -525,13 +758,6 @@ namespace OwinFramework.Utility
                 if (ReferenceEquals(s1, null)) return !ReferenceEquals(s2, null);
                 return !s1.Equals(s2);
             }
-        }
-
-        private class NodeSegmentAssignment
-        {
-            public Node Node;
-            public Segment Segment;
-            public IList<IList<Node>> DependentNodes;
         }
 
         private class Node: IEquatable<Node>

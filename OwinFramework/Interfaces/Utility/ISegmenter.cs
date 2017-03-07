@@ -58,6 +58,17 @@ namespace OwinFramework.Interfaces.Utility
         /// to get the root segment</param>
         /// <returns>A list of the child segment names</returns>
         IList<string> GetSegmentChildren(string segmentName);
+
+        /// <summary>
+        /// Gets a list of the nodes that another node depends on within a given
+        /// segment. This information is needed to order nodes correctly within
+        /// the segment.
+        /// </summary>
+        /// <param name="nodeKey">The unique key identifying a node</param>
+        /// <param name="segmentName">The name of the segment</param>
+        /// <returns>A list of node keys for the dependant nodes or null if this
+        /// node is not assigned to this segment</returns>
+        IList<string> GetNodeSegmentDependencies(string nodeKey, string segmentName);
     }
 
 }
