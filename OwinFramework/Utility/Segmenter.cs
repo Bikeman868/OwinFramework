@@ -199,7 +199,6 @@ namespace OwinFramework.Utility
         /// </summary>
         private void AssignRequiredSegments()
         {
-            // Assign nodes to degments
             foreach (var node in _nodes.Values)
             {
                 foreach (var segment in node.RequiredSegments)
@@ -207,6 +206,10 @@ namespace OwinFramework.Utility
             }
         }
 
+        /// <summary>
+        /// Find nodes that are not assigned to any segment and add them as close
+        /// to the root segment as possible withall of their dependencies met
+        /// </summary>
         private void AssignUnassignedNodes()
         {
             var count = -1;
@@ -225,6 +228,11 @@ namespace OwinFramework.Utility
             }
         }
 
+        /// <summary>
+        /// Where there are optional dependencies thatt are not being satisfied,
+        /// try to rearange nodes so that as many optional dependencies as possible
+        /// are satisfied.
+        /// </summary>
         private void CheckOptionalDependancies()
         {
         }
@@ -305,6 +313,7 @@ namespace OwinFramework.Utility
         private int DuplicateHardDependencies(Segment segment)
         {
             var ancestorNodes = NodeAncestors(segment);
+            var segmentNodes = segment.AssignedNodes.Select(a => a.Node).ToList();
             var nodesToAdd = new List<Node>();
 
             foreach(var node in segment
@@ -313,7 +322,9 @@ namespace OwinFramework.Utility
                 .Where(d => d.Count == 1)
                 .Select(d => d[0]))
             {
-                if (!ancestorNodes.Contains(node) && !nodesToAdd.Contains(node))
+                if (!ancestorNodes.Contains(node) &&
+                    !segmentNodes.Contains(node) &&
+                    !nodesToAdd.Contains(node))
                     nodesToAdd.Add(node);
             }
 
@@ -410,9 +421,9 @@ namespace OwinFramework.Utility
         }
 
         /// <summary>
-        /// Recursively traverses the segmentation graph from a starting 
-        /// parent node moving nodes into the parent segment where they are 
-        /// present in all child segments and where moving them would not 
+        /// Recursively traverses the segmentation graph from leaves to trunk
+        /// starting with the given segment. Move nodes into the parent segment 
+        /// where they are present in all child segments and where moving them would not 
         /// break any of their dependencies
         /// </summary>
         private void ConsolidateCommonNodes(Segment segment)
@@ -425,25 +436,25 @@ namespace OwinFramework.Utility
             // the parent unless you also move its dependents
             if (segment.AssignedNodes.Count > 1)
             {
-                var dependencyTree = _dependencyGraphFactory.Create<Node>();
-                foreach (var node in segment.AssignedNodes.Select(a => a.Node))
+                var dependencyTree = _dependencyGraphFactory.Create<NodeSegmentAssignment>();
+                foreach (var assignment in segment.AssignedNodes)
                 {
-                    var dependents = node.DependentNodes
+                    var dependents = assignment.DependentNodes
                         .SelectMany(nl => nl)
                         .Where(n => segment.AssignedNodes.Select(a => a.Node).Contains(n))
                         .Select(n => new DependencyGraphEdge { Key = n.Key });
                     dependencyTree.Add(
-                        node.Key, 
-                        node, 
+                        assignment.Node.Key,
+                        assignment, 
                         dependents,
                         PipelinePosition.Middle);
                 }
-                segment.Nodes = dependencyTree.GetBuildOrderData().ToList();
+                segment.AssignedNodes = dependencyTree.GetBuildOrderData().ToList();
             }
 
             if (segment.Children.Count < 2) return;
 
-            var commonNodes = segment.Children[0].Nodes.ToList();
+            var commonAssignments = segment.Children[0].AssignedNodes.ToList();
 
             var nodesRemoved = true;
             while (nodesRemoved)
@@ -452,25 +463,31 @@ namespace OwinFramework.Utility
                 for (var i = 1; i < segment.Children.Count; i++)
                 {
                     var child = segment.Children[i];
-                    foreach (var node in commonNodes.ToList())
+                    foreach (var assignment in commonAssignments.ToList())
                     {
-                        if (child.Nodes.Contains(node))
+                        if (child.AssignedNodes.Select(a => a.Node).Contains(assignment.Node))
                         {
-                            var blockingDependantCount = node.DependentNodes
+                            var blockingDependantCount = assignment
+                                .DependentNodes
                                 .SelectMany(d => d)
-                                .Where(d => child.Nodes.Contains(d))
-                                .Where(d => !commonNodes.Contains(d))
-                                .Count();
+                                .Where(d => child
+                                    .AssignedNodes
+                                    .Select(a => a.Node)
+                                    .Contains(d))
+                                .Count(d => 
+                                    !commonAssignments
+                                    .Select(a => a.Node)
+                                    .Contains(d));
                             if (blockingDependantCount > 0)
                             {
-                                commonNodes.Remove(node);
+                                commonAssignments.Remove(assignment);
                                 nodesRemoved = true;
                                 break;
                             }
                         }
                         else
                         {
-                            commonNodes.Remove(node);
+                            commonAssignments.Remove(assignment);
                             nodesRemoved = true;
                             break;
                         }
@@ -478,8 +495,8 @@ namespace OwinFramework.Utility
                 }
             }
 
-            foreach (var node in commonNodes)
-                MoveFromChildrenToParent(segment, node);
+            foreach (var assignment in commonAssignments)
+                MoveFromChildrenToParent(segment, assignment.Node);
         }
 
         #endregion
