@@ -126,6 +126,10 @@ namespace OwinFramework.Utility
 
         #region Initialization
 
+        /// <summary>
+        /// Evaluate all parent/child relationships, create missing segments
+        /// and add references between parents and children
+        /// </summary>
         private void PopulateSegments()
         {
             foreach (var segment in _segments.Values.ToList())
@@ -155,6 +159,9 @@ namespace OwinFramework.Utility
             }
         }
 
+        /// <summary>
+        /// Evaluate node dependencies and store references to dependant nodes
+        /// </summary>
         private void PopulateNodes()
         {
             foreach (var node in _nodes.Values)
@@ -193,9 +200,6 @@ namespace OwinFramework.Utility
 
         /// <summary>
         /// Assigns nodes to the segments configured in the application.
-        /// Adds nodes to segments that contain nodes with hard dependencies on them.
-        /// Also adds hard dependencies between nodes and the other nodes
-        /// that are in all of their ancestor segments.
         /// </summary>
         private void AssignRequiredSegments()
         {
@@ -208,7 +212,7 @@ namespace OwinFramework.Utility
 
         /// <summary>
         /// Find nodes that are not assigned to any segment and add them as close
-        /// to the root segment as possible withall of their dependencies met
+        /// to the root segment as possible with all of their dependencies met
         /// </summary>
         private void AssignUnassignedNodes()
         {
@@ -235,6 +239,62 @@ namespace OwinFramework.Utility
         /// </summary>
         private void CheckOptionalDependancies()
         {
+            int count = -1;
+            while (count != 0)
+            {
+                count = 0;
+                foreach (var segment in _segments.Values)
+                    count += CheckOptionalDependancies(segment);
+            }
+        }
+
+        private int CheckOptionalDependancies(Segment segment)
+        {
+            if (segment == null) return 0;
+
+            var count = 0;
+            foreach (var child in segment.Children)
+                count += CheckOptionalDependancies(child);
+
+            var assignmentsToMove = new List<NodeSegmentAssignment>();
+            Action<NodeSegmentAssignment> move = null;
+            move = assignment =>
+            {
+                if (!assignmentsToMove.Contains(assignment))
+                {
+                    assignmentsToMove.Add(assignment);
+                    count++;
+
+                    var dependantsToMove = segment.AssignedNodes
+                        .Where(
+                            an => an.DependentNodes
+                            .Select(n => n[0])
+                            .Where(n => n != null)
+                            .Contains(assignment.Node));
+                    foreach (var dm in dependantsToMove) 
+                        move(dm);
+                }
+            };
+
+            var descendants = NodeDescendants(segment).ToList();
+            foreach (var assignment in segment.AssignedNodes)
+            {
+                var softDependencies = assignment.DependentNodes
+                    .SelectMany(n => n)
+                    .Where(n => n != null)
+                    .ToList();
+                if (descendants.Any(softDependencies.Contains))
+                {
+                    move(assignment);
+                }
+            }
+
+            foreach (var assignment in assignmentsToMove)
+            {
+                MoveFromParentToChildren(segment, assignment.Node);
+            }
+
+            return count;
         }
 
         /// <summary>
@@ -725,6 +785,20 @@ namespace OwinFramework.Utility
             {
                 segment = segment.Parent;
                 yield return segment;
+            }
+        }
+
+        /// <summary>
+        /// Returns a bottom up list of all descentants of the specified segment
+        /// </summary>
+        private IEnumerable<Node> NodeDescendants(Segment segment)
+        {
+            foreach (var childSegment in segment.Children)
+            {
+                foreach (var grandchild in NodeDescendants(childSegment))
+                    yield return grandchild;
+                foreach (var assignment in childSegment.AssignedNodes)
+                    yield return assignment.Node;
             }
         }
 
