@@ -168,7 +168,7 @@ namespace OwinFramework.Utility
             {
                 node.DependentNodes = node
                     .Dependencies
-                    .Select(nl => (IList<Node>)nl.Where(n => n != null).Select(n => _nodes[n]).ToList())
+                    .Select(nl => (IList<Node>)nl.Select(n => n == null ? null : _nodes[n]).ToList())
                     .ToList();
                 node.AssignedSegments = new List<NodeSegmentAssignment>();
             }
@@ -187,8 +187,8 @@ namespace OwinFramework.Utility
             PopulateNodes();
 
             // Segmentation algorithm
-            AssignRequiredSegments();
             FixMissingDependencies();
+            AssignRequiredSegments();
             DuplicateHardDependencies();
             AssignUnassignedNodes();
             ResolveMultiChoiceDependencies();
@@ -307,45 +307,34 @@ namespace OwinFramework.Utility
             foreach (var node in _nodes.Values)
             {
                 var nodeDependencies = node
-                    .Dependencies
+                    .DependentNodes
                     .SelectMany(d => d)
                     .Where(d => d != null)
+                    .Distinct()
                     .ToList();
 
-                IList<Node> additionalNodeDependants = null;
-
-                foreach (var assignment in node.AssignedSegments)
+                var ancestorSegments = new List<Segment>();
+                foreach (var requiredSegmentName in node.RequiredSegments)
                 {
-                    var ancestorNodes = NodeAncestors(assignment.Segment);
-
-                    if (additionalNodeDependants == null)
+                    foreach (var ancestor in SegmentAncestors(_segments[requiredSegmentName]))
                     {
-                        additionalNodeDependants = ancestorNodes;
-                        for (var i = 0; i < additionalNodeDependants.Count; i++)
-                        {
-                            if (nodeDependencies.Contains(additionalNodeDependants[i].Key))
-                            {
-                                additionalNodeDependants.RemoveAt(i);
-                                i--;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (var i = 0; i < additionalNodeDependants.Count; i++)
-                        {
-                            if (!ancestorNodes.Contains(additionalNodeDependants[i]))
-                            {
-                                additionalNodeDependants.RemoveAt(i);
-                                i--;
-                            }
-                        }
+                        if (!ancestorSegments.Contains(ancestor))
+                            ancestorSegments.Add(ancestor);
                     }
                 }
 
-                if (additionalNodeDependants != null)
-                    foreach (var additionalDependant in additionalNodeDependants)
-                        node.Dependencies.Add(new List<string> { additionalDependant.Key });
+                foreach (var ancestorSegment in ancestorSegments)
+                {
+                    var additionalDependencies = _nodes.Values
+                        .Where(n => n.RequiredSegments.Contains(ancestorSegment.Name))
+                        .Where(n => !nodeDependencies.Contains(n))
+                        .Where(n => n != node);
+                    foreach (var additionalDependency in additionalDependencies)
+                    {
+                        nodeDependencies.Add(additionalDependency);
+                        node.DependentNodes.Add(new List<Node> { additionalDependency });
+                    }
+                }
             }
         }
 
@@ -414,9 +403,7 @@ namespace OwinFramework.Utility
                             var dependant = ResolveMultiChoiceDependency(assignment, nodeList);
                             if (dependant == null)
                             {
-                                if (nodeList.Contains(null))
-                                    nodeList.Clear();
-                                else
+                                if (!nodeList.Contains(null))
                                     unresolvedList.Add(assignment);
                             }
                             else
@@ -603,12 +590,6 @@ namespace OwinFramework.Utility
             if (node.AssignedSegments.All(sa => sa.Segment != segment))
             {
                 AddAssignment(node, segment);
-                foreach (var dependantList in node.DependentNodes)
-                {
-                    if (dependantList.Count == 1)
-                        Assign(dependantList[0], segment);
-                }
-                RemoveDuplicates(segment);
             }
         }
 
@@ -619,7 +600,7 @@ namespace OwinFramework.Utility
         private Segment FindHighestSegment(Node node)
         {
             
-            var unsatisfiedDependencies = node.Dependencies.Where(d => !d.Contains(null)).ToList();
+            var unsatisfiedDependencies = node.DependentNodes.Where(d => !d.Contains(null)).ToList();
             var rootSegment = _segments.Values.First(s => s.Parent == null);
 
             int depth;
@@ -630,7 +611,7 @@ namespace OwinFramework.Utility
         /// Recursively traverses the segment tree finding the segment closest to
         /// the start segment that satisfies all of the dependancies
         /// </summary>
-        private Segment FindHighestSegment(IList<IList<string>> dependencies, Segment segment, out int depth)
+        private Segment FindHighestSegment(IList<IList<Node>> dependencies, Segment segment, out int depth)
         {
             depth = 0;
             if (dependencies.Count == 0)
@@ -638,7 +619,7 @@ namespace OwinFramework.Utility
 
             var segmentNodes = segment
                 .AssignedNodes
-                .Select(a => a.Node.Key)
+                .Select(a => a.Node)
                 .ToList();
 
             var unsatisfiedDependencies = dependencies
