@@ -169,6 +169,7 @@ namespace OwinFramework.Utility
                 node.DependentNodes = node
                     .Dependencies
                     .Select(nl => (IList<Node>)nl.Select(n => n == null ? null : _nodes[n]).ToList())
+                    .Where(nl => nl.Count > 0)
                     .ToList();
                 node.AssignedSegments = new List<NodeSegmentAssignment>();
             }
@@ -239,23 +240,17 @@ namespace OwinFramework.Utility
         /// </summary>
         private void CheckOptionalDependancies()
         {
-            int count = -1;
-            while (count != 0)
+            int count;
+            do
             {
                 count = 0;
-                foreach (var segment in _segments.Values)
-                    count += CheckOptionalDependancies(segment);
+                TraverseBottomUp(RootSegment(), s => count += CheckOptionalDependancies(s));
             }
+            while (count != 0) ;
         }
 
         private int CheckOptionalDependancies(Segment segment)
         {
-            if (segment == null) return 0;
-
-            var count = 0;
-            foreach (var child in segment.Children)
-                count += CheckOptionalDependancies(child);
-
             var assignmentsToMove = new List<NodeSegmentAssignment>();
             Action<NodeSegmentAssignment> move = null;
             move = assignment =>
@@ -263,7 +258,6 @@ namespace OwinFramework.Utility
                 if (!assignmentsToMove.Contains(assignment))
                 {
                     assignmentsToMove.Add(assignment);
-                    count++;
 
                     var dependantsToMove = segment.AssignedNodes
                         .Where(
@@ -294,7 +288,7 @@ namespace OwinFramework.Utility
                 MoveFromParentToChildren(segment, assignment.Node);
             }
 
-            return count;
+            return assignmentsToMove.Count;
         }
 
         /// <summary>
@@ -434,13 +428,14 @@ namespace OwinFramework.Utility
 
         /// <summary>
         /// Recursively traverses the segmentation graph moving nodes into
-        /// the parent segment where they are present in all child segments
+        /// the parent segment where they are present more than one child segment
         /// and where moving them would not break any of their dependencies
         /// </summary>
         private void ConsolidateCommonNodes()
         {
-            foreach (var segment in _segments.Values.Where(s => s.Parent == null))
-                ConsolidateCommonNodes(segment);
+            var rootSegment = RootSegment();
+            TraverseBottomUp(rootSegment, SortNodesByDependencies);
+            TraverseBottomUp(rootSegment, ConsolidateCommonNodes);
         }
         
         /// <summary>
@@ -468,37 +463,38 @@ namespace OwinFramework.Utility
         }
 
         /// <summary>
-        /// Recursively traverses the segmentation graph from leaves to trunk
-        /// starting with the given segment. Move nodes into the parent segment 
-        /// where they are present in all child segments and where moving them would not 
-        /// break any of their dependencies
+        /// Arranges the nodes within the segment so that dependant nodes
+        /// are after the nodes that they depend on
+        /// </summary>
+        private void SortNodesByDependencies(Segment segment)
+        {
+            if (segment.AssignedNodes.Count < 2) return;
+
+            var dependencyTree = _dependencyGraphFactory.Create<NodeSegmentAssignment>();
+            foreach (var assignment in segment.AssignedNodes)
+            {
+                var dependents = assignment.DependentNodes
+                    .SelectMany(nl => nl)
+                    .Where(n => segment.AssignedNodes.Select(a => a.Node).Contains(n))
+                    .Select(n => new DependencyGraphEdge { Key = n.Key });
+                dependencyTree.Add(
+                    assignment.Node.Key,
+                    assignment, 
+                    dependents,
+                    PipelinePosition.Middle);
+            }
+            segment.AssignedNodes = dependencyTree.GetBuildOrderData().ToList();
+        }
+
+        /// <summary>
+        /// Move nodes into the parent segment where they are present multiple 
+        /// child segments and where moving them would not break any of their 
+        /// dependencies
         /// </summary>
         private void ConsolidateCommonNodes(Segment segment)
         {
-            // Recursively traverse the tree bottom up
-            foreach (var child in segment.Children)
-                ConsolidateCommonNodes(child);
-
-            // Sort the nodes by their dependencies. You can't move a node up to
-            // the parent unless you also move its dependents
-            if (segment.AssignedNodes.Count > 1)
-            {
-                var dependencyTree = _dependencyGraphFactory.Create<NodeSegmentAssignment>();
-                foreach (var assignment in segment.AssignedNodes)
-                {
-                    var dependents = assignment.DependentNodes
-                        .SelectMany(nl => nl)
-                        .Where(n => segment.AssignedNodes.Select(a => a.Node).Contains(n))
-                        .Select(n => new DependencyGraphEdge { Key = n.Key });
-                    dependencyTree.Add(
-                        assignment.Node.Key,
-                        assignment, 
-                        dependents,
-                        PipelinePosition.Middle);
-                }
-                segment.AssignedNodes = dependencyTree.GetBuildOrderData().ToList();
-            }
-
+            // You have to have at least two children for the children to share
+            // common nodes.
             if (segment.Children.Count < 2) return;
 
             var commonAssignments = segment.Children[0].AssignedNodes.ToList();
@@ -717,6 +713,36 @@ namespace OwinFramework.Utility
                 }
             }
             RemoveAssignment(node, segment);
+        }
+
+        /// <summary>
+        /// Returns the segment at the root of the segmentation graph
+        /// </summary>
+        private Segment RootSegment()
+        {
+            return _segments.Values.FirstOrDefault(s => s.Parent == null);
+        }
+
+        /// <summary>
+        /// Performs an action in all decendants of the given segment. The tree
+        /// is traversed top down
+        /// </summary>
+        private void TraverseTopDown(Segment segment, Action<Segment> action)
+        {
+            action(segment);
+            foreach (var child in segment.Children)
+                TraverseTopDown(child, action);
+        }
+
+        /// <summary>
+        /// Performs an action in all decendants of the given segment. The tree
+        /// is traversed top down
+        /// </summary>
+        private void TraverseBottomUp(Segment segment, Action<Segment> action)
+        {
+            foreach (var child in segment.Children)
+                TraverseBottomUp(child, action);
+            action(segment);
         }
 
         /// <summary>

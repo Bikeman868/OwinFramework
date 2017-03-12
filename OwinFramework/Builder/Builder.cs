@@ -268,7 +268,24 @@ namespace OwinFramework.Builder
                         .Where(c => c.MiddlewareType == dependency.DependentType)
                         .Select(c => c.Name)
                         .ToList();
-                    nodeDependencies.Add(dependantNames);
+                    if (dependantNames.Count > 0)
+                    {
+                        if (!dependency.Required)
+                            dependantNames.Add(null);
+                        nodeDependencies.Add(dependantNames);
+                    }
+                    else
+                    {
+                        if (dependency.Required)
+                            throw new BuilderException(
+                                "Missing middleware dependency. Middleware type " 
+                                + middlewareComponent.Middleware.GetType().Name
+                                + "<" + middlewareComponent.MiddlewareType.Name
+                                + "> has a dependency on " 
+                                + dependency.DependentType.Name
+                                + " but there is no IMiddleware<" + dependency.DependentType.Name 
+                                + "> configured.");
+                    }
                 }
                 else
                 { 

@@ -336,7 +336,7 @@ namespace UnitTests
             Assert.AreEqual("ui", lessSegments[0], "Less on UI route");
         }
 
-        [Test]
+        [Test, Ignore("There is a lot of complexity associated with this feature and its only a nice to have")]
         public void Should_segment_white_paper_additional_segments_use_case()
         {
             // See https://github.com/Bikeman868/OwinFramework/blob/master/Segmentation%20White%20Paper.pdf
