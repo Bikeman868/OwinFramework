@@ -8,6 +8,7 @@ using OwinFramework.Interfaces.Routing;
 using OwinFramework.InterfacesV1.Capability;
 using OwinFramework.InterfacesV1.Middleware;
 using OwinFramework.InterfacesV1.Upstream;
+using OwinFramework.MiddlewareHelpers.Identification;
 
 namespace ExampleUsage.Middleware
 {
@@ -61,24 +62,18 @@ namespace ExampleUsage.Middleware
         {
             Console.WriteLine("PROCESS: Forms identification");
 
-            context.SetFeature<IIdentification>(new Identification());
+            // A real implementation would check the username and password and get a list
+            // of known claims associated with this user
+            context.SetFeature<IIdentification>(new Identification(
+                Guid.NewGuid().ToString("N"),
+                new[]{
+                    new IdentityClaim { Name = ClaimNames.Username, Value = "user1", Status = ClaimStatus.Verified },
+                    new IdentityClaim { Name = ClaimNames.Email, Value = "user1@gmail.com", Status = ClaimStatus.Unverified }
+                    }));
 
             return next();
         }
 
-        /// <summary>
-        /// Basic implementation of IIdentification for illustration purposes only
-        /// </summary>
-        private class Identification : IIdentification
-        {
-            public string Identity { get; private set; }
-            public bool IsAnonymous { get { return true; } }
-
-            public Identification()
-            {
-                Identity = Guid.NewGuid().ToShortString();
-            }
-        }
 
     }
 }

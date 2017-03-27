@@ -77,6 +77,8 @@
     <Compile Include="MiddlewareHelpers\Analysable\TimeSpanStatistic.cs" />
     <Compile Include="MiddlewareHelpers\Analysable\FloatStatistic.cs" />
     <Compile Include="MiddlewareHelpers\Analysable\IntStatistic.cs" />
+    <Compile Include="MiddlewareHelpers\Identification\Identification.cs" />
+    <Compile Include="MiddlewareHelpers\Identification\IdentityClaim.cs" />
     <Compile Include="MiddlewareHelpers\ResponseRewriter\ResponseCapture.cs" />
     <Compile Include="MiddlewareHelpers\Analysable\Statistic.cs" />
     <Compile Include="MiddlewareHelpers\Analysable\StatisticInformation.cs" />

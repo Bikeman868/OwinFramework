@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Moq.Modules;
 using OwinFramework.Builder;
 using OwinFramework.InterfacesV1.Facilities;
+using OwinFramework.InterfacesV1.Middleware;
+using OwinFramework.MiddlewareHelpers.Identification;
 
 namespace OwinFramework.Mocks.V1.Facilities
 {
@@ -78,6 +81,49 @@ namespace OwinFramework.Mocks.V1.Facilities
                     : new List<string>()
             };
         }
+
+        public IList<IIdentityClaim> GetClaims(string identity)
+        {
+            TestIdentity testIdentity;
+            if (!_identities.TryGetValue(identity, out testIdentity))
+                return new List<IIdentityClaim>();
+            return testIdentity.Claims.Cast<IIdentityClaim>().ToList();
+        }
+
+        public void UpdateClaim(string identity, IIdentityClaim claim)
+        {
+            TestIdentity testIdentity;
+            if (!_identities.TryGetValue(identity, out testIdentity)) return;
+
+            var existingClaim = testIdentity.Claims.FirstOrDefault(c => c.Name == claim.Name);
+            if (existingClaim == null)
+            {
+                testIdentity.Claims.Add(new IdentityClaim
+                {
+                    Name = claim.Name, 
+                    Value = claim.Value, 
+                    Status = claim.Status
+                });
+            }
+            else
+            {
+                existingClaim.Value = claim.Value;
+                existingClaim.Status = claim.Status;
+            }
+        }
+
+        public void DeleteClaim(string identity, string claimName)
+        {
+            TestIdentity testIdentity;
+            if (!_identities.TryGetValue(identity, out testIdentity)) return;
+
+            var claimsToKeep = testIdentity.Claims.Where(c => c.Name != claimName).ToList();
+
+            testIdentity.Claims.Clear();
+            foreach (var claim in claimsToKeep)
+                testIdentity.Claims.Add(claim);
+        }
+
 
         #region Certificates
 
@@ -468,6 +514,7 @@ namespace OwinFramework.Mocks.V1.Facilities
             public string Name;
             public readonly IList<TestCertificate> Certificates = new List<TestCertificate>();
             public readonly IList<TestCredential> Credentials = new List<TestCredential>();
+            public readonly IList<IdentityClaim> Claims = new List<IdentityClaim>();
         }
 
         private class TestCredential : ICredential
@@ -525,6 +572,7 @@ namespace OwinFramework.Mocks.V1.Facilities
             public string Secret { get; set; }
             public IList<string> Purposes { get; set; }
         }
+
 
     }
 }

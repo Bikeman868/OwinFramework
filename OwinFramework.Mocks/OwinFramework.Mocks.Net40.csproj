@@ -54,10 +54,6 @@
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OwinFramework, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Owin.Framework.2.3.0\lib\net40\OwinFramework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -86,6 +82,12 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.OwinFramework.Mocks.Net40.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OwinFramework\OwinFramework.Net40.csproj">
+      <Project>{e51dc357-1b49-48e7-9fca-b3a4061d94cc}</Project>
+      <Name>OwinFramework.Net40</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using OwinFramework.InterfacesV1.Middleware;
 
 namespace OwinFramework.InterfacesV1.Facilities
 {
@@ -186,6 +187,25 @@ namespace OwinFramework.InterfacesV1.Facilities
         /// </summary>
         /// <returns>A unique url friendly identifier for a new identity</returns>
         string CreateIdentity();
+
+        /// <summary>
+        /// Returna a list of the claims made by this identity and the status of
+        /// each of thsose claims
+        /// </summary>
+        IList<IIdentityClaim> GetClaims(string identity);
+
+        /// <summary>
+        /// Adds or updates a claim for an identity. Claims are things like the user's
+        /// email address, real name, date of birth etc. Each claim has a status that
+        /// indicates if it has been verified.
+        /// </summary>
+        void UpdateClaim(string identity, IIdentityClaim claim);
+
+        /// <summary>
+        /// Removes a claim from an identity. This might be appropriate for example
+        /// if a certificate expires, or a user changes their email address
+        /// </summary>
+        void DeleteClaim(string identity, string claimName);
 
         #region Credentials
 

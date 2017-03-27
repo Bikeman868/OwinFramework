@@ -87,6 +87,8 @@
     <Compile Include="MiddlewareHelpers\Analysable\StatisticInformation.cs" />
     <Compile Include="MiddlewareHelpers\Analysable\TimeSpanPerCountStatistic.cs" />
     <Compile Include="MiddlewareHelpers\Analysable\TimespanStatistic.cs" />
+    <Compile Include="MiddlewareHelpers\Identification\Identification.cs" />
+    <Compile Include="MiddlewareHelpers\Identification\IdentityClaim.cs" />
     <Compile Include="MiddlewareHelpers\ResponseRewriter\ResponseCapture.cs" />
     <Compile Include="MiddlewareHelpers\SelfDocumenting\EndpointAttributeDocumentation.cs" />
     <Compile Include="MiddlewareHelpers\SelfDocumenting\EndpointDocumentation.cs" />

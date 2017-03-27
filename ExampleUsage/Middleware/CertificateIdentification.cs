@@ -6,6 +6,7 @@ using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.InterfacesV1.Capability;
 using OwinFramework.InterfacesV1.Middleware;
+using OwinFramework.MiddlewareHelpers.Identification;
 
 namespace ExampleUsage.Middleware
 {
@@ -41,24 +42,16 @@ namespace ExampleUsage.Middleware
             Console.WriteLine("PROCESS: Certificate identification");
 
             // A real implementation would check client certificates associated with
-            // the request at this point to establish user identification
-            context.SetFeature<IIdentification>(new Identification());
+            // the request at this point to establish verified claima based on the
+            // contents of the certificate
+            context.SetFeature<IIdentification>(new Identification(
+                Guid.NewGuid().ToString("N"), 
+                new []{
+                    new IdentityClaim { Name = ClaimNames.Domain, Value = "www.certdomain.com", Status = ClaimStatus.Verified }
+                    }));
 
             return next();
         }
 
-        /// <summary>
-        /// Basic implementation of IIdentification for illustration purposes only
-        /// </summary>
-        private class Identification : IIdentification
-        {
-            public string Identity { get; private set; }
-            public bool IsAnonymous { get { return true; } }
-
-            public Identification()
-            {
-                Identity = Guid.NewGuid().ToString("N");
-            }
-        }
     }
 }
