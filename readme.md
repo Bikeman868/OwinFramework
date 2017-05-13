@@ -114,6 +114,10 @@ management system. There is also a Net45 version of this project.
 
 `UnitTests.csproj` contains what you would expect!
 
+`OwinFramework.Mocks.Net40.csproj` contains mock implementations of the OWIN Framework
+interfaces. You can use these mocks in your unit tests to mock the framework
+itself. There is also a >net 4.5 version of this project in the solution.
+
 ## Roadmap
 
 These are the next batch of NuGet packages that are in the pipeline:
