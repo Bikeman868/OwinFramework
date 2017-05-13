@@ -45,5 +45,14 @@ namespace OwinFramework.MiddlewareHelpers.Identification
             Identity = identity;
             Claims = claims == null ? new List<IIdentityClaim>() : claims.ToList();
         }
+
+        /// <summary>
+        /// Constructs an instance that implements IIdentification
+        /// </summary>
+        public Identification(IIdentification other)
+        {
+            Identity = other.Identity;
+            Claims = other.Claims;
+        }
     }
 }

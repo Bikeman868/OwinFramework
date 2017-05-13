@@ -24,5 +24,15 @@ namespace OwinFramework.MiddlewareHelpers.Identification
         /// Gets of sets the status of this claim
         /// </summary>
         public ClaimStatus Status { get; set; }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        public IdentityClaim(IIdentityClaim other)
+        {
+            Name = other.Name;
+            Value = other.Value;
+            Status = other.Status;
+        }
     }
 }

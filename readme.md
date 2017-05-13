@@ -113,3 +113,27 @@ the [Urchin](https://github.com/Bikeman868/urchin) rules based configuration
 management system. There is also a Net45 version of this project.
 
 `UnitTests.csproj` contains what you would expect!
+
+## Roadmap
+
+These are the next batch of NuGet packages that are in the pipeline:
+
+1. A token store facility that uses Prius
+
+2. Authorization middleware for managing users, groups and permissions
+
+3. Identification middleware that uses IP address and can be used for 2 factor authentication
+
+4. An identity store facility that uses SQLite
+
+5. A token store facility thay uses SQLite
+
+6. A cache facility that uses MemcacheD
+
+7. A cache facility that uses ElastiCache
+
+8. Identification middleware that uses shared secrets
+
+9. Certificate based identification middleware
+
+10. Social login (Google, Facebook, LinkedIn, Microsoft etc)
