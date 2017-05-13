@@ -113,3 +113,7 @@ the [Urchin](https://github.com/Bikeman868/urchin) rules based configuration
 management system. There is also a Net45 version of this project.
 
 `UnitTests.csproj` contains what you would expect!
+
+`OwinFramework.Mocks.csproj` contains mock implementations of the OWIN Framework
+interfaces. You can use these mocks in your unit tests to mock the framework
+itself.
