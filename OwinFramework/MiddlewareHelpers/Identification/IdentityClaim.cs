@@ -34,5 +34,15 @@ namespace OwinFramework.MiddlewareHelpers.Identification
             Value = other.Value;
             Status = other.Status;
         }
+
+        /// <summary>
+        /// Constructs an identity claim
+        /// </summary>
+        public IdentityClaim(string name, string value, ClaimStatus status = ClaimStatus.Unknown)
+        {
+            Name = name;
+            Value = value;
+            Status = status;
+        }
     }
 }

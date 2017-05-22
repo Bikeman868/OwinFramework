@@ -42,12 +42,12 @@ namespace ExampleUsage.Middleware
             Console.WriteLine("PROCESS: Certificate identification");
 
             // A real implementation would check client certificates associated with
-            // the request at this point to establish verified claima based on the
+            // the request at this point to establish verified claims based on the
             // contents of the certificate
             context.SetFeature<IIdentification>(new Identification(
                 Guid.NewGuid().ToString("N"), 
                 new []{
-                    new IdentityClaim { Name = ClaimNames.Domain, Value = "www.certdomain.com", Status = ClaimStatus.Verified }
+                    new IdentityClaim (ClaimNames.Domain, "www.certdomain.com", ClaimStatus.Verified)
                     }));
 
             return next();

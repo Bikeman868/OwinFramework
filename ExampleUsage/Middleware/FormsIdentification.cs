@@ -67,8 +67,8 @@ namespace ExampleUsage.Middleware
             context.SetFeature<IIdentification>(new Identification(
                 Guid.NewGuid().ToString("N"),
                 new[]{
-                    new IdentityClaim { Name = ClaimNames.Username, Value = "user1", Status = ClaimStatus.Verified },
-                    new IdentityClaim { Name = ClaimNames.Email, Value = "user1@gmail.com", Status = ClaimStatus.Unverified }
+                    new IdentityClaim ( ClaimNames.Username, "user1", ClaimStatus.Verified ),
+                    new IdentityClaim ( ClaimNames.Email, "user1@gmail.com", ClaimStatus.Unverified )
                     }));
 
             return next();

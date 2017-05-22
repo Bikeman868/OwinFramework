@@ -98,12 +98,7 @@ namespace OwinFramework.Mocks.V1.Facilities
             var existingClaim = testIdentity.Claims.FirstOrDefault(c => c.Name == claim.Name);
             if (existingClaim == null)
             {
-                testIdentity.Claims.Add(new IdentityClaim
-                {
-                    Name = claim.Name, 
-                    Value = claim.Value, 
-                    Status = claim.Status
-                });
+                testIdentity.Claims.Add(new IdentityClaim(claim));
             }
             else
             {
