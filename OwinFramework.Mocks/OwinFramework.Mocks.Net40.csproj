@@ -72,6 +72,7 @@
     <Compile Include="Owin\MockOwinResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTests\MockCacheTests.cs" />
+    <Compile Include="UnitTests\MockConfigurationTests.cs" />
     <Compile Include="UnitTests\MockIdentityStoreTests.cs" />
     <Compile Include="UnitTests\MockOwinContextTests.cs" />
     <Compile Include="UnitTests\MockTokenStoreTests.cs" />
