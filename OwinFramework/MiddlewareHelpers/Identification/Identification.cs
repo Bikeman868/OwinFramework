@@ -44,6 +44,7 @@ namespace OwinFramework.MiddlewareHelpers.Identification
         {
             Identity = identity;
             Claims = claims == null ? new List<IIdentityClaim>() : claims.ToList();
+            AllowAnonymous = true;
         }
 
         /// <summary>
@@ -53,6 +54,7 @@ namespace OwinFramework.MiddlewareHelpers.Identification
         {
             Identity = other.Identity;
             Claims = other.Claims;
+            AllowAnonymous = true;
         }
     }
 }
