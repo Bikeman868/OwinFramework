@@ -36,7 +36,7 @@ namespace ExampleUsage.Middleware
             return true;
         }
 
-        public bool HasPermission(string permissionName)
+        public bool HasPermission(string permissionName, string roleName)
         {
             return true;
         }

@@ -22,12 +22,32 @@
     {
         /// <summary>
         /// Tests if the user that made this request is in the specified role.
+        /// Each user can have many roles. The role defines what type of user 
+        /// this is.
+        /// The expected usage of this function is that different types of user
+        /// might have different user experiences, or have access to different
+        /// areas of functionallity, for example only show the 'Developer Tools'
+        /// menu if the user has the role of 'Developer'.
         /// </summary>
         bool IsInRole(string roleName);
 
         /// <summary>
         /// Tests if the user that made this request has the specified permission.
+        /// Each authorization provider is free to define how the permission name
+        /// and resource name is interpreted. Read the authentication provider
+        /// documentation to know how to pass these parameters.
+        /// Permissions can be granted for specific operations on all resources
+        /// or limited to a subset of resources.
         /// </summary>
-        bool HasPermission(string permissionName);
+        /// <param name="permissionName">The name of the permission to test. We
+        /// recommend that you use some structure within your permission names.
+        /// Our suggestion is 'service:operation' for example 'cart:order.delete'</param>
+        /// <param name="resource">Optionally specifies the resource on which the
+        /// permission is being tested. We recommend using a heirachical notation
+        /// for resources so that for example having permission on the 'user:{self}'
+        /// resource implies permission on sub-resources such as 'user:{self}.profile'
+        /// which also implies permission on it's sub-resources such as 
+        /// 'user:{self}.profile.picture'.</param>
+        bool HasPermission(string permissionName, string resource);
     }
 }
