@@ -24,6 +24,12 @@ namespace OwinFramework.MiddlewareHelpers.Identification
         public IList<IIdentityClaim> Claims { get; set; }
 
         /// <summary>
+        /// A list of the purposes that this identification can be used for.
+        /// Empty list indicates that the identification can be used for any purpose
+        /// </summary>
+        public IList<string> Purposes { get; set; }
+
+        /// <summary>
         /// Sets or sets the flag indicating if the current request is permitted
         /// for identities with no verified claims
         /// </summary>
@@ -32,29 +38,36 @@ namespace OwinFramework.MiddlewareHelpers.Identification
         /// <summary>
         /// Returns trus if the identity has no verified claims
         /// </summary>
-        public bool IsAnonymous 
-        {
-            get { return Claims.All(c => c.Status != ClaimStatus.Verified); }
-        }
+        public bool IsAnonymous { get; private set; }
 
         /// <summary>
         /// Constructs an instance that implements IIdentification
         /// </summary>
-        public Identification(string identity, IEnumerable<IIdentityClaim> claims = null)
+        public Identification(
+            string identity, 
+            IEnumerable<IIdentityClaim> claims = null, 
+            bool isAnonymous = true, 
+            IEnumerable<string> purposes = null)
         {
             Identity = identity;
             Claims = claims == null ? new List<IIdentityClaim>() : claims.ToList();
+            Purposes = purposes == null ? new List<string>() : purposes.ToList();
             AllowAnonymous = true;
+            IsAnonymous = isAnonymous;
         }
 
         /// <summary>
-        /// Constructs an instance that implements IIdentification
+        /// Copy constructor
         /// </summary>
         public Identification(IIdentification other)
         {
             Identity = other.Identity;
             Claims = other.Claims;
-            AllowAnonymous = true;
+            Purposes = other.Purposes;
+            IsAnonymous = other.IsAnonymous;
+
+            var upstream = other as IUpstreamIdentification;
+            AllowAnonymous = upstream == null || upstream.AllowAnonymous;
         }
     }
 }

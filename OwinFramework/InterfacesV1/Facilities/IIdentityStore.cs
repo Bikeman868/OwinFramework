@@ -135,7 +135,7 @@ namespace OwinFramework.InterfacesV1.Facilities
         string Username { get; }
 
         /// <summary>
-        /// The actions that are permitted on the identity by this credential
+        /// The actions that are permitted on the identity identified by this credential
         /// </summary>
         List<string> Purposes { get; }
     }

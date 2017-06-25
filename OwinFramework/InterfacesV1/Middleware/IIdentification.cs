@@ -31,6 +31,21 @@ namespace OwinFramework.InterfacesV1.Middleware
         /// was supported by evidence, and if that evidence has be verified.
         /// </summary>
         IList<IIdentityClaim> Claims { get; }
+
+        /// <summary>
+        /// Users can create additional methods of authenticating against their account, 
+        /// for example by generating an API key which allows other applications or 
+        /// services to access their account. These additional authentication methods
+        /// can be restricted by passing a list of "purposes" that they can be used for.
+        /// For example your application can define purposes of "read my messages" or
+        /// "manage my calendar" then API tokens can be created that only allow the
+        /// third party application to read my messages for example.
+        /// When the user logs in using their own credentials this property will be
+        /// null or an empty list. When a third party application logs in using a
+        /// restricted access token, the list of things that they are allowed to do
+        /// will be available in this property.
+        /// </summary>
+        IList<string> Purposes { get; }
     }
 
     /// <summary>
