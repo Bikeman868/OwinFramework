@@ -26,6 +26,13 @@ namespace OwinFramework.MiddlewareHelpers.Identification
         public ClaimStatus Status { get; set; }
 
         /// <summary>
+        /// Default public constructor required for serialization
+        /// </summary>
+        public IdentityClaim()
+        {
+        }
+
+        /// <summary>
         /// Copy constructor
         /// </summary>
         public IdentityClaim(IIdentityClaim other)

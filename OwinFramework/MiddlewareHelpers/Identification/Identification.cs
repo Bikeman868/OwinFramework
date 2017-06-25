@@ -41,6 +41,12 @@ namespace OwinFramework.MiddlewareHelpers.Identification
         public bool IsAnonymous { get; private set; }
 
         /// <summary>
+        /// Default public constructor required for serialization
+        /// </summary>
+        public Identification()
+        { }
+
+        /// <summary>
         /// Constructs an instance that implements IIdentification
         /// </summary>
         public Identification(
