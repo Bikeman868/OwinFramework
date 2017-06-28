@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using OwinFramework.InterfacesV1.Facilities;
+using OwinFramework.InterfacesV1.Middleware;
+using OwinFramework.MiddlewareHelpers.Identification;
 using OwinFramework.Mocks.V1.Facilities;
 
 namespace OwinFramework.Mocks.UnitTests
@@ -372,6 +374,37 @@ namespace OwinFramework.Mocks.UnitTests
             result = _identityStore.AuthenticateWithCredentials(userName, oldPassword);
             Assert.AreEqual(identity, result.Identity);
             Assert.AreEqual(AuthenticationStatus.InvalidCredentials, result.Status);
+        }
+
+        [Test]
+        public void Should_search_identities()
+        {
+            const string password = "somethingHardT0Gu3$$";
+
+            _identityStore.AddCredentials(_identityStore.CreateIdentity(), "martin@gmail.com", password);
+            _identityStore.AddCredentials(_identityStore.CreateIdentity(), "fred@gmail.com", password);
+            _identityStore.AddCredentials(_identityStore.UpdateClaim(_identityStore.CreateIdentity(),new IdentityClaim{Name = ClaimNames.FirstName, Value = "Jack", Status = ClaimStatus.Verified}), "bill@hotmail.com", password);
+            _identityStore.AddCredentials(_identityStore.CreateIdentity(), "jane@gmail.com", password);
+            _identityStore.AddCredentials(_identityStore.CreateIdentity(), "wendy@hotmail.com", password);
+
+            var results1 = _identityStore.Search("Martin");
+
+            Assert.IsNotNull(results1);
+            Assert.IsNotNull(results1.Identities);
+            Assert.AreEqual(1, results1.Identities.Count);
+            Assert.AreEqual("martin@gmail.com", results1.Identities[0].Claims[0].Value);
+
+            var results2 = _identityStore.Search("hotmail.com");
+
+            Assert.IsNotNull(results2);
+            Assert.IsNotNull(results2.Identities);
+            Assert.AreEqual(2, results2.Identities.Count);
+
+            var results3 = _identityStore.Search("jack");
+
+            Assert.IsNotNull(results3);
+            Assert.IsNotNull(results3.Identities);
+            Assert.AreEqual(1, results3.Identities.Count);
         }
     }
 }

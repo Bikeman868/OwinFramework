@@ -90,10 +90,10 @@ namespace OwinFramework.Mocks.V1.Facilities
             return testIdentity.Claims.Cast<IIdentityClaim>().ToList();
         }
 
-        public void UpdateClaim(string identity, IIdentityClaim claim)
+        public string UpdateClaim(string identity, IIdentityClaim claim)
         {
             TestIdentity testIdentity;
-            if (!_identities.TryGetValue(identity, out testIdentity)) return;
+            if (!_identities.TryGetValue(identity, out testIdentity)) return identity;
 
             var existingClaim = testIdentity.Claims.FirstOrDefault(c => c.Name == claim.Name);
             if (existingClaim == null)
@@ -105,20 +105,45 @@ namespace OwinFramework.Mocks.V1.Facilities
                 existingClaim.Value = claim.Value;
                 existingClaim.Status = claim.Status;
             }
+
+            return identity;
         }
 
-        public void DeleteClaim(string identity, string claimName)
+        public string DeleteClaim(string identity, string claimName)
         {
             TestIdentity testIdentity;
-            if (!_identities.TryGetValue(identity, out testIdentity)) return;
+            if (!_identities.TryGetValue(identity, out testIdentity)) return identity;
 
             var claimsToKeep = testIdentity.Claims.Where(c => c.Name != claimName).ToList();
 
             testIdentity.Claims.Clear();
             foreach (var claim in claimsToKeep)
                 testIdentity.Claims.Add(claim);
+
+            return identity;
         }
 
+        public IIdentitySearchResult Search(string searchText, string pagerToken = null, int maxResultCount = 20, string claimName = null)
+        {
+            return new IdentitySearchResult
+            {
+                PagerToken = string.Empty,
+                Identities = _identities.Values
+                    .Where(i =>
+                        (i.Identity.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (i.Claims.Any(
+                            c =>
+                                c.Status == ClaimStatus.Verified &&
+                                c.Value.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)))
+                    .Select(i =>
+                        new MatchingIdentity
+                        {
+                            Identity = i.Identity,
+                            Claims = i.Claims.Cast<IIdentityClaim>().ToList()
+                        } as IMatchingIdentity)
+                    .ToList()
+            };
+        }
 
         #region Certificates
 
@@ -265,6 +290,14 @@ namespace OwinFramework.Mocks.V1.Facilities
                 };
                 _credentials.Add(newCredential);
             }
+
+            UpdateClaim(identity, new IdentityClaim
+            {
+                Name = ClaimNames.Username,
+                Value = userName,
+                Status = ClaimStatus.Verified
+            });
+
             return true;
         }
 
@@ -568,6 +601,16 @@ namespace OwinFramework.Mocks.V1.Facilities
             public IList<string> Purposes { get; set; }
         }
 
+        private class IdentitySearchResult: IIdentitySearchResult
+        {
+            public string PagerToken { get; set; }
+            public IList<IMatchingIdentity> Identities { get; set; }
+        }
 
+        private class MatchingIdentity: IMatchingIdentity
+        {
+            public string Identity { get; set; }
+            public IList<IIdentityClaim> Claims { get; set; }
+        }
     }
 }
