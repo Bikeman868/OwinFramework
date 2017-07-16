@@ -3,12 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Owin;
 using Owin;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Routing;
 using OwinFramework.Interfaces.Utility;
+using OwinFramework.InterfacesV1.Capability;
 using OwinFramework.Routing;
 using OwinFramework.Utility;
 
@@ -18,13 +21,20 @@ namespace OwinFramework.Builder
     /// This is the class that builds an OWIN pipeline with routing and
     /// dependencies between middleware
     /// </summary>
-    public class Builder: IBuilder
+    public class Builder: IBuilder, ITraceable
     {
         private readonly IList<Component> _components;
         private readonly IDependencyGraphFactory _dependencyGraphFactory;
         private readonly ISegmenterFactory _segmenterFactory;
 
         private IRouter _router;
+
+        /// <summary>
+        /// Implements ITraceable
+        /// </summary>
+        public Action<IOwinContext, Func<string>> Trace { get; set; }
+
+        private RequestsToTrace _requestsToTrace;
 
         /// <summary>
         /// Constructs a new OWIN pipeline builder
@@ -36,10 +46,65 @@ namespace OwinFramework.Builder
             _dependencyGraphFactory = dependencyGraphFactory;
             _segmenterFactory = segmenterFactory;
             _components = new List<Component>();
+            Trace = (c, f) => { };
+        }
+
+        /// <summary>
+        /// Implements IBuilder
+        /// </summary>
+        public IBuilder EnableTracing(RequestsToTrace requestsToTrace = RequestsToTrace.All)
+        {
+            _requestsToTrace = requestsToTrace;
+            if (requestsToTrace == RequestsToTrace.None)
+            {
+                Trace = (c, f) => { };
+            }
+            else
+            {
+                Trace = (c, f) =>
+                {
+                    if (f == null) return;
+
+                    if (_requestsToTrace == RequestsToTrace.QueryString)
+                    {
+                        if (c.Request.Query["trace"] == null) return;
+                    }
+
+                    string message;
+                    try
+                    {
+                        message = f();
+                    }
+                    catch (Exception ex)
+                    {
+                        message = "Exception thrown in trace function: " + Environment.NewLine + ex.StackTrace;
+                    }
+                    if (string.IsNullOrEmpty(message)) return;
+
+                    var t = c.Get<TraceContext>("fw.builder.trace");
+                    if (t == null)
+                    {
+                        t = new TraceContext();
+                        c.Set("fw.builder.trace", t);
+                    }
+
+                    t.Append(message);
+                };
+            }
+
+            foreach (var component in _components)
+            {
+                var traceable = component.Middleware as InterfacesV1.Capability.ITraceable;
+                if (traceable != null) traceable.Trace = Trace;
+            }
+            return this;
         }
 
         IMiddleware<T> IBuilder.Register<T>(IMiddleware<T> middleware)
         {
+            var traceable = middleware as InterfacesV1.Capability.ITraceable;
+            if (traceable != null) traceable.Trace = Trace;
+
             var component = typeof(T) == typeof(IRoute) 
                 ? (Component)(new RouterComponent())
                 : (Component)(new MiddlewareComponent());
@@ -101,7 +166,7 @@ namespace OwinFramework.Builder
                 .ToList();
 
             var routeBuilder = new RouteBuilder(_dependencyGraphFactory);
-            _router = routeBuilder.BuildRoutes(routerComponents);
+            _router = routeBuilder.BuildRoutes(this, routerComponents);
 
             if (routerComponents.Count == 1)
             {
@@ -190,8 +255,9 @@ namespace OwinFramework.Builder
                     segment.ResolveDependencies();
             }
 
+#if DEBUG
             Dump(_router, "");
-
+#endif
             app.Use(Invoke);
         }
 
@@ -342,11 +408,21 @@ namespace OwinFramework.Builder
 
         private Task Invoke(IOwinContext context, Func<Task> next)
         {
+            Trace(context, () => "Request " + context.Request.Uri);
+
             context.Set<IRouter>("OwinFramework.Router", _router);
-            return _router.RouteRequest(context, () => _router.Invoke(context, next));
+            var task = _router.RouteRequest(context, () => _router.Invoke(context, next));
+
+            if (_requestsToTrace != RequestsToTrace.None)
+            {
+                var traceContext = context.Get<TraceContext>("fw.builder.trace");
+                if (traceContext != null)
+                    System.Diagnostics.Trace.WriteLine(traceContext.TraceOutput.ToString());
+            }
+            return task;
         }
 
-#region Diagnostic dump
+#if DEBUG
 
         private void Dump(IRouter router, string indent)
         {
@@ -407,7 +483,26 @@ namespace OwinFramework.Builder
             foreach (var dependency in middleware.Dependencies) Dump(dependency, indent);
         }
 
-#endregion
+#endif
+
+        private class TraceContext
+        {
+            private static long _nextRequestId;
+
+            public readonly StringBuilder TraceOutput;
+            private readonly long _requestId;
+
+            public TraceContext()
+            {
+                TraceOutput = new StringBuilder();
+                _requestId = Interlocked.Increment(ref _nextRequestId);
+            }
+
+            public void Append(string message)
+            {
+                TraceOutput.AppendFormat("#{0:d6} {1:T} {2}{3}", _requestId, DateTime.Now, message, Environment.NewLine);
+            }
+        }
 
         private class Component
         {
@@ -444,11 +539,12 @@ namespace OwinFramework.Builder
                 _dependencyGraphFactory = dependencyGraphFactory;
             }
 
-            public IRouter BuildRoutes(IList<RouterComponent> routerComponents)
+            public IRouter BuildRoutes(ITraceable traceable, IList<RouterComponent> routerComponents)
             {
                 // Create a root level router as a container for everythinng that's not on a route. 
                 // When the application does not use routing everything ends up in here
                 IRouter rootRouter = new Router(_dependencyGraphFactory);
+                ((ITraceable) rootRouter).Trace = traceable.Trace;
 
                 // Add a root segment called with a pass everything filter
                 rootRouter.Add("root", owinContext => true);

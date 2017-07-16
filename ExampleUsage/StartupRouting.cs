@@ -39,7 +39,7 @@ namespace ExampleUsage
             // There are other startup examples in this project that demonstrate the IoC version
             IDependencyGraphFactory dependencyGraphFactory = new DependencyGraphFactory();
             ISegmenterFactory segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
-            IBuilder builder = new Builder(dependencyGraphFactory, segmenterFactory);
+            IBuilder builder = new Builder(dependencyGraphFactory, segmenterFactory).EnableTracing(RequestsToTrace.QueryString);
             IConfiguration configuration = new DefaultValueConfiguration();
 
             // Note that the middleware components below can be registerd with the builder

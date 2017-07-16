@@ -190,6 +190,18 @@ This very complex configuration might look like this:
       app.UseBuilder(builder);
     }
 ```
+## Debugging issues
+
+If your OWIN pipeline is not functioning as expected there are a couple of ways that
+you can debug it. Firstly there is a RouteVisualizer middleware that will draw an SVG
+visual representation of the pipeline so that you can see if the middleware are configured
+as you were expecting. Secondly `IBuilder` has an `EnableTracing()` method that causes the
+all middlware in the pipeline to output helpful trace information. To see the trace output 
+attach a debugger to your application.
+
+When you configure the builder to output trace information for "query string only" this
+means that only requests that include `trace=true` in the URL will have trace information
+output to the debug console.
 
 ## Legacy Middleware
 

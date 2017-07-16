@@ -7,6 +7,7 @@ using OwinFramework.Builder;
 using OwinFramework.Interfaces.Builder;
 using OwinFramework.Interfaces.Routing;
 using OwinFramework.Interfaces.Utility;
+using OwinFramework.InterfacesV1.Capability;
 using OwinFramework.Utility;
 
 namespace OwinFramework.Routing
@@ -17,11 +18,20 @@ namespace OwinFramework.Routing
     /// requests the router will evaluate filters until one matches, then only
     /// execute that one segment.
     /// </summary>
-    public class Router : IRouter
+    public class Router : IRouter, ITraceable
     {
-        string IMiddleware.Name { get; set; }
         IList<IDependency> IMiddleware.Dependencies { get { return _dependencies; } }
         IList<IRoutingSegment> IRouter.Segments { get { return _segments; } }
+
+        /// <summary>
+        ///  Impelemnts IRouter
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Implements ITraceable
+        /// </summary>
+        public Action<IOwinContext, Func<string>> Trace { get; set; }
 
         private readonly IList<IDependency> _dependencies;
         private readonly IList<IRoutingSegment> _segments;
@@ -43,7 +53,7 @@ namespace OwinFramework.Routing
 
         IRouter IRouter.Add(string routeName, Func<IOwinContext, bool> filterExpression)
         {
-            _segments.Add(new RoutingSegment(_dependencyGraphFactory).Initialize(routeName, filterExpression));
+            _segments.Add(new RoutingSegment(_dependencyGraphFactory).Initialize(this, routeName, filterExpression));
             return this;
         }
 
@@ -53,9 +63,11 @@ namespace OwinFramework.Routing
             {
                 if (segment.Filter(context))
                 {
+                    Trace(context, () => "Router " + Name + " " + segment.Name + " filter matches the request");
                     context.Set(_owinContextKey, segment);
                     return segment.RouteRequest(context, next) ?? next();
                 }
+                Trace(context, () => "Router " + Name + " " + segment.Name + " filter does not match the request");
             }
             return next();
         }
@@ -97,6 +109,7 @@ namespace OwinFramework.Routing
             private readonly IDependencyGraphFactory _dependencyGraphFactory;
 
             private IList<IRoutingProcessor> _routingProcessors;
+            private ITraceable _traceable;
 
             public RoutingSegment(IDependencyGraphFactory dependencyGraphFactory)
             {
@@ -104,8 +117,9 @@ namespace OwinFramework.Routing
                 _components = new List<Component>();
             }
 
-            public IRoutingSegment Initialize(string name, Func<IOwinContext, bool> filter)
+            public IRoutingSegment Initialize(ITraceable traceable, string name, Func<IOwinContext, bool> filter)
             {
+                _traceable = traceable;
                 Name = name;
                 Filter = filter;
                 return this;
@@ -219,13 +233,25 @@ namespace OwinFramework.Routing
                 if (_routingProcessors == null)
                     throw new RoutingException("Requests can not be routed until dependencies have been resolved");
 
+                _traceable.Trace(context, () => "Routing request in " + Name + " routing segment");
+
                 var nextIndex = 0;
                 Func<Task> getNext = null;
 
                 getNext = () =>
                 {
                     if (nextIndex < _routingProcessors.Count)
-                        return _routingProcessors[nextIndex++].RouteRequest(context, getNext) ?? next();
+                    {
+                        var routingProcessor = _routingProcessors[nextIndex++];
+                        _traceable.Trace(context, () =>
+                        {
+                            var middleware = routingProcessor as IMiddleware;
+                            if (middleware == null || string.IsNullOrEmpty(middleware.Name))
+                                return "Routing request to " + routingProcessor.GetType().FullName;
+                            return "Routing request to middleware '" + middleware.Name + "'";
+                        });
+                        return routingProcessor.RouteRequest(context, getNext) ?? next();
+                    }
                     return next();
                 };
 
@@ -237,13 +263,22 @@ namespace OwinFramework.Routing
                 if (Middleware == null)
                     throw new RoutingException("Requests can not be processed until dependencies have been resolved");
 
+                _traceable.Trace(context, () => "Processing request in '" + Name + "' routing segment");
+                
                 var nextIndex = 0;
                 Func<Task> getNext = null;
 
                 getNext = () =>
                     {
                         if (nextIndex < Middleware.Count)
-                            return Middleware[nextIndex++].Invoke(context, getNext);
+                        {
+                            var middleware = Middleware[nextIndex++];
+                            _traceable.Trace(context, () => 
+                                "Processing request with '" + 
+                                (string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name) + 
+                                "' middleware");
+                            middleware.Invoke(context, getNext);
+                        }
                         return next();
                     };
 

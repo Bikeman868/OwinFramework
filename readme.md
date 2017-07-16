@@ -122,22 +122,20 @@ itself. There is also a >net 4.5 version of this project in the solution.
 
 These are the next batch of NuGet packages that are in the pipeline:
 
-1. A token store facility that uses Prius
+1. Authorization middleware for managing users, groups and permissions
 
-2. Authorization middleware for managing users, groups and permissions
+2. Identification middleware that uses IP address and can be used for 2 factor authentication
 
-3. Identification middleware that uses IP address and can be used for 2 factor authentication
+3. An identity store facility that uses SQLite
 
-4. An identity store facility that uses SQLite
+4. A token store facility thay uses SQLite
 
-5. A token store facility thay uses SQLite
+5. A cache facility that uses MemcacheD
 
-6. A cache facility that uses MemcacheD
+6. A cache facility that uses ElastiCache
 
-7. A cache facility that uses ElastiCache
+7. Identification middleware that uses shared secrets
 
-8. Identification middleware that uses shared secrets
+8. Certificate based identification middleware
 
-9. Certificate based identification middleware
-
-10. Social login (Google, Facebook, LinkedIn, Microsoft etc)
+9. Social login (Google, Facebook, LinkedIn, Microsoft etc)

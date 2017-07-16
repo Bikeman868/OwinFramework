@@ -25,7 +25,7 @@ namespace ExampleUsage
             // choose not to use IoC, or configure any other IoC container you like.
             var packageLocator = new PackageLocator().ProbeAllLoadedAssemblies();
             var ninject = new StandardKernel(new Module(packageLocator));
-            var builder = ninject.Get<IBuilder>();
+            var builder = ninject.Get<IBuilder>().EnableTracing(RequestsToTrace.QueryString);
 
             // This next part defines the concrete implementation of the various
             // OWIN middleware components you want to use in your application. The

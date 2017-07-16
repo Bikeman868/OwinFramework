@@ -60,6 +60,7 @@
     <Compile Include="InterfacesV1\Capability\IAnalysable.cs" />
     <Compile Include="InterfacesV1\Capability\IConfigurable.cs" />
     <Compile Include="InterfacesV1\Capability\ISelfDocumenting.cs" />
+    <Compile Include="InterfacesV1\Capability\ITraceable.cs" />
     <Compile Include="InterfacesV1\Facilities\IIdentityStore.cs" />
     <Compile Include="InterfacesV1\Facilities\ICache.cs" />
     <Compile Include="InterfacesV1\Facilities\ITokenStore.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="InterfacesV1\Upstream\IUpstreamOutputCache.cs" />
     <Compile Include="InterfacesV1\Upstream\IUpstreamSession.cs" />
     <Compile Include="Interfaces\Builder\IUpstreamCommunicator.cs" />
+    <Compile Include="Interfaces\Builder\RequestsToTrace.cs" />
     <Compile Include="Interfaces\Utility\IDependencyGraphEdge.cs" />
     <Compile Include="Interfaces\Utility\IHostingEnvironment.cs" />
     <Compile Include="Interfaces\Utility\ISegmenter.cs" />

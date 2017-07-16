@@ -17,10 +17,16 @@ namespace ExampleUsage.Middleware
     /// * It injects the IIdentification feature into the OWIN context
     /// * It is configurable
     /// </summary>
-    public class FormsIdentification: IMiddleware<IIdentification>, IConfigurable, IRoutingProcessor
+    public class FormsIdentification: 
+        IMiddleware<IIdentification>, 
+        IConfigurable, 
+        IRoutingProcessor,
+        ITraceable
     {
         public string Name { get; set; }
         public IList<IDependency> Dependencies { get; private set; }
+
+        public Action<IOwinContext, Func<string>> Trace { get; set; }
 
         public FormsIdentification()
         {
@@ -38,7 +44,7 @@ namespace ExampleUsage.Middleware
         {
             var registration = configuration.Register(
                 path,
-                cfg => Console.WriteLine("CONFIGURE: Forms identification '" + Name + "' from " + path),
+                cfg => System.Diagnostics.Trace.WriteLine("Forms identification configuration changed for '" + Name + "' from " + path),
                 string.Empty);
             registration.Dispose();
         }
@@ -60,8 +66,6 @@ namespace ExampleUsage.Middleware
 
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("PROCESS: Forms identification");
-
             // A real implementation would check the username and password and get a list
             // of known claims associated with this user
             context.SetFeature<IIdentification>(new Identification(
@@ -73,7 +77,5 @@ namespace ExampleUsage.Middleware
 
             return next();
         }
-
-
     }
 }

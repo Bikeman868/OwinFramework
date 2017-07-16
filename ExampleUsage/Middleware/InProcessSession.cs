@@ -44,8 +44,6 @@ namespace ExampleUsage.Middleware
         /// </summary>
         public Task RouteRequest(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("ROUTE: In process session");
-
             context.SetFeature<IUpstreamSession>(new UpstreamSession());
 
             // Invoke the next middleware in the chain
@@ -59,8 +57,6 @@ namespace ExampleUsage.Middleware
         /// </summary>
         public Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Console.WriteLine("PROCESS: In process session");
-
             var upstreamSession = context.GetFeature<IUpstreamSession>() as UpstreamSession;
             var sessionRequired = upstreamSession != null && upstreamSession.SessionRequired;
 
