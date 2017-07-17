@@ -13,7 +13,8 @@ namespace OwinFramework.MiddlewareHelpers.ResponseRewriter
     {
         private readonly IResponseRewriter _prior;
         private readonly MemoryStream _memoryStream;
-        private readonly Stream _responseStream;
+        private readonly Stream _originalStream;
+        private readonly IOwinContext _owinContext;
 
         /// <summary>
         /// Constructs an object that will capture the output from downstream middleware.
@@ -24,10 +25,11 @@ namespace OwinFramework.MiddlewareHelpers.ResponseRewriter
         public ResponseCapture(IOwinContext owinContext)
         {
             _prior = owinContext.GetFeature<IResponseRewriter>();
+            _owinContext = owinContext;
 
             if (_prior == null)
             {
-                _responseStream = owinContext.Response.Body;
+                _originalStream = owinContext.Response.Body;
                 _memoryStream = new MemoryStream();
                 owinContext.Response.Body = _memoryStream;
             }
@@ -43,7 +45,8 @@ namespace OwinFramework.MiddlewareHelpers.ResponseRewriter
             if (_prior == null)
             {
                 var buffer = _memoryStream.ToArray();
-                _responseStream.Write(buffer, 0, buffer.Length);
+                _owinContext.Response.ContentLength = buffer.Length;
+                _originalStream.Write(buffer, 0, buffer.Length);
             }
         }
 

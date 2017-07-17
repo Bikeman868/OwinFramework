@@ -410,16 +410,24 @@ namespace OwinFramework.Builder
         {
             Trace(context, () => "Request " + context.Request.Uri);
 
-            context.Set<IRouter>("OwinFramework.Router", _router);
-            var task = _router.RouteRequest(context, () => _router.Invoke(context, next));
+            var task = ExecutePipeline(context, next);
 
             if (_requestsToTrace != RequestsToTrace.None)
             {
-                var traceContext = context.Get<TraceContext>("fw.builder.trace");
-                if (traceContext != null)
-                    System.Diagnostics.Trace.WriteLine(traceContext.TraceOutput.ToString());
+                return task.ContinueWith(t =>
+                {
+                    var traceContext = context.Get<TraceContext>("fw.builder.trace");
+                    if (traceContext != null)
+                        System.Diagnostics.Trace.WriteLine(traceContext.TraceOutput.ToString());
+                });
             }
             return task;
+        }
+
+        private Task ExecutePipeline(IOwinContext context, Func<Task> next)
+        {
+            context.Set<IRouter>("OwinFramework.Router", _router);
+            return _router.RouteRequest(context, () => _router.Invoke(context, next));
         }
 
 #if DEBUG

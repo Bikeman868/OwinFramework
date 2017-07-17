@@ -59,15 +59,17 @@ namespace OwinFramework.Routing
 
         Task IRoutingProcessor.RouteRequest(IOwinContext context, Func<Task> next)
         {
+            var name = string.IsNullOrEmpty(Name) ? GetType().Name : Name;
             foreach (var segment in _segments)
             {
+                var seg = segment;
                 if (segment.Filter(context))
                 {
-                    Trace(context, () => "Router " + Name + " " + segment.Name + " filter matches the request");
+                    Trace(context, () => "The '" + name + "' router '" + seg.Name + "' filter matches the request");
                     context.Set(_owinContextKey, segment);
                     return segment.RouteRequest(context, next) ?? next();
                 }
-                Trace(context, () => "Router " + Name + " " + segment.Name + " filter does not match the request");
+                Trace(context, () => "The '" + name + "' router '" + seg.Name + "' filter does not match the request");
             }
             return next();
         }
@@ -233,7 +235,7 @@ namespace OwinFramework.Routing
                 if (_routingProcessors == null)
                     throw new RoutingException("Requests can not be routed until dependencies have been resolved");
 
-                _traceable.Trace(context, () => "Routing request in " + Name + " routing segment");
+                _traceable.Trace(context, () => "Routing request in '" + Name + "' routing segment");
 
                 var nextIndex = 0;
                 Func<Task> getNext = null;
@@ -277,7 +279,7 @@ namespace OwinFramework.Routing
                                 "Processing request with '" + 
                                 (string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name) + 
                                 "' middleware");
-                            middleware.Invoke(context, getNext);
+                            return middleware.Invoke(context, getNext);
                         }
                         return next();
                     };
