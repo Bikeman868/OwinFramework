@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Moq.Modules;
 using OwinFramework.Builder;
 using OwinFramework.InterfacesV1.Facilities;
@@ -49,7 +47,7 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         #endregion
 
-        string IIdentityStore.CreateIdentity()
+        string IIdentityDirectory.CreateIdentity()
         {
             var identity = new TestIdentity {Identity = Guid.NewGuid().ToString("N")};
             _identities.Add(identity.Identity, identity);

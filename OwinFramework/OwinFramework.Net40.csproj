@@ -61,8 +61,16 @@
     <Compile Include="InterfacesV1\Capability\IConfigurable.cs" />
     <Compile Include="InterfacesV1\Capability\ISelfDocumenting.cs" />
     <Compile Include="InterfacesV1\Capability\ITraceable.cs" />
-    <Compile Include="InterfacesV1\Facilities\IIdentityStore.cs" />
+    <Compile Include="InterfacesV1\Facilities\AuthenticationStatus.cs" />
+    <Compile Include="InterfacesV1\Facilities\IAuthenticationResult.cs" />
     <Compile Include="InterfacesV1\Facilities\ICache.cs" />
+    <Compile Include="InterfacesV1\Facilities\ICertificateStore.cs" />
+    <Compile Include="InterfacesV1\Facilities\ICredentialStore.cs" />
+    <Compile Include="InterfacesV1\Facilities\IIdentityDirectory.cs" />
+    <Compile Include="InterfacesV1\Facilities\IIdentityStore.cs" />
+    <Compile Include="InterfacesV1\Facilities\IMimeTypeEvaluator.cs" />
+    <Compile Include="InterfacesV1\Facilities\ISharedSecretStore.cs" />
+    <Compile Include="InterfacesV1\Facilities\ISocialIdentityStore.cs" />
     <Compile Include="InterfacesV1\Facilities\ITokenStore.cs" />
     <Compile Include="InterfacesV1\Middleware\IAuthorization.cs" />
     <Compile Include="InterfacesV1\Middleware\IIdentification.cs" />
@@ -89,6 +97,9 @@
     <Compile Include="MiddlewareHelpers\Analysable\StatisticInformation.cs" />
     <Compile Include="MiddlewareHelpers\Analysable\TimeSpanPerCountStatistic.cs" />
     <Compile Include="MiddlewareHelpers\Analysable\TimespanStatistic.cs" />
+    <Compile Include="MiddlewareHelpers\EmbeddedResources\EmbeddedResource.cs" />
+    <Compile Include="MiddlewareHelpers\EmbeddedResources\MimeTypeEvaluator.cs" />
+    <Compile Include="MiddlewareHelpers\EmbeddedResources\ResourceManager.cs" />
     <Compile Include="MiddlewareHelpers\Identification\Identification.cs" />
     <Compile Include="MiddlewareHelpers\Identification\IdentityClaim.cs" />
     <Compile Include="MiddlewareHelpers\ResponseRewriter\ResponseCapture.cs" />
