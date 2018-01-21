@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Owin.Framework.ConfigurationManager</id>
-    <version>2.5.6</version>
+    <version>2.6.0</version>
     <title>Owin.Framework.ConfigurationManager</title>
     <authors>Martin Halliday</authors>
     <owners>Martin Halliday</owners>

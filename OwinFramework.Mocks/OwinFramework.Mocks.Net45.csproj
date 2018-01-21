@@ -86,6 +86,7 @@
     <Compile Include="UnitTests\MockOwinContextTests.cs" />
     <Compile Include="UnitTests\MockTokenStoreTests.cs" />
     <Compile Include="V1\Facilities\MockCache.cs" />
+    <Compile Include="V1\Facilities\MockIdentityDirectory.cs" />
     <Compile Include="V1\Facilities\MockIdentityStore.cs" />
     <Compile Include="V1\Facilities\MockTokenStore.cs" />
   </ItemGroup>

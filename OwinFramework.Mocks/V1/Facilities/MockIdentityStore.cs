@@ -20,8 +20,11 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         protected override IIdentityStore GetImplementation(IMockProducer mockProducer)
         {
+            _identityDirectory = mockProducer.SetupMock<IIdentityDirectory>();
             return this;
         }
+
+        private IIdentityDirectory _identityDirectory;
 
         private readonly IDictionary<string, TestIdentity> _identities = new ConcurrentDictionary<string, TestIdentity>();
         private readonly IList<TestSharedSecret> _sharedSecrets = new List<TestSharedSecret>();
@@ -30,29 +33,12 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         #region Methods to control mock behaviour in unit tests
 
-        public void SetIdentityName(string identity, string name)
-        {
-            _identities[identity].Name = name;
-        }
-
-        public string GetIdentityName(string identity)
-        {
-            return _identities[identity].Name;
-        }
-
         public bool SupportsCertificates { get; set; }
         public bool SupportsCredentials { get; set; }
         public bool SupportsSharedSecrets { get; set; }
         public IList<string> SocialServices { get; set; }
 
         #endregion
-
-        string IIdentityDirectory.CreateIdentity()
-        {
-            var identity = new TestIdentity {Identity = Guid.NewGuid().ToString("N")};
-            _identities.Add(identity.Identity, identity);
-            return identity.Identity;
-        }
 
         public IAuthenticationResult RememberMe(string rememberMeToken)
         {
@@ -80,73 +66,13 @@ namespace OwinFramework.Mocks.V1.Facilities
             };
         }
 
-        public IList<IIdentityClaim> GetClaims(string identity)
-        {
-            TestIdentity testIdentity;
-            if (!_identities.TryGetValue(identity, out testIdentity))
-                return new List<IIdentityClaim>();
-            return testIdentity.Claims.Cast<IIdentityClaim>().ToList();
-        }
-
-        public string UpdateClaim(string identity, IIdentityClaim claim)
-        {
-            TestIdentity testIdentity;
-            if (!_identities.TryGetValue(identity, out testIdentity)) return identity;
-
-            var existingClaim = testIdentity.Claims.FirstOrDefault(c => c.Name == claim.Name);
-            if (existingClaim == null)
-            {
-                testIdentity.Claims.Add(new IdentityClaim(claim));
-            }
-            else
-            {
-                existingClaim.Value = claim.Value;
-                existingClaim.Status = claim.Status;
-            }
-
-            return identity;
-        }
-
-        public string DeleteClaim(string identity, string claimName)
-        {
-            TestIdentity testIdentity;
-            if (!_identities.TryGetValue(identity, out testIdentity)) return identity;
-
-            var claimsToKeep = testIdentity.Claims.Where(c => c.Name != claimName).ToList();
-
-            testIdentity.Claims.Clear();
-            foreach (var claim in claimsToKeep)
-                testIdentity.Claims.Add(claim);
-
-            return identity;
-        }
-
-        public IIdentitySearchResult Search(string searchText, string pagerToken = null, int maxResultCount = 20, string claimName = null)
-        {
-            return new IdentitySearchResult
-            {
-                PagerToken = string.Empty,
-                Identities = _identities.Values
-                    .Where(i =>
-                        (i.Identity.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                        (i.Claims.Any(
-                            c =>
-                                c.Status == ClaimStatus.Verified &&
-                                c.Value.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)))
-                    .Select(i =>
-                        new MatchingIdentity
-                        {
-                            Identity = i.Identity,
-                            Claims = i.Claims.Cast<IIdentityClaim>().ToList()
-                        } as IMatchingIdentity)
-                    .ToList()
-            };
-        }
-
         #region Certificates
 
         public byte[] AddCertificate(string identity, TimeSpan? lifetime, IEnumerable<string> purposes)
         {
+            var testIdentity = GetIdentity(identity);
+            if (testIdentity == null) throw new Exception("Unknwn identity " + identity);
+
             var id = Guid.NewGuid().ToString("N");
             var certificateText = identity + ":" + id;
             var certificate = new TestCertificate
@@ -157,7 +83,8 @@ namespace OwinFramework.Mocks.V1.Facilities
                 Expiry = lifetime.HasValue ? DateTime.UtcNow + lifetime : null,
                 Purposes = purposes == null ? new List<string>() : purposes.Where(p => !string.IsNullOrEmpty(p)).ToList()
             };
-            _identities[identity].Certificates.Add(certificate);
+
+            testIdentity.Certificates.Add(certificate);
             return certificate.Certificate;
         }
 
@@ -201,7 +128,10 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         public int DeleteCertificates(string identity)
         {
-            var certificates = _identities[identity].Certificates;
+            var testIdentity = GetIdentity(identity);
+            if (testIdentity == null) throw new Exception("Unknwn identity " + identity);
+
+            var certificates = testIdentity.Certificates;
             var result = certificates.Count;
             certificates.Clear();
             return result;
@@ -220,7 +150,8 @@ namespace OwinFramework.Mocks.V1.Facilities
             if (colonIndex < 1) return false;
 
             var identityToken = certificateText.Substring(0, colonIndex);
-            if (!_identities.TryGetValue(identityToken, out identity)) return false;
+            identity = GetIdentity(identityToken);
+            if (identity == null) return false;
 
             foreach (var identityCertificate in identity.Certificates)
             {
@@ -289,7 +220,7 @@ namespace OwinFramework.Mocks.V1.Facilities
                 _credentials.Add(newCredential);
             }
 
-            UpdateClaim(identity, new IdentityClaim
+            _identityDirectory.UpdateClaim(identity, new IdentityClaim
             {
                 Name = ClaimNames.Username,
                 Value = userName,
@@ -348,10 +279,9 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         public bool ChangePassword(ICredential credential, string newPassword)
         {
-            if (!_identities.ContainsKey(credential.Identity))
+            var testIdentity = GetIdentity(credential.Identity);
+            if (testIdentity == null)
                 return false;
-
-            var identity = _identities.FirstOrDefault(i => i.Key == credential.Identity).Value;
 
             var foundCredential = _credentials.FirstOrDefault(c => string.Equals(c.Username, credential.Username));
             if (foundCredential == null) return false;
@@ -534,13 +464,32 @@ namespace OwinFramework.Mocks.V1.Facilities
 
         #endregion
 
+        private TestIdentity GetIdentity(string identity)
+        {
+            TestIdentity testIdentity;
+            if (_identities.TryGetValue(identity, out testIdentity))
+                return testIdentity;
+
+            var claims = _identityDirectory.GetClaims(identity);
+            if (claims == null)
+                return null;
+
+            testIdentity = new TestIdentity
+            {
+                Identity = identity,
+                Claims = claims
+            };
+
+            _identities[identity] = testIdentity;
+            return testIdentity;
+        }
+
         private class TestIdentity
         {
-            public string Identity;
-            public string Name;
+            public string Identity { get; set; }
+            public IList<IIdentityClaim> Claims { get; set; }
             public readonly IList<TestCertificate> Certificates = new List<TestCertificate>();
             public readonly IList<TestCredential> Credentials = new List<TestCredential>();
-            public readonly IList<IdentityClaim> Claims = new List<IdentityClaim>();
         }
 
         private class TestCredential : ICredential
@@ -597,18 +546,6 @@ namespace OwinFramework.Mocks.V1.Facilities
             public string Name { get; set; }
             public string Secret { get; set; }
             public IList<string> Purposes { get; set; }
-        }
-
-        private class IdentitySearchResult: IIdentitySearchResult
-        {
-            public string PagerToken { get; set; }
-            public IList<IMatchingIdentity> Identities { get; set; }
-        }
-
-        private class MatchingIdentity: IMatchingIdentity
-        {
-            public string Identity { get; set; }
-            public IList<IIdentityClaim> Claims { get; set; }
         }
     }
 }

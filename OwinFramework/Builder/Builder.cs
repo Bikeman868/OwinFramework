@@ -211,14 +211,14 @@ namespace OwinFramework.Builder
                         sep = ", ";
                     }
                     l += "}";
-                    Trace.WriteLine(l);
+                    System.Diagnostics.Trace.WriteLine(l);
                 };
-                Trace.WriteLine("== Before segmentation ==");
-                Trace.WriteLine("Components at the front of the pipeline");
+                System.Diagnostics.Trace.WriteLine("== Before segmentation ==");
+                System.Diagnostics.Trace.WriteLine("Components at the front of the pipeline");
                 foreach (var c in frontComponents) p(c);
-                Trace.WriteLine("Components in the middle of the pipeline");
+                System.Diagnostics.Trace.WriteLine("Components in the middle of the pipeline");
                 foreach (var c in middleComponents) p(c);
-                Trace.WriteLine("Components at the back of the pipeline");
+                System.Diagnostics.Trace.WriteLine("Components at the back of the pipeline");
                 foreach (var c in backComponents) p(c);
 #endif
 
@@ -227,12 +227,12 @@ namespace OwinFramework.Builder
                 AddToBack(routerComponents, backComponents);
 
 #if DEBUG
-                Trace.WriteLine("== After segmentation ==");
-                Trace.WriteLine("Components at the front of the pipeline");
+                System.Diagnostics.Trace.WriteLine("== After segmentation ==");
+                System.Diagnostics.Trace.WriteLine("Components at the front of the pipeline");
                 foreach (var c in frontComponents) p(c);
-                Trace.WriteLine("Components in the middle of the pipeline");
+                System.Diagnostics.Trace.WriteLine("Components in the middle of the pipeline");
                 foreach (var c in middleComponents) p(c);
-                Trace.WriteLine("Components at the back of the pipeline");
+                System.Diagnostics.Trace.WriteLine("Components at the back of the pipeline");
                 foreach (var c in backComponents) p(c);
 #endif
             }

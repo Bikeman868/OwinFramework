@@ -19,14 +19,43 @@ namespace OwinFramework.Mocks.UnitTests
     [TestFixture]
     public class MockIdentityStoreTests
     {
+        private MockIdentityDirectory _mockIdentityDirectory;
+        private IIdentityDirectory _identityDirectory;
+
         private MockIdentityStore _mockIdentityStore;
         private IIdentityStore _identityStore;
+
+        private class MockProducer: Moq.Modules.IMockProducer
+        {
+            private readonly Dictionary<Type, object> _mocks = new Dictionary<Type, object>();
+
+            public void Add<T>(T mock)
+            {
+                _mocks.Add(typeof (T), mock);
+            }
+
+            T Moq.Modules.IMockProducer.SetupMock<T>()
+            {
+                object mock;
+                if (_mocks.TryGetValue(typeof (T), out mock))
+                    return (T)mock;
+
+                throw new Exception("Mock not added for " + typeof (T).Name);
+            }
+        }
 
         [SetUp]
         public void Setup()
         {
+            var mockProducer = new MockProducer();
+
+            _mockIdentityDirectory = new MockIdentityDirectory();
+            _identityDirectory = _mockIdentityDirectory.GetImplementation<IIdentityDirectory>(mockProducer);
+            mockProducer.Add(_identityDirectory);
+
             _mockIdentityStore = new MockIdentityStore();
-            _identityStore = _mockIdentityStore.GetImplementation<IIdentityStore>(null);
+            _identityStore = _mockIdentityStore.GetImplementation<IIdentityStore>(mockProducer);
+            mockProducer.Add(_identityStore);
         }
 
         [Test]
@@ -35,7 +64,7 @@ namespace OwinFramework.Mocks.UnitTests
             var lifetime = TimeSpan.FromMilliseconds(100);
             var purpose = new[] { "api" };
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             var cert = _identityStore.AddCertificate(identity, lifetime, purpose);
 
             var result = _identityStore.AuthenticateWithCertificate(cert);
@@ -61,7 +90,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string name = "Facebook access to API";
             var purpose = new[] { "api" };
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             var secret = _identityStore.AddSharedSecret(identity, name, purpose);
 
             var result = _identityStore.AuthenticateWithSharedSecret(secret);
@@ -86,7 +115,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string userName = "martin@gmail.com";
             const string password = "somethingHardT0Gu3$$";
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             var success = _identityStore.AddCredentials(identity, userName, password);
 
             Assert.IsTrue(success);
@@ -115,7 +144,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string userName = "martin@gmail.com";
             const string password = "somethingHardT0Gu3$$";
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             var success = _identityStore.AddCredentials(identity, userName, password);
 
             Assert.IsTrue(success);
@@ -143,7 +172,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string delegatePassword = "NotSoHard";
             var delegatePurposes = new List<string> {"ManageContacts"};
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             Assert.IsTrue(_identityStore.AddCredentials(identity, userName, password));
             Assert.IsTrue(_identityStore.AddCredentials(identity, delegateUserName, delegatePassword, false, delegatePurposes));
 
@@ -169,7 +198,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string oldPassword = "somethingHardT0Gu3$$";
             const string newPassword = "evenHarderT0Gu3$$2016";
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             _identityStore.AddCredentials(identity, userName, oldPassword);
 
             var result = _identityStore.AuthenticateWithCredentials(userName, oldPassword);
@@ -194,7 +223,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string newUserName = "martin@hotmail.com";
             const string password = "somethingHardT0Gu3$$";
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             _identityStore.AddCredentials(identity, oldUserName, password);
 
             var result = _identityStore.AuthenticateWithCredentials(oldUserName, password);
@@ -219,7 +248,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string fullAccessPassword = "somethingHardT0Gu3$$";
             const string restrictedAccessPassword = "EasyToGuess";
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             _identityStore.AddCredentials(identity, fullAccessUserName, fullAccessPassword);
             _identityStore.AddCredentials(identity, restrictedUserName, restrictedAccessPassword, false, new[]{"view", "report"});
 
@@ -246,7 +275,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string userId = "martin@gmail.com";
             var authenticationToken = Guid.NewGuid().ToString();
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             var isNew = _identityStore.AddSocial(identity, userId, socialService, authenticationToken);
 
             Assert.IsTrue(isNew);
@@ -280,7 +309,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string userName = "martin@gmail.com";
             const string password = "somethingHardT0Gu3$$";
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             _identityStore.AddCredentials(identity, userName, password);
             var sharedSecret = _identityStore.AddSharedSecret(identity, "3rd party API access", new[] { "api" });
 
@@ -307,7 +336,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string username2 = "martin2@gmail.com";
             const string password = "somethingHardT0Gu3$$";
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             _identityStore.AddCredentials(identity, username1, password);
             _identityStore.AddCredentials(identity, username2, password, false, new[]{"contacts"});
 
@@ -334,7 +363,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string username2 = "martin2@gmail.com";
             const string password = "somethingHardT0Gu3$$";
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             _identityStore.AddCredentials(identity, username1, password);
             _identityStore.AddCredentials(identity, username2, password, false, new[] { "contacts" });
 
@@ -357,7 +386,7 @@ namespace OwinFramework.Mocks.UnitTests
             const string oldPassword = "somethingHardT0Gu3$$";
             const string newPassword = "evenHarderT0Gu3$$2016";
 
-            var identity = _identityStore.CreateIdentity();
+            var identity = _identityDirectory.CreateIdentity();
             _identityStore.AddCredentials(identity, userName, oldPassword);
 
             var result = _identityStore.AuthenticateWithCredentials(userName, oldPassword);
@@ -381,26 +410,26 @@ namespace OwinFramework.Mocks.UnitTests
         {
             const string password = "somethingHardT0Gu3$$";
 
-            _identityStore.AddCredentials(_identityStore.CreateIdentity(), "martin@gmail.com", password);
-            _identityStore.AddCredentials(_identityStore.CreateIdentity(), "fred@gmail.com", password);
-            _identityStore.AddCredentials(_identityStore.UpdateClaim(_identityStore.CreateIdentity(),new IdentityClaim{Name = ClaimNames.FirstName, Value = "Jack", Status = ClaimStatus.Verified}), "bill@hotmail.com", password);
-            _identityStore.AddCredentials(_identityStore.CreateIdentity(), "jane@gmail.com", password);
-            _identityStore.AddCredentials(_identityStore.CreateIdentity(), "wendy@hotmail.com", password);
+            _identityStore.AddCredentials(_identityDirectory.CreateIdentity(), "martin@gmail.com", password);
+            _identityStore.AddCredentials(_identityDirectory.CreateIdentity(), "fred@gmail.com", password);
+            _identityStore.AddCredentials(_identityDirectory.UpdateClaim(_identityDirectory.CreateIdentity(), new IdentityClaim { Name = ClaimNames.FirstName, Value = "Jack", Status = ClaimStatus.Verified }), "bill@hotmail.com", password);
+            _identityStore.AddCredentials(_identityDirectory.CreateIdentity(), "jane@gmail.com", password);
+            _identityStore.AddCredentials(_identityDirectory.CreateIdentity(), "wendy@hotmail.com", password);
 
-            var results1 = _identityStore.Search("Martin");
+            var results1 = _identityDirectory.Search("Martin");
 
             Assert.IsNotNull(results1);
             Assert.IsNotNull(results1.Identities);
             Assert.AreEqual(1, results1.Identities.Count);
             Assert.AreEqual("martin@gmail.com", results1.Identities[0].Claims[0].Value);
 
-            var results2 = _identityStore.Search("hotmail.com");
+            var results2 = _identityDirectory.Search("hotmail.com");
 
             Assert.IsNotNull(results2);
             Assert.IsNotNull(results2.Identities);
             Assert.AreEqual(2, results2.Identities.Count);
 
-            var results3 = _identityStore.Search("jack");
+            var results3 = _identityDirectory.Search("jack");
 
             Assert.IsNotNull(results3);
             Assert.IsNotNull(results3.Identities);
