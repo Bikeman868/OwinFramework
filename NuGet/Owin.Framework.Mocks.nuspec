@@ -19,7 +19,7 @@
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
     <tags>OWIN framework moq modules mock</tags>
     <dependencies>
-      <dependency id="Owin.Framework" version="2.5.6" />
+      <dependency id="Owin.Framework" version="2.6.0" />
       <dependency id="Moq.Modules" version="1.0.1" />
       <dependency id="NUnit" version="3.5.0" />
     </dependencies>

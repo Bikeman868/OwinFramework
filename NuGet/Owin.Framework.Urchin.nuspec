@@ -20,7 +20,7 @@
     <tags>OWIN framework urchin</tags>
     <dependencies>
       <dependency id="Ioc.Modules" version="1.1.4" />
-      <dependency id="Owin.Framework" version="2.5.6" />
+      <dependency id="Owin.Framework" version="2.6.0" />
       <dependency id="Urchin.Client" version="1.2.0" />
       <dependency id="Newtonsoft.Json" version="7.0.1" />
     </dependencies>
