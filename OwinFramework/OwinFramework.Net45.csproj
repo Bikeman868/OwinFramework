@@ -36,8 +36,8 @@
     <DocumentationFile>bin\Net45\Release\OwinFramework.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ioc.Modules, Version=1.1.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ioc.Modules.1.1.4\lib\net45\Ioc.Modules.dll</HintPath>
+    <Reference Include="Ioc.Modules, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ioc.Modules.1.2.1\lib\net45\Ioc.Modules.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -76,6 +76,7 @@
     <Compile Include="InterfacesV1\Middleware\IResponseProducer.cs" />
     <Compile Include="InterfacesV1\Middleware\IResponseRewriter.cs" />
     <Compile Include="InterfacesV1\Upstream\IUpstreamOutputCache.cs" />
+    <Compile Include="Interfaces\Builder\IRequestTracer.cs" />
     <Compile Include="Interfaces\Builder\RequestsToTrace.cs" />
     <Compile Include="Interfaces\Utility\IDependencyGraphEdge.cs" />
     <Compile Include="Interfaces\Utility\IHostingEnvironment.cs" />

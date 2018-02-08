@@ -34,6 +34,11 @@ namespace OwinFramework.Builder
         /// </summary>
         public Action<IOwinContext, Func<string>> Trace { get; set; }
 
+        /// <summary>
+        ///  Defines how captured traces will be output
+        /// </summary>
+        public Action<IOwinContext, string> TraceOutput { get; set; }
+
         private RequestsToTrace _requestsToTrace;
 
         /// <summary>
@@ -47,6 +52,7 @@ namespace OwinFramework.Builder
             _segmenterFactory = segmenterFactory;
             _components = new List<Component>();
             Trace = (c, f) => { };
+            TraceOutput = (c, t) => System.Diagnostics.Trace.WriteLine(t);
         }
 
         /// <summary>
@@ -418,7 +424,7 @@ namespace OwinFramework.Builder
                 {
                     var traceContext = context.Get<TraceContext>("fw.builder.trace");
                     if (traceContext != null)
-                        System.Diagnostics.Trace.WriteLine(traceContext.TraceOutput.ToString());
+                        TraceOutput(context, traceContext.TraceOutput.ToString());
                 });
             }
             return task;

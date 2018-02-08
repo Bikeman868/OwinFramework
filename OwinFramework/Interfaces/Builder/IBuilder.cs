@@ -7,7 +7,7 @@ namespace OwinFramework.Interfaces.Builder
     /// dependencied between OWIN middleware compoennts and building
     /// an OWIN chain that will work.
     /// </summary>
-    public interface IBuilder
+    public interface IBuilder : IRequestTracer
     {
         /// <summary>
         /// Adds a middleware component to the list of middleware to build into
@@ -23,13 +23,5 @@ namespace OwinFramework.Interfaces.Builder
         /// an OWIN pipeline
         /// </summary>
         void Build(IAppBuilder app);
-
-        /// <summary>
-        /// Turns tracing on. This should only be used in a development environment.
-        /// If your production environment is very low volume you could also choose
-        /// to leave it on in production but this is not the use case it was designed 
-        /// for.
-        /// </summary>
-        IBuilder EnableTracing(RequestsToTrace traceOption = RequestsToTrace.All);
     }
 }
