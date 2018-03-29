@@ -69,6 +69,7 @@
     <Compile Include="InterfacesV1\Facilities\IIdentityDirectory.cs" />
     <Compile Include="InterfacesV1\Facilities\IIdentityStore.cs" />
     <Compile Include="InterfacesV1\Facilities\IMimeTypeEvaluator.cs" />
+    <Compile Include="InterfacesV1\Facilities\IPasswordHasher.cs" />
     <Compile Include="InterfacesV1\Facilities\ISharedSecretStore.cs" />
     <Compile Include="InterfacesV1\Facilities\ISocialIdentityStore.cs" />
     <Compile Include="InterfacesV1\Facilities\ITokenStore.cs" />

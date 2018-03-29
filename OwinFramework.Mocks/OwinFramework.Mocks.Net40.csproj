@@ -79,6 +79,7 @@
     <Compile Include="V1\Facilities\MockCache.cs" />
     <Compile Include="V1\Facilities\MockIdentityDirectory.cs" />
     <Compile Include="V1\Facilities\MockIdentityStore.cs" />
+    <Compile Include="V1\Facilities\MockPasswordHasher.cs" />
     <Compile Include="V1\Facilities\MockTokenStore.cs" />
   </ItemGroup>
   <ItemGroup>

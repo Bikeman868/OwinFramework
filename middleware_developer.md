@@ -127,7 +127,7 @@ Starting from existing middleware like this:
     using System.Threading.Tasks;
     using Microsoft.Owin;
 
-    public class MyMiddleware: IMiddleware<object>
+    public class MyMiddleware
     {
 	  public Task Invoke(IOwinContext context, Func<Task> next)
 	  {
