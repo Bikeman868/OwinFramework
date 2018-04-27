@@ -414,7 +414,7 @@ namespace OwinFramework.Builder
 
         private Task Invoke(IOwinContext context, Func<Task> next)
         {
-            Trace(context, () => "Request " + context.Request.Uri);
+            Trace(context, () => context.Request.Method + " " + context.Request.Uri);
 
             var task = ExecutePipeline(context, next);
 

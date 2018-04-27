@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Owin;
 using OwinFramework.Builder;
@@ -279,7 +280,31 @@ namespace OwinFramework.Routing
                                 "Processing request with '" + 
                                 (string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name) + 
                                 "' middleware");
-                            return middleware.Invoke(context, getNext);
+                            try
+                            {
+                                return middleware.Invoke(context, getNext);
+                            }
+                            catch (Exception ex)
+                            {
+                                _traceable.Trace(context, () =>
+                                    {
+                                        var message = new StringBuilder();
+                                        message.Append("Exception thrown by '");
+                                        message.Append(string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name);
+                                        message.AppendLine("' middleware");
+                                        while (ex != null)
+                                        {
+                                            message.Append(ex.GetType().Name);
+                                            message.Append(" ");
+                                            message.AppendLine(ex.Message);
+                                            if (ex.StackTrace != null)
+                                                message.AppendLine(ex.StackTrace);
+                                            ex = ex.InnerException;
+                                        }
+                                        return message.ToString();
+                                    });
+                                throw;
+                            }
                         }
                         return next();
                     };
