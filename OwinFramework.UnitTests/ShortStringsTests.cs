@@ -9,7 +9,7 @@ using OwinFramework.Builder;
 namespace UnitTests
 {
     [TestFixture]
-    public class ShortStringsTest
+    public class ShortStringsTests
     {
         [Test]
         [TestCase(ulong.MinValue, "a")]

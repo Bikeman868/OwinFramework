@@ -81,8 +81,9 @@
     </Compile>
     <Compile Include="DependencyGraphTests.cs" />
     <Compile Include="ResponseCacheTests.cs" />
+    <Compile Include="TraceFilterTests.cs" />
     <Compile Include="StatisticTests.cs" />
-    <Compile Include="ShortStringsTest.cs" />
+    <Compile Include="ShortStringsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SegmenterTests.cs" />
   </ItemGroup>

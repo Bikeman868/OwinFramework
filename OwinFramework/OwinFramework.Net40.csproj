@@ -107,6 +107,9 @@
     <Compile Include="MiddlewareHelpers\ResponseRewriter\ResponseCapture.cs" />
     <Compile Include="MiddlewareHelpers\SelfDocumenting\EndpointAttributeDocumentation.cs" />
     <Compile Include="MiddlewareHelpers\SelfDocumenting\EndpointDocumentation.cs" />
+    <Compile Include="MiddlewareHelpers\Traceable\TraceFilter.cs" />
+    <Compile Include="MiddlewareHelpers\Traceable\TraceFilterLevel.cs" />
+    <Compile Include="MiddlewareHelpers\Traceable\TraceLevel.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="Utility\DuplicateKeyException.cs" />
     <Compile Include="Utility\CircularDependencyException.cs" />

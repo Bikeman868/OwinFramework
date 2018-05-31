@@ -28,8 +28,20 @@ namespace OwinFramework.Mocks.Builder
             return this;
         }
 
+        public void CancelRegistrations()
+        {
+            _registrations.Clear();
+        }
+
+        public void Clear()
+        {
+            _configurations.Clear();
+        }
+
         public void Dispose()
         {
+            CancelRegistrations();
+            Clear();
         }
 
         public void SetConfiguration<T>(string path, T newValue)

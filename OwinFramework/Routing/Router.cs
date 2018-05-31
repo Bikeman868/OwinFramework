@@ -284,6 +284,10 @@ namespace OwinFramework.Routing
                             {
                                 return middleware.Invoke(context, getNext);
                             }
+                            catch (RoutingException)
+                            {
+                                throw;
+                            }
                             catch (Exception ex)
                             {
                                 _traceable.Trace(context, () =>
@@ -292,18 +296,24 @@ namespace OwinFramework.Routing
                                         message.Append("Exception thrown by '");
                                         message.Append(string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name);
                                         message.AppendLine("' middleware");
+                                        var count = 0;
                                         while (ex != null)
                                         {
+                                            if (count > 0) message.AppendLine("Inner exception #" + count);
+
                                             message.Append(ex.GetType().Name);
                                             message.Append(" ");
                                             message.AppendLine(ex.Message);
+
                                             if (ex.StackTrace != null)
                                                 message.AppendLine(ex.StackTrace);
+
                                             ex = ex.InnerException;
+                                            count++;
                                         }
                                         return message.ToString();
                                     });
-                                throw;
+                                throw new RoutingException(string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name, ex);
                             }
                         }
                         return next();
