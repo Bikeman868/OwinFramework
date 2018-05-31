@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -157,7 +157,7 @@ namespace OwinFramework.MiddlewareHelpers.EmbeddedResources
         {
             var resources = assembly.GetManifestResourceNames();
 
-            filename = filename.Replace("/", ".");
+            filename = filename.Replace("/", ".").ToLower();
 
             var resourceName = resources.FirstOrDefault(n => n.ToLower().Contains(filename));
 
