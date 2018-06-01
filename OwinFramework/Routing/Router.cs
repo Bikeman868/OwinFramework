@@ -10,6 +10,7 @@ using OwinFramework.Interfaces.Routing;
 using OwinFramework.Interfaces.Utility;
 using OwinFramework.InterfacesV1.Capability;
 using OwinFramework.Utility;
+using OwinFramework.MiddlewareHelpers.Traceable;
 
 namespace OwinFramework.Routing
 {
@@ -38,14 +39,17 @@ namespace OwinFramework.Routing
         private readonly IList<IRoutingSegment> _segments;
         private readonly string _owinContextKey;
         private readonly IDependencyGraphFactory _dependencyGraphFactory;
+        private readonly TraceFilter _traceFilter;
 
         /// <summary>
         /// Constructs a new router
         /// </summary>
-        /// <param name="dependencyGraphFactory"></param>
-        public Router(IDependencyGraphFactory dependencyGraphFactory)
+        public Router(
+            IConfiguration configuration,
+            IDependencyGraphFactory dependencyGraphFactory)
         {
             _dependencyGraphFactory = dependencyGraphFactory;
+            _traceFilter = new TraceFilter(configuration, this);
 
             _owinContextKey = "R:" + Guid.NewGuid().ToShortString(false);
             _dependencies = new List<IDependency>();
@@ -54,7 +58,8 @@ namespace OwinFramework.Routing
 
         IRouter IRouter.Add(string routeName, Func<IOwinContext, bool> filterExpression)
         {
-            _segments.Add(new RoutingSegment(_dependencyGraphFactory).Initialize(this, routeName, filterExpression));
+            _segments.Add(new RoutingSegment(_dependencyGraphFactory)
+                .Initialize(_traceFilter, routeName, filterExpression));
             return this;
         }
 
@@ -66,11 +71,11 @@ namespace OwinFramework.Routing
                 var seg = segment;
                 if (segment.Filter(context))
                 {
-                    Trace(context, () => "The '" + name + "' router '" + seg.Name + "' filter matches the request");
+                    _traceFilter.Trace(context, TraceLevel.Debug, () => "The '" + name + "' router '" + seg.Name + "' filter matches the request");
                     context.Set(_owinContextKey, segment);
                     return segment.RouteRequest(context, next) ?? next();
                 }
-                Trace(context, () => "The '" + name + "' router '" + seg.Name + "' filter does not match the request");
+                _traceFilter.Trace(context, TraceLevel.Debug, () => "The '" + name + "' router '" + seg.Name + "' filter does not match the request");
             }
             return next();
         }
@@ -112,7 +117,7 @@ namespace OwinFramework.Routing
             private readonly IDependencyGraphFactory _dependencyGraphFactory;
 
             private IList<IRoutingProcessor> _routingProcessors;
-            private ITraceable _traceable;
+            private TraceFilter _traceFilter;
 
             public RoutingSegment(IDependencyGraphFactory dependencyGraphFactory)
             {
@@ -120,9 +125,12 @@ namespace OwinFramework.Routing
                 _components = new List<Component>();
             }
 
-            public IRoutingSegment Initialize(ITraceable traceable, string name, Func<IOwinContext, bool> filter)
+            public IRoutingSegment Initialize(
+                TraceFilter traceFilter, 
+                string name, 
+                Func<IOwinContext, bool> filter)
             {
-                _traceable = traceable;
+                _traceFilter = traceFilter;
                 Name = name;
                 Filter = filter;
                 return this;
@@ -236,7 +244,7 @@ namespace OwinFramework.Routing
                 if (_routingProcessors == null)
                     throw new RoutingException("Requests can not be routed until dependencies have been resolved");
 
-                _traceable.Trace(context, () => "Routing request in '" + Name + "' routing segment");
+                _traceFilter.Trace(context, TraceLevel.Debug, () => "Routing request in '" + Name + "' routing segment");
 
                 var nextIndex = 0;
                 Func<Task> getNext = null;
@@ -246,7 +254,7 @@ namespace OwinFramework.Routing
                     if (nextIndex < _routingProcessors.Count)
                     {
                         var routingProcessor = _routingProcessors[nextIndex++];
-                        _traceable.Trace(context, () =>
+                        _traceFilter.Trace(context, TraceLevel.Debug, () =>
                         {
                             var middleware = routingProcessor as IMiddleware;
                             if (middleware == null || string.IsNullOrEmpty(middleware.Name))
@@ -266,7 +274,7 @@ namespace OwinFramework.Routing
                 if (Middleware == null)
                     throw new RoutingException("Requests can not be processed until dependencies have been resolved");
 
-                _traceable.Trace(context, () => "Processing request in '" + Name + "' routing segment");
+                _traceFilter.Trace(context, TraceLevel.Debug, () => "Processing request in '" + Name + "' routing segment");
                 
                 var nextIndex = 0;
                 Func<Task> getNext = null;
@@ -276,7 +284,7 @@ namespace OwinFramework.Routing
                         if (nextIndex < Middleware.Count)
                         {
                             var middleware = Middleware[nextIndex++];
-                            _traceable.Trace(context, () => 
+                            _traceFilter.Trace(context, TraceLevel.Debug, () => 
                                 "Processing request with '" + 
                                 (string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name) + 
                                 "' middleware");
@@ -290,30 +298,37 @@ namespace OwinFramework.Routing
                             }
                             catch (Exception ex)
                             {
-                                _traceable.Trace(context, () =>
+                                _traceFilter.Trace(context, TraceLevel.Debug, () =>
                                     {
                                         var message = new StringBuilder();
+                                        var exception = ex;
+
                                         message.Append("Exception thrown by '");
                                         message.Append(string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name);
                                         message.AppendLine("' middleware");
+
                                         var count = 0;
-                                        while (ex != null)
+                                        while (exception != null)
                                         {
                                             if (count > 0) message.AppendLine("Inner exception #" + count);
 
-                                            message.Append(ex.GetType().Name);
+                                            message.Append(exception.GetType().Name);
                                             message.Append(" ");
-                                            message.AppendLine(ex.Message);
+                                            message.AppendLine(exception.Message);
 
-                                            if (ex.StackTrace != null)
-                                                message.AppendLine(ex.StackTrace);
+                                            if (exception.StackTrace != null)
+                                                message.AppendLine(exception.StackTrace);
 
-                                            ex = ex.InnerException;
+                                            exception = exception.InnerException;
                                             count++;
                                         }
                                         return message.ToString();
                                     });
-                                throw new RoutingException(string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name, ex);
+                                throw new RoutingException(
+                                    "Exception thrown by '" + 
+                                    (string.IsNullOrEmpty(middleware.Name) ? middleware.GetType().FullName : middleware.Name) + 
+                                    "' middleware", 
+                                    ex);
                             }
                         }
                         return next();

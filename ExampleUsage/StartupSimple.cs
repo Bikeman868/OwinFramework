@@ -4,6 +4,7 @@ using Ioc.Modules.Ninject;
 using Ninject;
 using Owin;
 using OwinFramework.Builder;
+using OwinFramework.Configuration;
 using OwinFramework.Interfaces.Builder;
 
 namespace ExampleUsage
@@ -25,6 +26,7 @@ namespace ExampleUsage
             // choose not to use IoC, or configure any other IoC container you like.
             var packageLocator = new PackageLocator().ProbeAllLoadedAssemblies();
             var ninject = new StandardKernel(new Module(packageLocator));
+            ninject.Bind<IConfiguration>().To<DefaultValueConfiguration>();
             var builder = ninject.Get<IBuilder>().EnableTracing(RequestsToTrace.QueryString);
 
             // This next part defines the concrete implementation of the various

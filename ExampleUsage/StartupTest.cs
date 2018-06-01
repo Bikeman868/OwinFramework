@@ -23,11 +23,11 @@ namespace ExampleUsage
         {
             IDependencyGraphFactory dependencyGraphFactory = new DependencyGraphFactory();
             ISegmenterFactory segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
-            IBuilder builder = new Builder(dependencyGraphFactory, segmenterFactory);
             IConfiguration config = new DefaultValueConfiguration();
+            IBuilder builder = new Builder(dependencyGraphFactory, segmenterFactory, config);
 
             var uiPath = new PathString("/ui");
-            builder.Register(new Router(dependencyGraphFactory))
+            builder.Register(new Router(config, dependencyGraphFactory))
                 .AddRoute("ui", c => c.Request.Path.StartsWithSegments(uiPath))
                 .As("Router");
 

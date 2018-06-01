@@ -39,8 +39,8 @@ namespace ExampleUsage
             // There are other startup examples in this project that demonstrate the IoC version
             IDependencyGraphFactory dependencyGraphFactory = new DependencyGraphFactory();
             ISegmenterFactory segmenterFactory = new SegmenterFactory(dependencyGraphFactory);
-            IBuilder builder = new Builder(dependencyGraphFactory, segmenterFactory).EnableTracing();
             IConfiguration configuration = new DefaultValueConfiguration();
+            IBuilder builder = new Builder(dependencyGraphFactory, segmenterFactory, configuration).EnableTracing();
 
             // Note that the middleware components below can be registerd with the builder
             // in any order. The builder will resolve dependencies and add middleware into 
@@ -104,7 +104,7 @@ namespace ExampleUsage
             // authentication and REST service rendering.
             // Since this router does not have any route dependencies it will run directly
             // off the incomming request.
-            builder.Register(new Router(dependencyGraphFactory))
+            builder.Register(new Router(configuration, dependencyGraphFactory))
                 .AddRoute("ui", context => context.Request.Path.Value.EndsWith(".aspx"))
                 .AddRoute("staticFiles", context =>
                 {
@@ -125,7 +125,7 @@ namespace ExampleUsage
 
             // This configures another routing split that divides the 'ui' route into 
             // 'secure' and 'public' routes.
-            builder.Register(new Router(dependencyGraphFactory))
+            builder.Register(new Router(configuration, dependencyGraphFactory))
                 .AddRoute("secure", context => context.Request.Path.Value.StartsWith("/secure"))
                 .AddRoute("public", context => true)
                 .RunOnRoute("ui");

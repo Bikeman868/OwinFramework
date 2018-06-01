@@ -26,6 +26,7 @@ namespace OwinFramework.Builder
         private readonly IList<Component> _components;
         private readonly IDependencyGraphFactory _dependencyGraphFactory;
         private readonly ISegmenterFactory _segmenterFactory;
+        private readonly IConfiguration _configuration;
 
         private IRouter _router;
 
@@ -46,10 +47,12 @@ namespace OwinFramework.Builder
         /// </summary>
         public Builder(
             IDependencyGraphFactory dependencyGraphFactory,
-            ISegmenterFactory segmenterFactory)
+            ISegmenterFactory segmenterFactory,
+            IConfiguration configuration)
         {
             _dependencyGraphFactory = dependencyGraphFactory;
             _segmenterFactory = segmenterFactory;
+            _configuration = configuration;
             _components = new List<Component>();
             Trace = (c, f) => { };
             TraceOutput = (c, t) => System.Diagnostics.Trace.WriteLine(t);
@@ -171,7 +174,7 @@ namespace OwinFramework.Builder
                 .Where(mc => mc != null)
                 .ToList();
 
-            var routeBuilder = new RouteBuilder(_dependencyGraphFactory);
+            var routeBuilder = new RouteBuilder(_configuration, _dependencyGraphFactory);
             _router = routeBuilder.BuildRoutes(this, routerComponents);
 
             if (routerComponents.Count == 1)
@@ -546,18 +549,24 @@ namespace OwinFramework.Builder
 
         private class RouteBuilder
         {
+            private readonly IConfiguration _configuration;
             private readonly IDependencyGraphFactory _dependencyGraphFactory;
 
-            public RouteBuilder(IDependencyGraphFactory dependencyGraphFactory)
+            public RouteBuilder(
+                IConfiguration configuration,
+                IDependencyGraphFactory dependencyGraphFactory)
             {
+                _configuration = configuration;
                 _dependencyGraphFactory = dependencyGraphFactory;
             }
 
-            public IRouter BuildRoutes(ITraceable traceable, IList<RouterComponent> routerComponents)
+            public IRouter BuildRoutes(
+                ITraceable traceable, 
+                IList<RouterComponent> routerComponents)
             {
                 // Create a root level router as a container for everythinng that's not on a route. 
                 // When the application does not use routing everything ends up in here
-                IRouter rootRouter = new Router(_dependencyGraphFactory);
+                IRouter rootRouter = new Router(_configuration, _dependencyGraphFactory);
                 ((ITraceable) rootRouter).Trace = traceable.Trace;
 
                 // Add a root segment called with a pass everything filter
