@@ -1,4 +1,7 @@
-﻿namespace OwinFramework.InterfacesV1.Middleware
+﻿using System;
+using Microsoft.Owin;
+
+namespace OwinFramework.InterfacesV1.Middleware
 {
     /// <summary>
     /// Indicates that the middleware modifies the request URL. Any other middleware
@@ -15,5 +18,14 @@
     /// </summary>
     public interface IRequestRewriter
     {
+        /// <summary>
+        /// This is the URL of the request before it was rewritten
+        /// </summary>
+        Uri OriginalUrl { get; set; }
+
+        /// <summary>
+        /// This is the path part of the URL before it was rewritten
+        /// </summary>
+        PathString OriginalPath { get; set; }
     }
 }
