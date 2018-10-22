@@ -1,5 +1,4 @@
 # OWIN Framework
-
 If you are writing middleware components to share with others please read
 [the middleware development guide](middleware_developer.md).
 
@@ -10,7 +9,6 @@ and configure your OWIN pipeline please read
 Note that there is a comprehensive [Wiki for this project](https://github.com/Bikeman868/OwinFramework/wiki).
 
 ## Why does this project exist
-
 OWIN represents a great leap forward in standardizing the interface bewteen
 the hosting environment and the web application. It allows any web application
 to run on any hosting platform, and this standardization is helpful to
@@ -74,7 +72,6 @@ the middleware downstream. This is just one example of the class of problems
 that this framework solves.
 
 ## What is in this project
-
 This project mostly consists of interface definitions. These interfaces 
 extend the original OWIN concept of not restricting the building blocks
 of the application by enforcing constraints on what their shape should be,
@@ -92,7 +89,6 @@ from  as many other developers as possible. The more people who use this
 framework, the more useful it will be to everyone so please join in.
 
 ## Projects in this solution
-
 `ExampleUsage.csproj` is a project that demonstrates some of what is possible
 with this framework. It is by no means trying to be an exhastive list
 of what can be done, but just a few variations to give a flavour.
@@ -119,23 +115,14 @@ interfaces. You can use these mocks in your unit tests to mock the framework
 itself. There is also a >net 4.5 version of this project in the solution.
 
 ## Roadmap
-
 These are the next batch of NuGet packages that are in the pipeline:
 
 1. Authorization middleware for managing users, groups and permissions
-
 2. Identification middleware that uses IP address and can be used for 2 factor authentication
-
 3. An identity store facility that uses SQLite
-
 4. A token store facility thay uses SQLite
-
 5. A cache facility that uses MemcacheD
-
 6. A cache facility that uses ElastiCache
-
 7. Identification middleware that uses shared secrets
-
 8. Certificate based identification middleware
-
 9. Social login (Google, Facebook, LinkedIn, Microsoft etc)
