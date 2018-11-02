@@ -1,5 +1,3 @@
-﻿# Owin Framework Urchin Configuration
-
 Add this package to your application and your Owin Framework components will use Urchin for their configuration.
 
 No other code changes are required. Simply adding the package via NuGet will register the `IConfiguration` implementation with IoC.
