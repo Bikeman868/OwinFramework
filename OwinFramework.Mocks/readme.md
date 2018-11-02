@@ -1,4 +1,3 @@
-# OwinFramework Mocks
 This project defines Mock implementations of the Owin Framework interfaces to allow
 other developers to write unit tests without having to create these mocks.
 
