@@ -1,10 +1,9 @@
-# OWIN Framework
 If you are writing middleware components to share with others please read
-[the middleware development guide](middleware_developer.md).
+[the middleware development guide](https://github.com/Bikeman868/OwinFramework/blob/master/middleware_developer.md).
 
 If you are writing an OWIN application and want to consume components 
 and configure your OWIN pipeline please read
-[the application development guide](application_developer.md).
+[the application development guide](https://github.com/Bikeman868/OwinFramework/blob/master/application_developer.md).
 
 Note that there is a comprehensive [Wiki for this project](https://github.com/Bikeman868/OwinFramework/wiki).
 
