@@ -16,9 +16,9 @@ namespace OwinFramework.Utility.Containers
     public class OrderedCollection<T>: IDisposable, IList<T>
     {
         private readonly ArrayPool<T> _arrayPool;
-        private readonly LinkedList<ReusableArray<T>> _arrayList;
         private readonly int _arrayLength;
         private readonly object _lock;
+        private LinkedList<ReusableArray<T>> _arrayList;
         private int _count;
 
         bool ICollection<T>.IsReadOnly { get { return false; } }
@@ -98,7 +98,7 @@ namespace OwinFramework.Utility.Containers
                     var arrayIndex = _count / _arrayLength;
                     var arrayElement = _arrayList.Skip(arrayIndex).First();
                     var array = arrayElement.Data;
-                    array[arrayIndex] = item;
+                    array[elementIndex] = item;
                 }
                 _count++;
             }
@@ -113,7 +113,7 @@ namespace OwinFramework.Utility.Containers
             lock (_lock)
             {
                 var elementIndex = _count % _arrayLength;
-                var lastArray = _arrayList.LastElement(e => true);
+                var lastArray = _arrayList.LastElementOrDefault();
 
                 foreach (var item in items)
                 {
@@ -136,54 +136,50 @@ namespace OwinFramework.Utility.Containers
         /// </summary>
         public bool Remove(T item)
         {
-            var found = false;
-
             lock (_lock)
             {
-                if (_count > 0)
-                {
-                    var headElement = _arrayList.FirstElement();
-                    LinkedList<ReusableArray<T>>.ListElement newElement = null;
-                    var newCount = 0;
-                    var newElementIndex = 0;
+                if (_count <= 0) return false;
 
-                    foreach (var arrayElement in _arrayList)
+                var found = false;
+                var oldArrayList = _arrayList;
+                var remaining = _count;
+                var newArrayList = new LinkedList<ReusableArray<T>>();
+                var newArray = newArrayList.Append(_arrayPool.GetArray());
+                var newCount = 0;
+                var newElementIndex = 0;
+
+                foreach (var arrayElement in _arrayList)
+                {
+                    for (var i = 0; i < _arrayLength; i++)
                     {
-                        if (ReferenceEquals(arrayElement, headElement))
+                        var value = arrayElement.Data[i];
+
+                        if (remaining-- == 0)
+                            break;
+
+                        if (item.Equals(value))
                         {
-                            _arrayList.Truncate(headElement, true);
-                            _count = newCount;
-                            return found;
+                            found = true;
+                            continue;
                         }
 
-                        if (newElement == null)
+                        if (newElementIndex >= _arrayLength)
                         {
-                            newElement = _arrayList.Prepend(_arrayPool.GetArray());
+                            newArray = newArrayList.Append(_arrayPool.GetArray());
                             newElementIndex = 0;
                         }
 
-                        for (var i = 0; i < _arrayLength; i++)
-                        {
-                            if (!item.Equals(arrayElement.Data[i]))
-                            {
-                                found = true;
-                                continue;
-                            }
-
-                            newElement.Data[newElementIndex++] = arrayElement.Data[i];
-                            newCount++;
-
-                            if (newElementIndex == _arrayLength)
-                            {
-                                newElement = _arrayList.Prepend(_arrayPool.GetArray());
-                                newElementIndex = 0;
-                            }
-                        }
+                        newArray.Data[newElementIndex++] = value;
+                        newCount++;
                     }
                 }
-            }
 
-            return found;
+                _arrayList = newArrayList;
+                _count = newCount;
+                oldArrayList.Clear(true);
+
+                return found;
+            }
         }
 
         /// <summary>
@@ -199,11 +195,21 @@ namespace OwinFramework.Utility.Containers
         }
 
         /// <summary>
-        /// Finds the index number of an item in the collection
+        /// Finds the index position of an item in the collection
         /// </summary>
         public int IndexOf(T item)
         {
-            throw new NotImplementedException();
+            var index = 0;
+            foreach (var array in _arrayList)
+            {
+                for (var i = 0; i < _arrayLength; i++)
+                {
+                    if (item.Equals(array.Data[i]))
+                        return index + i;
+                }
+                index += _arrayLength;
+            }
+            return -1;
         }
 
         public void Insert(int index, T item)
@@ -243,11 +249,13 @@ namespace OwinFramework.Utility.Containers
         {
             private readonly OrderedCollection<T> _collection;
             private LinkedList<ReusableArray<T>>.ListElement _currentArrayElement;
-            private volatile int _currentIndex;
+            private int _currentIndex;
+            private int _index;
 
             public Enumerator(OrderedCollection<T> collection)
             {
                 _collection = collection;
+                _index = -1;
             }
 
             T IEnumerator<T>.Current
@@ -268,15 +276,18 @@ namespace OwinFramework.Utility.Containers
             {
                 lock (_collection._lock)
                 {
-                    if (_collection._count == 0) 
+                    if (_collection._count == 0 || _index >= _collection._count - 1) 
                         return false;
 
                     if (_currentArrayElement == null)
                     {
                         _currentArrayElement = _collection._arrayList.FirstElementOrDefault();
                         _currentIndex = 0;
+                        _index = 0;
                         return true;
                     }
+
+                    _index++;
 
                     if (_currentIndex < _collection._arrayLength - 1)
                     {
