@@ -111,6 +111,10 @@
     <Compile Include="MiddlewareHelpers\Traceable\TraceFilterLevel.cs" />
     <Compile Include="MiddlewareHelpers\Traceable\TraceLevel.cs" />
     <Compile Include="Package.cs" />
+    <Compile Include="Utility\Containers\ArrayPool.cs" />
+    <Compile Include="Utility\Containers\LinkedList.cs" />
+    <Compile Include="Utility\Containers\ReusableArray.cs" />
+    <Compile Include="Utility\Containers\OrderedCollection.cs" />
     <Compile Include="Utility\DuplicateKeyException.cs" />
     <Compile Include="Utility\CircularDependencyException.cs" />
     <Compile Include="Utility\HostingEnvironment.cs" />

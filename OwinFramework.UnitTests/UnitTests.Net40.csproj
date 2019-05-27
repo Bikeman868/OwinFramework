@@ -80,7 +80,9 @@
       <Link>Properties\SharedVersionInfo.cs</Link>
     </Compile>
     <Compile Include="DependencyGraphTests.cs" />
+    <Compile Include="LinkedListTests.cs" />
     <Compile Include="ResponseCacheTests.cs" />
+    <Compile Include="OrderedCollectionTests.cs" />
     <Compile Include="TraceFilterTests.cs" />
     <Compile Include="StatisticTests.cs" />
     <Compile Include="ShortStringsTests.cs" />
