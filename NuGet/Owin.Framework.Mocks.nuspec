@@ -8,7 +8,7 @@
     <owners>Martin Halliday</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Mocks of Owin Framework interfaces to use in your unit tests</description>
-    <copyright>Copyright Martin Halliday 2018</copyright>
+    <copyright>Copyright Martin Halliday 2014-2019</copyright>
     <releaseNotes>For use with Owin Framework of the same version number</releaseNotes>
     <summary>
       Uses Moq.Modules to provide a set of plug-in Mocks that can seamlessly

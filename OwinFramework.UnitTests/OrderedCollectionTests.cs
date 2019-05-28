@@ -136,5 +136,63 @@ namespace UnitTests
                 Assert.AreEqual(Array.IndexOf(items, value), _collection.IndexOf(items[i]));
             }
         }
+
+        [Test]
+        public void Should_insert_into_the_list()
+        {
+            var items = new[] { 1, 3, 4, 5, 7, 8, 10 };
+            _collection.AddRange(items);
+
+            Assert.AreEqual(items.Length, _collection.Count);
+
+            _collection.Insert(0, 0);
+
+            Assert.AreEqual(items.Length + 1, _collection.Count);
+            Assert.AreEqual(0, _collection[0]);
+            Assert.AreEqual(1, _collection[1]);
+            Assert.AreEqual(3, _collection[2]);
+
+            _collection.Insert(2, 2);
+
+            Assert.AreEqual(items.Length + 2, _collection.Count);
+            Assert.AreEqual(0, _collection[0]);
+            Assert.AreEqual(1, _collection[1]);
+            Assert.AreEqual(2, _collection[2]);
+            Assert.AreEqual(3, _collection[3]);
+
+            _collection.Insert(_collection.Count, 11);
+
+            Assert.AreEqual(items.Length + 3, _collection.Count);
+            Assert.AreEqual(0, _collection[0]);
+            Assert.AreEqual(1, _collection[1]);
+            Assert.AreEqual(2, _collection[2]);
+            Assert.AreEqual(3, _collection[3]);
+            Assert.AreEqual(11, _collection[_collection.Count - 1]);
+        }
+
+        [Test]
+        public void Should_remove_by_index()
+        {
+            var items = new[] { 1, 2, 3, 4, 5, 6, 7 };
+            _collection.AddRange(items);
+
+            Assert.AreEqual(items.Length, _collection.Count);
+
+            _collection.RemoveAt(2);
+
+            Assert.AreEqual(items.Length - 1, _collection.Count);
+            Assert.AreEqual(1, _collection[0]);
+            Assert.AreEqual(2, _collection[1]);
+            Assert.AreEqual(4, _collection[2]);
+            Assert.AreEqual(5, _collection[3]);
+
+            _collection.RemoveAt(0);
+
+            Assert.AreEqual(items.Length - 2, _collection.Count);
+            Assert.AreEqual(2, _collection[0]);
+            Assert.AreEqual(4, _collection[1]);
+            Assert.AreEqual(5, _collection[2]);
+            Assert.AreEqual(6, _collection[3]);
+        }
     }
 }

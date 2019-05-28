@@ -2,10 +2,10 @@
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyProduct("OwinFramework")]
-[assembly: AssemblyCopyright("Copyright © Martin Halliday 2018")]
+[assembly: AssemblyCopyright("Copyright © Martin Halliday 2014-2019")]
 [assembly: AssemblyTrademark("")]
 
 [assembly: ComVisible(false)]
 
-[assembly: AssemblyVersion("2.6.8")]
-[assembly: AssemblyFileVersion("2.6.8")]
+[assembly: AssemblyVersion("2.6.9")]
+[assembly: AssemblyFileVersion("2.6.9")]

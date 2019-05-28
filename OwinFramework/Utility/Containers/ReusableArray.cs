@@ -69,6 +69,12 @@ namespace OwinFramework.Utility.Containers
         /// </summary>
         public int Length { get { return _data.Length; } }
 
+        /// <summary>
+        /// This property is provided for the convenience of the application programmer
+        /// to use. The ReusableArray class does not make use of this property.
+        /// </summary>
+        public int Count { get; set; }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new Enumerator(this);

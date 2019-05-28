@@ -12,6 +12,11 @@ namespace OwinFramework.Utility.Containers
     /// Note that arrays are already shread-safe and non-blocking so if
     /// you know the size of your collection this is the best choice.
     /// Internally this class maintains a linked list of arrays.
+    /// This class is very efficient at adding items and enumerations
+    /// to the collection and allows miltiple threads to enumerate the 
+    /// collection whilst it is being modified in other threads, but is
+    /// very slow at removing items from the collection and moderately
+    /// slow at finding items in the collection.
     /// </summary>
     public class OrderedCollection<T>: IDisposable, IList<T>
     {
@@ -131,8 +136,8 @@ namespace OwinFramework.Utility.Containers
         }
 
         /// <summary>
-        /// Removes an item from the collection and returns true if the
-        /// item was present
+        /// Removes all items from the collection that equal the supplied item 
+        /// and returns true if at least one item was removed
         /// </summary>
         public bool Remove(T item)
         {
@@ -199,7 +204,11 @@ namespace OwinFramework.Utility.Containers
         /// </summary>
         public int IndexOf(T item)
         {
+            if (ReferenceEquals(item, null))
+                return -1;
+
             var index = 0;
+
             foreach (var array in _arrayList)
             {
                 for (var i = 0; i < _arrayLength; i++)
@@ -209,17 +218,106 @@ namespace OwinFramework.Utility.Containers
                 }
                 index += _arrayLength;
             }
+
             return -1;
         }
 
+        /// <summary>
+        /// Adds a new item into the middle of the collection
+        /// </summary>
+        /// <param name="index">The index of the item to insert before</param>
+        /// <param name="item">The item to insert</param>
         public void Insert(int index, T item)
         {
-            throw new NotImplementedException();
+            // TODO: Use the Count property of ReusableArray to allow intertions without copying the whole collection
+            lock (_lock)
+            {
+                if (index < 0 || index > _count) 
+                    return;
+
+                var oldArrayList = _arrayList;
+                var currentIndex = 0;
+                var newArrayList = new LinkedList<ReusableArray<T>>();
+                var newArray = newArrayList.Append(_arrayPool.GetArray());
+                var newCount = 0;
+                var newElementIndex = 0;
+
+                foreach (var arrayElement in _arrayList)
+                {
+                    for (var i = 0; i < _arrayLength; i++)
+                    {
+                        if (currentIndex == _count + 1)
+                            break;
+
+                        var value = arrayElement.Data[i];
+
+                        if (currentIndex++ == index)
+                        {
+                            value = item;
+                            i--;
+                        }
+
+                        if (newElementIndex >= _arrayLength)
+                        {
+                            newArray = newArrayList.Append(_arrayPool.GetArray());
+                            newElementIndex = 0;
+                        }
+
+                        newArray.Data[newElementIndex++] = value;
+                        newCount++;
+                    }
+                }
+
+                _arrayList = newArrayList;
+                _count = newCount;
+                oldArrayList.Clear(true);
+            }
         }
 
+        /// <summary>
+        /// Removes an item from the collection by index position
+        /// </summary>
+        /// <param name="index"></param>
         public void RemoveAt(int index)
         {
-            throw new NotImplementedException();
+            // TODO: Use the Count property of ReusableArray to allow deletions without copying the whole collection
+            lock (_lock)
+            {
+                if (index < 0 || index > _count - 1) 
+                    return;
+
+                var oldArrayList = _arrayList;
+                var currentIndex = 0;
+                var newArrayList = new LinkedList<ReusableArray<T>>();
+                var newArray = newArrayList.Append(_arrayPool.GetArray());
+                var newCount = 0;
+                var newElementIndex = 0;
+
+                foreach (var arrayElement in _arrayList)
+                {
+                    for (var i = 0; i < _arrayLength; i++)
+                    {
+                        if (currentIndex == _count)
+                            break;
+
+                        if (currentIndex++ == index)
+                            continue;
+
+                        if (newElementIndex >= _arrayLength)
+                        {
+                            newArray = newArrayList.Append(_arrayPool.GetArray());
+                            newElementIndex = 0;
+                        }
+
+                        newArray.Data[newElementIndex++] = arrayElement.Data[i];
+                        newCount++;
+                    }
+                }
+
+                _arrayList = newArrayList;
+                _count = newCount;
+                oldArrayList.Clear(true);
+            }
         }
 
         public bool Contains(T item)
