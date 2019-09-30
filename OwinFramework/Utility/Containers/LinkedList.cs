@@ -305,6 +305,24 @@ namespace OwinFramework.Utility.Containers
         }
 
         /// <summary>
+        /// Returns the next element in the list or null if this is the last element
+        /// </summary>
+        /// <param name="start">The list element to start from</param>
+        public ListElement NextElement(ListElement start)
+        {
+            return start.Next;
+        }
+
+        /// <summary>
+        /// Returns the prior element in the list or null if this is the first element
+        /// </summary>
+        /// <param name="start">The list element to start from</param>
+        public ListElement PriorElement(ListElement start)
+        {
+            return start.Prior;
+        }
+
+        /// <summary>
         /// Returns the first list element that matches the supplied predicate function.
         /// Throws an exception if there are no matching elements in the list
         /// </summary>
