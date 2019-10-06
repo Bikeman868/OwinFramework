@@ -127,6 +127,78 @@ namespace OwinFramework.Utility.Containers
         }
 
         /// <summary>
+        /// Adds an element to the list immediately after the specified element.
+        /// To use this to maintain a sorted list with multiple threads inserting
+        /// values you will need to block the threads for the duretion of the 
+        /// find + insert operation. If you only have one thread inserting an
+        /// multiple threads enumerating the list then no additional locks are 
+        /// required.
+        /// </summary>
+        /// <param name="element">The element to add after</param>
+        /// <param name="data">The data to add to the list</param>
+        public ListElement InsertAfter(ListElement element, T data)
+        {
+            if (element == null)
+                return Append(data);
+
+            var newListElement = new ListElement
+            {
+                Data = data,
+                Prior = element
+            };
+
+            lock (_lock)
+            {
+                newListElement.Next = element.Next;
+
+                if (element.Next == null)
+                    _tail = newListElement;
+                else
+                    element.Next.Prior = newListElement;
+
+                element.Next = newListElement;
+            }
+
+            return newListElement;
+        }
+
+        /// <summary>
+        /// Adds an element to the list immediately before the specified element
+        /// To use this to maintain a sorted list with multiple threads inserting
+        /// values you will need to block the threads for the duretion of the 
+        /// find + insert operation. If you only have one thread inserting an
+        /// multiple threads enumerating the list then no additional locks are 
+        /// required.
+        /// </summary>
+        /// <param name="element">The element to add before</param>
+        /// <param name="data">The data to add to the list</param>
+        public ListElement InsertBefore(ListElement element, T data)
+        {
+            if (element == null)
+                return Prepend(data);
+
+            var newListElement = new ListElement
+            {
+                Data = data,
+                Next = element
+            };
+
+            lock (_lock)
+            {
+                newListElement.Prior = element.Prior;
+
+                if (element.Prior == null)
+                    _head = newListElement;
+                else
+                    element.Prior.Next = newListElement;
+
+                element.Prior = newListElement;
+            }
+
+            return newListElement;
+        }
+
+        /// <summary>
         /// Removes an element from anywhere in the list
         /// </summary>
         /// <param name="element">The element to remove</param>

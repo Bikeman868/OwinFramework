@@ -320,17 +320,49 @@ namespace OwinFramework.Utility.Containers
             }
         }
 
+        /// <summary>
+        /// Returns true if the collection contains the specified item
+        /// </summary>
         public bool Contains(T item)
         {
             return !ReferenceEquals(item, null) && Enumerable.Contains(this, item);
         }
 
-        public void CopyTo(T[] array, int arrayIndex)
+        /// <summary>
+        /// Copies of this collection to an array
+        /// </summary>
+        /// <param name="array">The array to copy elements to</param>
+        /// <param name="arrayIndex">The index in the array to start copying</param>
+        /// <param name="cloneFunc">Optional function to allow deep copying</param>
+        public void CopyTo(T[] array, int arrayIndex, Func<T, T> cloneFunc = null)
         {
-            foreach (var element in this)
-                array[arrayIndex++] = element;
+            if (cloneFunc == null)
+            {
+                foreach (var element in this)
+                    array[arrayIndex++] = element;
+            }
+            else
+            {
+                foreach (var element in this)
+                    array[arrayIndex++] = cloneFunc(element);
+            }
         }
 
+        /// <summary>
+        /// Copies of this collection to an array
+        /// </summary>
+        /// <param name="array">The array to copy elements to</param>
+        /// <param name="arrayIndex">The index in the array to start copying</param>
+        void ICollection<T>.CopyTo(T[] array, int arrayIndex)
+        {
+            CopyTo(array, arrayIndex);
+        }
+
+        /// <summary>
+        /// <summary>
+        /// Gets a thread-safe enumerator for the collection. Many threads can
+        /// concurrently enumerate the collection
+        /// </summary>
         public IEnumerator<T> GetEnumerator()
         {
             return new Enumerator(this);

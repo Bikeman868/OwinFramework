@@ -263,6 +263,33 @@ namespace UnitTests
         }
 
         [Test]
+        public void Should_maintain_sorted_list()
+        {
+            var linkedList = new LinkedList<int>();
+
+            Action<int> addAscending = value =>
+            {
+                var nextElement = linkedList.FirstElementOrDefault(v => v > value);
+                linkedList.InsertBefore(nextElement, value);
+            };
+
+            addAscending(13);
+            addAscending(1);
+            addAscending(5);
+            addAscending(2);
+            addAscending(17);
+            addAscending(1);
+            addAscending(8);
+
+            var last = int.MinValue;
+            foreach( var element in linkedList)
+            {
+                Assert.IsTrue(element.Data >= last);
+                last = element.Data;
+            }
+        }
+
+        [Test]
         public void Should_be_thread_safe()
         {
             var linkedList = new LinkedList<TestData>();

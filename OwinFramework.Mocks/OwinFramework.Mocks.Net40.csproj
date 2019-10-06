@@ -42,9 +42,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.Owin.2.1.0\lib\net40\Microsoft.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Moq.Modules, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Moq.Modules.1.0.2\lib\Moq.Modules.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Moq.Modules, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Moq.Modules.1.0.4\lib\net40\Moq.Modules.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=2.7.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.2.7.0\lib\nunit.framework.dll</HintPath>
