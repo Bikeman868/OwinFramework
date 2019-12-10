@@ -1,8 +1,11 @@
+#if NET45
+
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Owin.Security;
+
 
 namespace OwinFramework.Mocks.Owin
 {
@@ -65,3 +68,4 @@ namespace OwinFramework.Mocks.Owin
 
     }
 }
+#endif

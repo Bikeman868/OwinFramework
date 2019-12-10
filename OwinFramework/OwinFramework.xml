@@ -1,0 +1,3484 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>OwinFramework</name>
+    </assembly>
+    <members>
+        <member name="T:OwinFramework.Builder.Builder">
+            <summary>
+            This is the class that builds an OWIN pipeline with routing and
+            dependencies between middleware
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Builder.Builder.Trace">
+            <summary>
+            Implements ITraceable
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Builder.Builder.TraceOutput">
+            <summary>
+             Defines how captured traces will be output
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Builder.Builder.#ctor(OwinFramework.Interfaces.Utility.IDependencyGraphFactory,OwinFramework.Interfaces.Utility.ISegmenterFactory,OwinFramework.Interfaces.Builder.IConfiguration)">
+            <summary>
+            Constructs a new OWIN pipeline builder
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Builder.Builder.EnableTracing(OwinFramework.Interfaces.Builder.RequestsToTrace)">
+            <summary>
+            Implements IBuilder
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Builder.BuilderException">
+            <summary>
+            This exception is thrown when the builder encounters a fatal error
+            in the pipeline configuration that prevents it from building the
+            OWIN pipeline.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Builder.BuilderException.#ctor">
+            <summary>
+            Constructs a new BuilderException
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Builder.BuilderException.#ctor(System.String)">
+            <summary>
+            Constructs a new BuilderException with an error message
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Builder.Extensions">
+            <summary>
+            Extension methods that provide a fluid syntax for configuring middleware in the OWIN pipeline builder
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.As(OwinFramework.Interfaces.Builder.IMiddleware,System.String)">
+            <summary>
+            Specifies a unique name for the middleware so that other middleware can depend on it.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.RunAfter``1(OwinFramework.Interfaces.Builder.IMiddleware,System.String,System.Boolean)">
+            <summary>
+            Specifies a dependency on another middleware of a specific type
+            </summary>
+            <typeparam name="T">The type of middleware that this middleware depends on</typeparam>
+            <param name="middleware">The middleware that has a dependency</param>
+            <param name="name">Optional name in case there are multiple middleware of the dependent type</param>
+            <param name="required">True if this middleware can not function without the dependant middleware</param>
+            <returns>The middleware to facilitate fluid syntax</returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.RunAfter(OwinFramework.Interfaces.Builder.IMiddleware,System.String,System.Boolean)">
+            <summary>
+            Specifies a dependency on another middleware with the specified name
+            </summary>
+            <param name="middleware">The middleware that has a dependency</param>
+            <param name="name">The name of the other middleware that this one depends on</param>
+            <param name="required">True if this middleware can not function without the dependant middleware</param>
+            <returns>The middleware to facilitate fluid syntax</returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.RunOnRoute(OwinFramework.Interfaces.Builder.IMiddleware,System.String)">
+            <summary>
+            Specifies that this middleware must run on a specific route
+            </summary>
+            <param name="middleware">The middleware to configure</param>
+            <param name="routeName">The name of the route it must run on</param>
+            <returns>The middleware to facilitate fluid syntax</returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.RunFirst(OwinFramework.Interfaces.Builder.IMiddleware)">
+            <summary>
+            Specifies that this middleware needs to handle every request and
+            therefore runs before any routing takes place.
+            </summary>
+            <param name="middleware">The middleware to configure</param>
+            <returns>The middleware to facilitate fluid syntax</returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.RunLast(OwinFramework.Interfaces.Builder.IMiddleware)">
+            <summary>
+            Specifies that this middleware should run after all other middleware
+            has chosen not to handle the request
+            </summary>
+            <param name="middleware">The middleware to configure</param>
+            <returns>The middleware to facilitate fluid syntax</returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.Register(OwinFramework.Interfaces.Builder.IBuilder,Owin.IAppBuilder)">
+            <summary>
+            Use this method to register instances of the LegacyMiddlewareWrapper
+            </summary>
+            <param name="builder"></param>
+            <param name="legacyMiddleware"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.ConfigureWith(OwinFramework.Interfaces.Builder.IMiddleware,OwinFramework.Interfaces.Builder.IConfiguration,System.String)">
+            <summary>
+            Specifies how the middleware should obtain its configuration
+            </summary>
+            <param name="middleware">The middleware to configure</param>
+            <param name="configuration">The applications provider of configuration data</param>
+            <param name="configurationPath">A path in the configuration file where
+             the configuration should be read from</param>
+            <returns>The middleware to facilitate fluid syntax</returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.AddRoute(OwinFramework.Interfaces.Builder.IMiddleware{OwinFramework.Interfaces.Routing.IRoute},System.String,System.Func{Microsoft.Owin.IOwinContext,System.Boolean})">
+            <summary>
+            Adds a route to a router
+            </summary>
+            <param name="middleware">The router to add a route to</param>
+            <param name="routeName">The name of the route to add to this router</param>
+            <param name="filterExpression">An expression that will be used at runtime
+            to decide if the incomming request should be processed by the middleware
+            on this route. Routes are evaluated in the order they are added. It
+            is often a good idea to have a catch all route as the last route
+            configured</param>
+            <returns>The middleware to facilitate fluid syntax</returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.UseBuilder(Owin.IAppBuilder,OwinFramework.Interfaces.Builder.IBuilder)">
+            <summary>
+            Standard OWIN syntax for adding middleware. In this case it adds the OWIN
+            pipeline builder to the OWIN pipeline
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.GetFeature``1(Microsoft.Owin.IOwinContext)">
+            <summary>
+            This is used by middleware to get features that are implemented by other
+            middleware components that already executed against this OWIN context. For
+            example if the session middleware already executed then other middleware
+            can get the session that was added to the OWIN context using this extension 
+            method
+            </summary>
+            <typeparam name="T">The interface type of the feature to get. For example ISession</typeparam>
+            <param name="owinContext">The context of this OWIN request</param>
+            <returns>The feature if it exists or null if there is no feature of this type in context</returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.SetFeature``1(Microsoft.Owin.IOwinContext,``0)">
+            <summary>
+            Stores a feature implementation in the OWIN context for retrieval by other
+            middleware further down the pipeline.
+            </summary>
+            <typeparam name="T">The type of feature to store. This must be an interface, for example ISession</typeparam>
+            <param name="owinContext">The context of this OWIN request</param>
+            <param name="feature">The feature to make available to other middleware</param>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.ToShortString(System.UInt64,System.Boolean)">
+            <summary>
+            Converts a 64-bit unsigned value to a string that is shorter than simply
+            calling the ToString() method and is valid for inclusion in a URL
+            </summary>
+            <param name="value">The value to convert to short text</param>
+            <param name="mixedCase">True to use both upper and lower case letters, false 
+            to use lower case letters only</param>
+            <returns>A short string representing this value</returns>
+        </member>
+        <member name="M:OwinFramework.Builder.Extensions.ToShortString(System.Guid,System.Boolean)">
+            <summary>
+            Converts a GUID to a string that is shorter than simply
+            calling the ToString() method and is valid for inclusion in a URL
+            </summary>
+            <param name="guid">The GUID to convert to short text</param>
+            <param name="mixedCase">True to use both upper and lower case letters, false 
+            to use lower case letters only</param>
+            <returns>A short string representing this GUID</returns>
+        </member>
+        <member name="T:OwinFramework.Builder.LegacyMiddlewareWrapper">
+            <summary>
+            This class provides a wrapper around legacy middleware that was not designed to
+            work with the Owin Framework.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Builder.LegacyMiddlewareWrapper.#ctor">
+            <summary>
+            Constructs a wrapper around legacy middleware that does not implement IMiddleware so that 
+            it can be used with the builder.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Builder.LegacyMiddlewareWrapper.Use(System.Object,System.Object[])">
+            <summary>
+            Registers legacy middleware with the Owin Framework builder
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Configuration.DefaultValueConfiguration">
+            <summary>
+            This implementation of IConfiguration always supplies the default configuration value.
+            Most real world applications need to be configurable and should use a different
+            implementation of IConfiguration. This implementation is useful for demo projects,
+            unit tests and 'hello world' type projets.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Capability.IAnalysable">
+            <summary>
+            Middleware that implements this interface gather statictics at
+            runtime about the requests that have been handled, and expose
+            this to allow other middleware to provide a 'dashboard' type
+            functionallity for the application developer or support
+            engineer to figure out issues with the way the system is
+            performing.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IAnalysable.AvailableStatistics">
+            <summary>
+            Returns a list of the statistics that this middleware provides for inclusion
+            on a dashboard. Typically the user will choose statistics to incluse on
+            the dashboard from this list
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Capability.IAnalysable.GetStatistic(System.String)">
+            <summary>
+            Returns a statistic by its ID.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Capability.IStatisticInformation">
+            <summary>
+            Static information about a statistic that does not change as the application rune
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IStatisticInformation.Id">
+            <summary>
+            Persistent identifier for this statstic. This can be stored in dashboard
+            applications persistently to refer to this statistic. Once your middleware
+            is published you must support the old ID values in the future.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IStatisticInformation.Name">
+            <summary>
+            A short lingle line name of this statistic. This is used in drop-down lists
+            when the user is asked to choose a statistic.
+            See https://www.vicimediainc.com/google-analytics-cheat-sheet-2/
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IStatisticInformation.Units">
+            <summary>
+            The units of measure for this statistic, For example seconds or
+            bytes per second.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IStatisticInformation.Description">
+            <summary>
+            A longer plain text description that can be mutiple lines
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IStatisticInformation.Explanation">
+            <summary>
+            Returns a detailed explanation of how to interpret the numbers
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Capability.IStatistic">
+            <summary>
+            Dynamic information about a statistic that changes as the application runs.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IStatistic.Value">
+            <summary>
+            The numerical value of this statistic. This is provided so that
+            a dashboard application can graph the results or calculate
+            trends.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IStatistic.Denominator">
+            <summary>
+            When the value property is a ratio then this property contains
+            the denominator of that ratio. This allows the ratio calculation
+            to be reversed back into the original two values.
+            For example if the Value is in bytes/sec then this property
+            must contain the number of seconds so that Value*Deniminator
+            will result in the total number of bytes.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IStatistic.Formatted">
+            <summary>
+            Returns the value formatted with units, and scaled for human
+            readability.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Capability.IStatistic.Refresh">
+            <summary>
+            Updates all of the properties atomically with new values. If no
+            new values are available then the values will remain unchanged.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Capability.IConfigurable">
+            <summary>
+            Middleware can choose to implement this interface if they can be configured.
+            If there is nothing to configure then the middleware does not need to implement this interface
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Capability.IConfigurable.Configure(OwinFramework.Interfaces.Builder.IConfiguration,System.String)">
+            <summary>
+            The pipeline builder will call this method of the middleware once at startup to give it
+            a chance grab configuration data.
+            </summary>
+            <param name="configuration">The configuration mechanism used by the application</param>
+            <param name="path">The path to this middleware's configuration in the configuration file</param>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Capability.DocumentationTypes">
+            <summary>
+            Defaines the types of documentation that Owin middleware can provide
+            to the application developer.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Capability.DocumentationTypes.Overview">
+            <summary>
+            A high level description of why this middleware exists, the 
+            circumstances where it is useful and what it depends on.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Capability.DocumentationTypes.GettingStarted">
+            <summary>
+            Step by step instructions for downloading, installing and 
+            configuring this middleware for a simple 'hello world' type
+            application.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Capability.DocumentationTypes.SampleCode">
+            <summary>
+            Source code recipies for some typical situations.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Capability.DocumentationTypes.Configuration">
+            <summary>
+            Reference information for all configuration options provided
+            by this middleware
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Capability.DocumentationTypes.TechnicalDetails">
+            <summary>
+            Descriptions and diagrams explaining how this middleware works
+            and exactly what it does.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Capability.DocumentationTypes.SourceCode">
+            <summary>
+            If this middleware is open source then this should point
+            to the web site where the source code can be obtained
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Capability.ISelfDocumenting">
+            <summary>
+            If you implement this interface in your middleware then tools that 
+            generate documentation for the application developer will be able 
+            to include more detail about your middleware.
+            
+            Implementing this interface is optional.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.ISelfDocumenting.ShortDescription">
+            <summary>
+            Returns a short one line description of the middleware. Is
+            typically used to label drawings and populate drop-down lists
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.ISelfDocumenting.LongDescription">
+            <summary>
+            This is a longer plain text description that can contain
+            line breaks. This is typically used in roll-over popups
+            that provide a little more detail about the middleware
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Capability.ISelfDocumenting.GetDocumentation(OwinFramework.InterfacesV1.Capability.DocumentationTypes)">
+            <summary>
+            Retrieves the URL of a type of documentation. The middleware
+            can return the same URL for all types of documentation if
+            it likes, or it can return null for documentation types
+            that it does not support.
+            This will typically be used to create hyperlinks that the
+            application developer can click on to find out more about
+            the middleware.
+            Middleware can return a relative URL and serve the
+            documentation itself, i.e. the URL can point to a
+            location that is handled by this middleware, or the
+            URL can be the absolute URL of an external web page.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.ISelfDocumenting.Endpoints">
+            <summary>
+            Optionally returns API documentation for application 
+            developers or null if no documentation is available.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Capability.IEndpointDocumentation">
+            <summary>
+            Provides application developer with information about an
+            endpoint that is supported by your middleware. The longer
+            descriptive properties support simple HTML. You can use:
+            &lt;p&gt;&lt;/p&gt;
+            &lt;b&gt;&lt;/b&gt;
+            &lt;i&gt;&lt;/i&gt;
+            &lt;span style=""&gt;&lt;/span&gt;
+            &lt;div stype=""&gt;&lt;/div&gt;
+            &lt;ul&gt;&lt;li&gt;&lt;/li&gt;&lt;/ul&gt;
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IEndpointDocumentation.RelativePath">
+            <summary>
+            The path of this endpoint in the web site. If the path
+            contains variable data such as the ID or name of something
+            then put the name of this variable in {}, for example
+              /customer/{customerId}/address/{index}
+            Document the variable elements in curly brackets in the
+            Attributes property.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IEndpointDocumentation.Description">
+            <summary>
+            A description of what this endpoint does and how/when to 
+            use it. You can use simple HTML markup here
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IEndpointDocumentation.Examples">
+            <summary>
+            Some examples of paths with a description of how these
+            will be interpreted by the endpoint. You can use simple 
+            HTML markup here
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IEndpointDocumentation.Attributes">
+            <summary>
+            A list of the optional parts of the request including
+            supported methods, variable path elements, HTTP headers
+            etc.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Capability.IEndpointAttributeDocumentation">
+            <summary>
+            Describes an attribute of an endpoint, for example a
+            supported HTTP method, query string parameter or header
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IEndpointAttributeDocumentation.Type">
+            <summary>
+            The type of attribute. Can be 'Query string', 'Header',
+            'Method' or any other type appropriate to your endpoint
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IEndpointAttributeDocumentation.Name">
+            <summary>
+            The name of the attribute. If Type is 'Method' for example
+            then this should be the name of the method, for example 'POST'.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.IEndpointAttributeDocumentation.Description">
+            <summary>
+            An explanation of when this attribute applies, what effect 
+            it has on the response, the possible values etc. You can use
+            simple HTML markup here
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Capability.ITraceable">
+            <summary>
+            Middleware that implements this interface can be configured to output trace information
+            that can help in discovering why requests are not being handled in the way that
+            the application developer was expecting. For example if an application developer
+            configures static files middleware and no static files are served, maybe the 
+            configuration is wrong, maybe it is looking in the wrong location on disk, maybe
+            the web server does not have permission to access the files etc. This interface
+            allows calls to be traced to help with tracking down these issues without the
+            overhead of constantly tracing everything.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Capability.ITraceable.Trace">
+            <summary>
+            The builder will set this property immediately after constructing your
+            middleware class. When tracing is disabled this action will do nothing
+            very quickly. When tracing is enabled the function you pass to the 
+            trace action will execute and the string it returns will be added to a
+            log that is specific to the current request.
+            </summary>
+            <example>Trace(context, () => "File does not exist on disk");</example>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.AuthenticationStatus">
+            <summary>
+            This is returned by authentication methods
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.AuthenticationStatus.Anonymous">
+            <summary>
+            The evidence provided represents the anonymous user
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.AuthenticationStatus.Authenticated">
+            <summary>
+            The requestor sucesfully authenticated and should be given access
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.AuthenticationStatus.InvalidCredentials">
+            <summary>
+            The information provided by the requestor was not valid. This could be
+            incorrect password, invalid shared secret, invalid cerificate signature etc.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.AuthenticationStatus.NotFound">
+            <summary>
+            The supplied information did not match any identity
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.AuthenticationStatus.Locked">
+            <summary>
+            This result is returned after too many failed login attempts. The
+            implementor of this factiity can decide the business rules around
+            locking and unlocking users because of failed logins. Generic middleware
+            should provide configuration options to allow the application developer
+            to choose the behavour they want. This should be considered a temporary
+            failure, trying again later might succeed.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.AuthenticationStatus.Expired">
+            <summary>
+            Some implementations might have time-limited user accounts, secret keys etc.
+            Certificates also have an expiration date. In all of these circumstances the
+            Expired result is returned. This should be considered a permenant failure,
+            ie trying again later will produce the same result.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.AuthenticationStatus.Unsupported">
+            <summary>
+            The requested authentication method is not supported by this identity store
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.IAuthenticationResult">
+            <summary>
+            The result of an authentication attempt
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IAuthenticationResult.Status">
+            <summary>
+            See definition of enum values
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IAuthenticationResult.Identity">
+            <summary>
+            A URL friendly string that uniquely identifies a consumer of this service (user).
+            Other facilities and middleware should use this to associate other information
+            with the caller. For example the Authorization middleware should associate
+            group membership with this identity and a user store can use this to 
+            associate real name, email address physical address and preferences with the
+            identity of the caller.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IAuthenticationResult.RememberMeToken">
+            <summary>
+            An opaque token that uniquely identifies this authentication result. If the
+            application supports a 'Remember Me' feature where they store a cookie on
+            the broswer to avoid the user having to log in each time, then this token
+            is designed to be stored in that cookie.
+            The implementation of this token can be a secure encryption of the Identity 
+            and Purposes properties combined, or a random key that is a lookup for this
+            information.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IAuthenticationResult.Purposes">
+            <summary>
+            Returns a list of optional purposes associated with this login. 
+            If this is null then the authentication is good for all purposes.
+            For example a user might want to create an API key that uses the shared
+            secret method of authentication. This API key should be associated with
+            the user but give only partial access, i.e. you can't do everything with
+            that user's account using the API key.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.ICache">
+            <summary>
+            An object of this type is returned by the cache facility
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICache.Get``1(System.String,``0,System.Nullable{System.TimeSpan},System.String)">
+            <summary>
+            Tries to get a value from the cache if it is present
+            </summary>
+            <typeparam name="T">The type of data stored the cache against this key</typeparam>
+            <param name="key">A key that identifies a piece of data in the cache</param>
+            <param name="defaultValue">The value to return if the cache does not contain this key</param>
+            <param name="lockTime">Optional time to lock the value in the cache. Updating the cache will clear the lock</param>
+            <param name="category">Optional category. Cache implementations can choose different caching strategies for different categories of data</param>
+            <returns>The cached value or the default value if not in cache</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICache.Put``1(System.String,``0,System.Nullable{System.TimeSpan},System.String)">
+            <summary>
+            Overwrites data in the cache and unlocks it if locked
+            </summary>
+            <typeparam name="T">The type of data to store in the cache. Must be serializable for distributed caches</typeparam>
+            <param name="key">A key that identifies a piece of data in the cache</param>
+            <param name="value">The data to store in the cache</param>
+            <param name="lifespan">How long to keep the data in cache. If you pass null the cache will decide</param>
+            <param name="category">Optional category. Cache implementations can choose different caching strategies for different categories of data</param>
+            <returns>True if the data was overwritten and False if data was inserted</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICache.Delete(System.String,System.String)">
+            <summary>
+            Deletes an entry in the cache
+            </summary>
+            <param name="key">A key that identifies a piece of data in the cache</param>
+            <param name="category">Optional category. Cache implementations can choose different caching strategies for different categories of data</param>
+            <returns>True if the data was deleted and False if data was not in the cache</returns>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.ICertificateStore">
+            <summary>
+            Defines a facility that stores certificates that identify identities
+            making requests to the system
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ICertificateStore.SupportsCertificates">
+            <summary>
+            Returns true if this identity store can work with certificates
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICertificateStore.AddCertificate(System.String,System.Nullable{System.TimeSpan},System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Generates a certificate and associates it with an identity
+            </summary>
+            <param name="identity">The identity to associate the certificate with</param>
+            <param name="lifetime">How long is this certificate valid for</param>
+            <param name="purposes">Optional list of purposes to limit the scope of this certificate</param>
+            <returns>A certificate that a 3rd party can store on their system and use to access
+            services for specific purposes</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICertificateStore.DeleteCertificate(System.Byte[])">
+            <summary>
+            Deletes a specific certificate from the identity store
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICertificateStore.DeleteCertificates(System.String)">
+            <summary>
+            Deletes all of the certificates associated with an identity
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICertificateStore.AuthenticateWithCertificate(System.Byte[])">
+            <summary>
+            Checks the supplied certifcate and returns status of the identity associated with
+            that certificate. This mechanism is useful when you want to issue certificates to
+            trusted external systems and be able to identify those systems by the certificate
+            that they present.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.ICredential">
+            <summary>
+            Encapsulates the information stored about a username/password combination
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ICredential.Identity">
+            <summary>
+            The unique identifier for the identity this credential belongs to
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ICredential.Username">
+            <summary>
+            The username used to sign in with this credential
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ICredential.Purposes">
+            <summary>
+            The actions that are permitted on the identity identified by this credential
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.ICredentialStore">
+            <summary>
+            Defines a facility that stores username and password credentials that identify
+            users making requests to the system
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ICredentialStore.SupportsCredentials">
+            <summary>
+            Returns true if this identity store can work with usernames and passwords
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICredentialStore.AddCredentials(System.String,System.String,System.String,System.Boolean,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Adds username/password credentials to an identity so that the identity can
+            log in using these credentials
+            </summary>
+            <param name="identity">A URL friendly string that uniquely identifies an identity</param>
+            <param name="userName">The username that they will use to login</param>
+            <param name="password">The password that they will use to login</param>
+            <param name="replaceExisting">True to delete all existing credentials. This
+            will not delete any secret keys, certificates etc. False to add this as a
+            new login but keep the old credentials still active, this allows different
+            credentials to have different purposes on the same account.</param>
+            <param name="purposes">Optional list of purposes to restrict what is allowed
+            when a user logs in with these credentials. If this is null then the 
+            login is unrestricted</param>
+            <returns>True if sucessful. Returns false if the identity was not found or the
+            password does not meet requirements for password complexity</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICredentialStore.AuthenticateWithCredentials(System.String,System.String)">
+            <summary>
+            Checks user supplied credentials and returns the identity of the user
+            </summary>
+            <param name="userName">The user id for this user (usually email address)</param>
+            <param name="password">The user's password</param>
+            <returns>The results of checking the user's credentials</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICredentialStore.RememberMe(System.String)">
+            <summary>
+            Logs the user in using a stored Remember Me Token. This token
+            can be obtained from a full login with credentials or a secret key
+            </summary>
+            <param name="rememberMeToken">The remember me token from a succesful
+            login</param>
+            <returns>Details about the user and purposes permitted by this login</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICredentialStore.GetRememberMeCredential(System.String)">
+            <summary>
+            Retrieves the username that was used to log in using credentials
+            </summary>
+            <param name="rememberMeToken">A token returned from a sucessful login</param>
+            <returns>Credentials if this login was a creddentials login, or null
+            if the user identified in some other way (for example with a cert)</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICredentialStore.GetUsernameCredential(System.String)">
+            <summary>
+            Retrieves the username that was used to log in using credentials
+            </summary>
+            <param name="username">A username that is used to login to the system</param>
+            <returns>Credentials if this username exists in the system, or null
+            if there is no such user</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICredentialStore.GetCredentials(System.String)">
+            <summary>
+            Retrieves a list of the credentials associated with an identity
+            </summary>
+            <param name="identity">The unique identifier for the identity</param>
+            <returns>A list of credentials</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICredentialStore.DeleteCredential(OwinFramework.InterfacesV1.Facilities.ICredential)">
+            <summary>
+            Deletes a user credential from the system preventing any further login
+            attempts with that username.
+            </summary>
+            <param name="credential">The credential to delete</param>
+            <returns>True if the deletion was sucessful and false if not found</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ICredentialStore.ChangePassword(OwinFramework.InterfacesV1.Facilities.ICredential,System.String)">
+            <summary>
+            Changes the password for a credential
+            </summary>
+            <param name="credential"></param>
+            <param name="newPassword"></param>
+            <returns></returns>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.IIdentitySearchResult">
+            <summary>
+            This structure is returned when a request is made to find identities
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IIdentitySearchResult.PagerToken">
+            <summary>
+            This token can be passed back to the search method to retrieve the
+            next page of results. To make this useful implementors should assume
+            that this token will be passed in a URL query string and therefore
+            should not use characters that are illegal in that context.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IIdentitySearchResult.Identities">
+            <summary>
+            This is are one page of search results
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.IMatchingIdentity">
+            <summary>
+            Represents an identity that matched the search phrase
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IMatchingIdentity.Identity">
+            <summary>
+            The string that represents this identity. The format of this string
+            is implementation specific, but should always be something that you
+            could include in a URL with encoding for it to be useful.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IMatchingIdentity.Claims">
+            <summary>
+            These are the claims made by the identity. Claims include things like
+            email address, real name etc.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.IIdentityDirectory">
+            <summary>
+            Defines a facility that stores information about identities.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IIdentityDirectory.CreateIdentity">
+            <summary>
+            Creates a new identity in the system. You must associate the identity with
+            some type of evidence to make it useful (for example you have to add a
+            username and password or certificate or something).
+            </summary>
+            <returns>A unique url friendly identifier for a new identity</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IIdentityDirectory.GetClaims(System.String)">
+            <summary>
+            Returna a list of the claims made by this identity and the status of
+            each of thsose claims
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IIdentityDirectory.UpdateClaim(System.String,OwinFramework.InterfacesV1.Middleware.IIdentityClaim)">
+            <summary>
+            Adds or updates a claim for an identity. Claims are things like the user's
+            email address, real name, date of birth etc. Each claim has a status that
+            indicates if it has been verified.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IIdentityDirectory.DeleteClaim(System.String,System.String)">
+            <summary>
+            Removes a claim from an identity. This might be appropriate for example
+            if a certificate expires, or a user changes their email address
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IIdentityDirectory.Search(System.String,System.String,System.Int32,System.String)">
+            <summary>
+            Searches for matching identities. This is useful in administration UIs where
+            system administrators need to find users by name or email etc to reset their
+            password, change permissions etc
+            </summary>
+            <param name="searchText">The text that the user typed into the search box</param>
+            <param name="pagerToken">Pass the token from a prior search result to return the 
+            next page of results or null to start from the beginning</param>
+            <param name="maxResultCount">The maximum number of results to return</param>
+            <param name="claimName">Restricts the search to one claim only. When this
+            parameter is null all claims and the identity string will be searched</param>
+            <returns></returns>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.IIdentityStore">
+            <summary>
+            Defines a facility that stores information about identities and provides
+            methods to verify the identity of the entity making the request.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.IMimeTypeEvaluator">
+            <summary>
+            Determines the appropriate mime type to use for a response.
+            Can use configuration or logic to determine the correct type
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IMimeTypeEvaluator.MimeTypeFromExtension(System.String)">
+            <summary>
+            Maps a file extension onto a mime type
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IMimeTypeEvaluator.MimeTypeFromContent(System.String)">
+            <summary>
+            Evaluates the contents of a response and determines
+            the mime type by looking for known patterns in the date
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IMimeTypeEvaluator.MimeTypeFromContent(System.Byte[])">
+            <summary>
+            Evaluates the contents of a response and determines
+            the mime type by looking for known patterns in the date
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.PasswordCheckResult">
+            <summary>
+            This POCO is returned when the user chooses a new password and the
+            password is checked to see if it meets the password complexity policy
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.PasswordCheckResult.IsAllowed">
+            <summary>
+            Contains true if the password is allowed under the password
+            complexity policy
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.PasswordCheckResult.ValidationError">
+            <summary>
+            If the IsAllowed property is False, then this property contains
+            a description of why the password is not acceptable. This 
+            description must be suitably worded for display in the UI
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.PasswordCheckResult.PasswordPolicy">
+            <summary>
+            Returns an HTML description of the password policy. This will
+            be displayed in teh UI when the user changes their password.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.IPasswordHashingScheme">
+            <summary>
+            You can implement this interface in your application to add a custom
+            password hashing scheme for a specific version of stored passwords.
+            This is particularly useful when migrating users from a prior system
+            and you do not want to force all the users to reset their password.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IPasswordHashingScheme.ComputeHash(System.String,System.Byte[]@)">
+            <summary>
+            Computes a hash for a password
+            </summary>
+            <param name="password">The password to hash</param>
+            <param name="salt">If you pass salt in then it will be appended to
+            the password prior to hashing. If you pass null for the salt, then
+            the hashing scheme should generate random salt and return it.</param>
+            <returns></returns>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.IPasswordHasher">
+            <summary>
+            Defines a facility for hashing passwords so that they can be safely
+            stored and checked later.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IPasswordHasher.CheckPasswordAllowed(System.String,System.String)">
+            <summary>
+            Tests a potential password to see if it meets the requirements for
+            password complexity.
+            </summary>
+            <param name="identity">The identity of the user who is setting the
+            password. This is passed as a parameter to enable identity specific
+            password complexity rules - such as you can not use the same password
+            again.</param>
+            <param name="password">The password that the user wants to set</param>
+            <returns>Results of checking their password against the policy</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IPasswordHasher.ComputeHash(System.String,System.String,System.Nullable{System.Int32}@,System.Byte[]@,System.Byte[]@)">
+            <summary>
+            Computes the hash for a password so that it can be stored as the new 
+            password for the identity
+            </summary>
+            <param name="identity">The identity whos password is being set. This is passed in
+            case the implementation uses different versions of the hashing scheme for different
+            types of identity</param>
+            <param name="password">The password that the user chose</param>
+            <param name="version">You can pass in a version to use that hashing scheme or pass null
+            for the most recent version. Outputs the version of the password hashing scheme that 
+            was actually used, never returns null.</param>
+            <param name="salt">Outputs the random salt that was added to the password before hashing</param>
+            <param name="hash">Outputs the password hash that can be safely stored</param>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IPasswordHasher.ComputeHash(System.String,System.Int32,System.Byte[],System.Byte[]@)">
+            <summary>
+            Computes the hash for a password so that it can be compared to the stored
+            hash during the login process
+            </summary>
+            <param name="password">The login password supplied by the user</param>
+            <param name="version">The version of the password hashing scheme that
+            was employed when the password was originally hashed</param>
+            <param name="salt">The random salt that was originally appended to the
+            password before hashing</param>
+            <param name="hash">Outputs a hash that can be compared to the stored
+            hash to see if the user supplied the correct password.</param>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IPasswordHasher.SetHashingScheme(System.Int32,OwinFramework.InterfacesV1.Facilities.IPasswordHashingScheme)">
+            <summary>
+            Sets the password hashing scheme for a specific version number.
+            </summary>
+            <param name="version">The version number that this scheme applies to</param>
+            <param name="scheme">The hashing scheme</param>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.IPasswordHasher.GetHashingScheme(System.Int32)">
+            <summary>
+            Gets a specific version of the password hashing scheme
+            </summary>
+            <param name="version">The version number to get</param>
+            <returns>The hashing scheme used for this version of the hash</returns>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.ISharedSecret">
+            <summary>
+            When users create shared secrets that provide access to their account, they
+            need to be able to go back later and delete or deactivate these secrets, hence
+            these have to be given names.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ISharedSecret.Name">
+            <summary>
+            The name of this shared secret
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ISharedSecret.Secret">
+            <summary>
+            The secret that can be shared to provide access to the system
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ISharedSecret.Purposes">
+            <summary>
+            Contains the purposes that this shared secret can be used for
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.ISharedSecretStore">
+            <summary>
+            Defines a facility that stores shared secrets that third-party systems
+            can use when identifying themselves to your APIs
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ISharedSecretStore.SupportsSharedSecrets">
+            <summary>
+            Returns true if this identity store can work with shared secrets
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ISharedSecretStore.AddSharedSecret(System.String,System.String,System.Collections.Generic.IList{System.String})">
+            <summary>
+            Creates a shared secret that can be used to authenticate as an identity
+            </summary>
+            <param name="identity">The identity to associate</param>
+            <param name="name">When users create shared keys to give access to their account they
+            can give a name to each one so that they can manage them later</param>
+            <param name="purposes">Optional list of purposes to limit the scope of this login</param>
+            <returns>A short unique url friendly string that can be shared with a third party to give them
+            the ability to authenticate as this identity</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ISharedSecretStore.DeleteSharedSecret(System.String)">
+            <summary>
+            Removes a shared secret from an identity preventing login with this shared secret in future
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ISharedSecretStore.GetAllSharedSecrets(System.String)">
+            <summary>
+            Returns a list of all the shared secrets associated with an identity
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ISharedSecretStore.AuthenticateWithSharedSecret(System.String)">
+            <summary>
+            Provides shared secret authentication. The shared secret should be send securely
+            to the other party, and they must logon through a secure connection.
+            </summary>
+            <param name="sharedSecret">A secret key that was provided to a 3rd party</param>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.ISocialAuthentication">
+            <summary>
+            Used to provide information about a sucesful login to a social network site
+            such as Google, Facebook Twitter etc
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ISocialAuthentication.Identity">
+            <summary>
+            A URL friendly string that uniquely identifies a consumer of this service.
+            Other facilities and middleware should use this to associate other information
+            with the caller. For example the Authorization middleware should associate
+            group membership with this identity and a user store can use this to 
+            associate real name, email address physical address and preferences with the
+            identity of the caller.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ISocialAuthentication.Purposes">
+            <summary>
+            Returns a list of optional purposes associated with this login. 
+            If this is null then the authentication is good for all purposes.
+            For example a user might want to create an API key that uses the shared
+            secret method of authentication. This API key should be associated with
+            the user but give only partial access, i.e. you can't do everything with
+            that user's account using the API key.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ISocialAuthentication.AuthenticationToken">
+            <summary>
+            Contains the authentication token that was received from the social service
+            when the user successfullly logged in to that service. This token can be used
+            to request access tokens from the social service.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.ISocialIdentityStore">
+            <summary>
+            Defines a facility that stores social login tokens that identify
+            users that registered using a 3rd party authentication such as Facebook, LinkedIn etc
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.ISocialIdentityStore.SocialServices">
+            <summary>
+            Returns a list of the domain names for social services that can be used to 
+            authenticate through this identity store. If the identity store dows not support
+            social login then this list will be empty.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ISocialIdentityStore.AddSocial(System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.Boolean)">
+            <summary>
+            Associates a sucessfull login to a social account (on Google, Facebook etc) with an identity.
+            Call this method only after the user has successfully authenticated with the social service.
+            </summary>
+            <param name="identity">The identity to associate</param>
+            <param name="userId">An identifier from the social login site that identifies this user on that site</param>
+            <param name="socialService">The domain name of the social service</param>
+            <param name="authenticationToken">An identification token received from the social service for this 
+            specific user. These are sometimes referred to as refresh tokens in social login APIs. This
+            token will be used later to obtain an access token for the social site</param>
+            <param name="purposes">Optional list of purposes to limit the scope of this login</param>
+            <param name="replaceExisting">Pass true to delete other social logins for the same identity on the
+            same social service</param>
+            <returns>True if this is a new social login and false if an existing one was updated</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ISocialIdentityStore.DeleteSocial(System.String,System.String)">
+            <summary>
+            Removes a social login account from an identity preventing login with this social account
+            </summary>
+            <returns>True if the social login was deleted and False if it did not exist</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ISocialIdentityStore.DeleteAllSocial(System.String)">
+            <summary>
+            Removes all social login account from an identity preventing login with these social accounts
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ISocialIdentityStore.GetSocialAuthentication(System.String,System.String)">
+            <summary>
+            Each time a new session is established for an identity and the application needs to 
+            communicate with a social service API it should call this method. This method will
+            return the authentication token obtained from the social service when the user logged in.
+            You can pass this authentication token along with the user ID to the social service to get
+             an access token and you can store the access token in session to gain access to social
+            site apis.
+            </summary>
+            <param name="userId">An identifier from the social login site that identifies this user on that site</param>
+            <param name="socialService">The domain name of the social service that was used</param>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.TokenStatus">
+            <summary>
+            Defines the possible results of trying to use a token for a specific purpose
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.TokenStatus.Allowed">
+            <summary>
+            This token is allowed to be used for the specified purpose
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.TokenStatus.NotAllowed">
+            <summary>
+            This token is not allowed to be used for the specified
+            purpose at this time but it could be valid in the future 
+            for this purpose or for another purposes.
+            When this status is returned it could be that the token has expired,
+            been used too many times, has been used too frequently, or
+            it was not created for this purpose
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Facilities.TokenStatus.Invalid">
+            <summary>
+            This token is no longer valid and any future attempts to check
+            the status of this token will also result in this same status result.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.IToken">
+            <summary>
+            An object of this type is returned by the token facility
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IToken.Value">
+            <summary>
+            The URL friendly unique identifier for this token
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IToken.Status">
+            <summary>
+            The current status of the token for the requested purpose
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IToken.Identity">
+            <summary>
+            An optional identity associated with the token
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Facilities.IToken.Purpose">
+            <summary>
+            The purpose for which this token was checked
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Facilities.ITokenStore">
+            <summary>
+            Defines a token management facility. Any middleware that needs to use
+            tokens can add a dependency on this interface. The application developer
+            must implement this interface or include a package in thier application 
+            that provides it.
+            
+            Example usage:
+            The user forgot their password and requested a password reset email. 
+            The email needs to contain a url that the user can click that brings 
+            the user to a page where they can reset their password. The url needs
+            to be opaque (ie no user id in plain text). This url should 
+            only be valid for a specific user, should only work once, and
+            should only be valid for a limited time. This can be achieved by creating
+            a token whose types is configured for single use with validity period and
+            contains the user's identity.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ITokenStore.CreateToken(System.String,System.Collections.Generic.IEnumerable{System.String},System.String)">
+            <summary>
+            Creates a URL friendly token of the specified type and with a list of
+            allowed purposes.
+            </summary>
+            <param name="tokenType">The application can define whatever token types
+            make sense to the application. It is expected that implementations of
+            this facility will allow configuration of token types with things
+            like period of validity, number of times they can be used etc.</param>
+            <param name="purpose">Optional list of purposes that this token is
+            valid for. For example an application can create a token that
+            represents a user but can only be used for viewing certain kinds
+            of data and can not change anything.</param>
+            <param name="identity">Optional identity associated with the token. This
+            can be thought of as a user id except that it's not always a user, it
+            could just as easily be a service, machine etc.</param>
+            <returns>A unique short string containing none of the url reserved characters</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ITokenStore.CreateToken(System.String,System.String,System.String)">
+            <summary>
+            Creates a URL friendly token of the specified type and a specific purpose
+            </summary>
+            <param name="tokenType">The application can define whatever token types
+            make sense to the application. It is expected that implementations of
+            this facility will allow configuration of token types with things
+            like period of validity, number of times they can be used etc.</param>
+            <param name="purpose">The only purpose that is allowed with this token</param>
+            <param name="identity">Optional identity associated with the token. This
+            can be thought of as a user id except that it's not always a user, it
+            could just as easily be a service, machine etc.</param>
+            <returns>A unique short string containing with none of the url reserved characters</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ITokenStore.DeleteToken(System.String)">
+            <summary>
+            Deletes a token making it invalid. This is how you would invalidate an 
+            authentication token when a user logs out
+            </summary>
+            <param name="token">A token that was returned by one of the CreateToken overrides</param>
+            <returns>True if the token was deleted and False if the  token did not exist</returns>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Facilities.ITokenStore.GetToken(System.String,System.String,System.String,System.String)">
+            <summary>
+            Checks if a token is valid for the specified purpose. The token will be invalid
+            if the token has expired or been used too many times etc. The token will only
+            be valid if the purpose passed to this method is one of the purposes that was 
+            passed when the token was created.
+            </summary>
+            <param name="tokenType">The application can define whatever token types
+            make sense to the application. It is expected that implementations of
+            this facility will allow configuration of token types with things
+            like period of validity, number of times they can be used etc.</param>
+            <param name="token">A token that was returned by one of the CreateToken overrides</param>
+            <param name="purpose">The purpose that this token is being used for</param>
+            <param name="identity">An optional identity. If you pass this then the token
+            store will check that this is the identity associated with the token. If you
+            pass null then this check will be skipped</param>
+            <returns>Information about the validity of this token for this purpose by this identity</returns>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.IAuthorization">
+            <summary>
+            Defines the functionallity exposed by the authorization feature that
+            can be used by other middleware compoennts.
+            
+            Authorization is the business of deciding who it allowed to do what.
+            Middleware that provides this feature will typically have a dependency
+            on middleware that provides the IIdentification feature.
+            
+            In most authorization systems users can be assigned to a role which
+            makes them a member of several groups and these groups have permissions
+            assigned to them. For example a user might have the role of "Developer"
+            which adds them to the "Developers" group and the "IIS Admins" group.
+            These groups in turn will grant specific permissions within certain
+            applications.
+            
+            Within a specific application, all the application usually cares about
+            is whether the user has permission to perform a certain action.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Middleware.IAuthorization.IsInRole(System.String)">
+            <summary>
+            Tests if the user that made this request is in the specified role.
+            Each user can have many roles. The role defines what type of user 
+            this is.
+            The expected usage of this function is that different types of user
+            might have different user experiences, or have access to different
+            areas of functionallity, for example only show the 'Developer Tools'
+            menu if the user has the role of 'Developer'.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Middleware.IAuthorization.HasPermission(System.String,System.String)">
+            <summary>
+            Tests if the user that made this request has the specified permission.
+            Each authorization provider is free to define how the permission name
+            and resource name is interpreted. Read the authentication provider
+            documentation to know how to pass these parameters.
+            Permissions can be granted for specific operations on all resources
+            or limited to a subset of resources.
+            </summary>
+            <param name="permissionName">The name of the permission to test. We
+            recommend that you use some structure within your permission names.
+            Our suggestion is 'service:operation' for example 'cart:order.delete'</param>
+            <param name="resource">Optionally specifies the resource on which the
+            permission is being tested. We recommend using a heirachical notation
+            for resources so that for example having permission on the 'user:{self}'
+            resource implies permission on sub-resources such as 'user:{self}.profile'
+            which also implies permission on it's sub-resources such as 
+            'user:{self}.profile.picture'.</param>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.IIdentification">
+            <summary>
+            Defines the functionallity exposed by the identification feature that
+            can be used by other middleware compoennts.
+            
+            Identification is the business of figuring out who made this request. The
+            caller can be a user, an application, a trusted third party system etc.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IIdentification.Identity">
+            <summary>
+            Returns a unique identifier for the user that made the request.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IIdentification.IsAnonymous">
+            <summary>
+            Returns true if the user could not be identified from the request. In this
+            case the Identity property will still contain a unique value, but this value
+            can change with subsequent requests from the same user.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IIdentification.Claims">
+            <summary>
+            This is a list of claims made by the caller. For example the caller can
+            claim to have an email address, a real name, an avatar etc. It is also possible
+            to use claims to represent permissions, for example the user can claim to be
+            an administrator. Each claim has a claim status that indicates if the claim
+            was supported by evidence, and if that evidence has be verified.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IIdentification.Purposes">
+            <summary>
+            Users can create additional methods of authenticating against their account, 
+            for example by generating an API key which allows other applications or 
+            services to access their account. These additional authentication methods
+            can be restricted by passing a list of "purposes" that they can be used for.
+            For example your application can define purposes of "read my messages" or
+            "manage my calendar" then API tokens can be created that only allow the
+            third party application to read my messages for example.
+            When the user logs in using their own credentials this property will be
+            null or an empty list. When a third party application logs in using a
+            restricted access token, the list of things that they are allowed to do
+            will be available in this property.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.IIdentityClaim">
+            <summary>
+            Represents a claim made by the entity that is requesting access to a protected
+            resource.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IIdentityClaim.Name">
+            <summary>
+            This is the name of the claim the entity is making. This can be one of the
+            constants defined in the ClaimNames class or any other name that is not 
+            already defined here.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IIdentityClaim.Value">
+            <summary>
+            The value associated with this name. For example if the Name property
+            contains ClaimNames.Email then this value property will contain the
+            email address.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IIdentityClaim.Status">
+            <summary>
+            Indicates if the identification system has verified this claim. Note that
+            the claim can be verified at the point where the entity requests access, or
+            it can be stored with the identity. For example a user can log in with a 
+            username and password, so their username is a verified claim, then they
+            can specify their email address, which is an unverified claim. The system
+            can send an email to the email address and if the user clicks a link in
+            the email and verifies their username and password, we can now flag the
+            email address as verified. Next time the user identifies via username and
+            password, the identiity middleware can include a verified email claim because
+            it knows that the verified email address is associated with that username.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.ClaimNames">
+            <summary>
+            Specifies the wll known claim names
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.Email">
+            <summary>
+            The email address of the identity
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.Username">
+            <summary>
+            The username or display name of the identity
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.Domain">
+            <summary>
+            The domain name that the user was logged into. For example 
+            for active directory intrgration if the user logged into
+            a domain controller and presented a kerberos token as evidence
+            then this would be a verified claim to be a member of that
+            active directory domain. If the request is from another
+            trusted organization in a B2B transaction, this can also be
+            the dmain name of the organization requesting access
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.Surname">
+            <summary>
+            The last name of a real person
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.FirstName">
+            <summary>
+            The first name of a real person
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.PhoneNumber">
+            <summary>
+            The phone number of a real person
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.BirthYear">
+            <summary>
+            The year in which the person was born
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.BirthMonth">
+            <summary>
+            The month in which the person was born
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.BirthDay">
+            <summary>
+            The day in which the person was born
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.Application">
+            <summary>
+            The name of the software that is requesting access
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.Machine">
+            <summary>
+            The machine name of the server that is requesting access
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.IpV4">
+            <summary>
+            The V4 IP address of the identity
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimNames.IpV6">
+            <summary>
+            The V6 IP address of the identity
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.ClaimStatus">
+            <summary>
+            When an entity submits a request to a secure resource, it makes claims about its
+            identity and supports those claims with evidence. For example a user might claim
+            to have a certain username, and support that claim by providing the password as
+            evidence. If the evidence is accepted then the user's claim is verfied. The user 
+            might also make a claim about their email address, but we can't verify this claim
+            until we send an email to this address and have the user click a link in the email
+            and type in their password.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimStatus.Unknown">
+            <summary>
+            This means that claim verification is pending, od the software does not
+            have a mechanism to verify the claim.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimStatus.Verified">
+            <summary>
+            This status means that the software took steps to verify the claim, and it
+            can be trusted by the application.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.ClaimStatus.Unverified">
+            <summary>
+            This means that the claim has no evidence to support it, or the claim
+            verification failed. The claim can not be trusted.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.IOutputCache">
+            <summary>
+            Output cache middleware will inject this interface into the OWIN
+            context before chaining to the rest of the pipeline. Downstream
+            middleware can use this interface to give hints to the output
+            cache so that it can optimize its performance.
+            The output cache can decide to cache the output and serve the
+            next identical request itself from cache rather than passing
+            control down the chain.
+            Output caching algorithms are extremely difficult to get right
+            so I expect a lot of different implementations to be available.
+            As an application developer you should test a few alternatives
+            with production traffic.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IOutputCache.Priority">
+            <summary>
+            Rendering middleware should set this to indicate how valulable
+            it would be to have this content cached. Another way of looking
+            at this is how expensive is it to render this content again.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IOutputCache.MaximumCacheTime">
+            <summary>
+            Specifies the maximum amount of time that this content can
+            be cached before the cached data has no value.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IOutputCache.Category">
+            <summary>
+            It is assumed that caching algorithms will look at the frequency
+            of requests, request processing time and size of response when
+            deciding what to cache. It is not necessary for the cache to
+            capture these statistics for every URL. By setting this
+            category property the output cache can calculate stats on each
+            category instead of each URL. The rendering middleware can set this
+            property, or the application developer can write middleware for the
+            express purpose of categorizing requests.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Middleware.IOutputCache.Clear">
+            <summary>
+            Clears all content from the cache. You might want to do this
+            if you deployed a new version of your web site and there is
+            potential for all content to be different.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Middleware.IOutputCache.Clear(System.String)">
+            <summary>
+            Clears any cached URLs that match the supplied Regular Expression
+            </summary>
+            <param name="urlRegex">A Regular Expression to match againt the URL</param>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.CachePriority">
+            <summary>
+            Defines possible values for specifying cache priority to the output 
+            caching middleware
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.CachePriority.Never">
+            <summary>
+            Rendering middleware should set this value when the content
+            it is returning can never be cached, for example when it is
+            returning real-time stock market prices, or when a user is
+            requesting their own user profile immediately after posting
+            changes to it.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.CachePriority.Low">
+            <summary>
+            Indicates that there is low value in caching this content.
+            Rendering middleware should set this value when the cost of
+            a cache miss is very low, for example because the data is
+            already available in memory
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.CachePriority.Medium">
+            <summary>
+            Indicates that there is reasonable value in caching, for example
+            if caching the output will avoid a call to a local database.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.CachePriority.High">
+            <summary>
+            Indicates that there is very high value in caching this content
+            for example because it involves multiple complex database queries
+            or service calls to external systems.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.InterfacesV1.Middleware.CachePriority.Always">
+            <summary>
+            Rendering middleware should set this value when the content
+            never changes and is guaranteed to always be the same. For example
+            if you version JavaScript files and increase the version number on
+            each change, old versions are guaranteed to remian unchanged.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.IRequestRewriter">
+            <summary>
+            Indicates that the middleware modifies the request URL. Any other middleware
+            that needs the final url (for example because it maps the path to a physical file)
+            should declare an optional dependency on this middleware to ensure that all
+            request modifications are done before the request is interpreted.
+            Examples of this type of middleware are:
+            * URL rewriting rules to map legacy urls onto the current sitemap
+            * Asset versioning middleware that appends version numbers to URLs in
+              outgoing HTML, then removes these version numbers from incomming requests.
+            * Middleware that redirects different browsers to different locations within
+              the web site, for example browsers that natively support the Dart programming
+              language can be served different files than browsers that do not support it.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IRequestRewriter.OriginalUrl">
+            <summary>
+            This is the URL of the request before it was rewritten
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IRequestRewriter.OriginalPath">
+            <summary>
+            This is the path part of the URL before it was rewritten
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.IResponseProducer">
+            <summary>
+            Middleware that implements IMiddleware&lt;IResponseProducer&gt; is indicating that it
+            will render content to the response stream. This is mostly usefull in
+            setting dependencies, for example a NotFound (404) middleware might declare
+            a dependency on IPresentation middleware so that it only returns a 404
+            response after the rendering middleware has passed on the request.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.IResponseRewriter">
+            <summary>
+            Indicates that the middleware buffers the output from downstream middleware and 
+            alters it in some way before returning it to the browser.
+            Examples of this type of middleware are:
+            * Compression middleware
+            * Encryption middleware
+            * Image resizing middleware
+            * Middleware that appends version numbers to URLs in HTML
+            If the application developer adds multiple middleware of this type then they
+            may have to add extra dependencies to make the pipeline work. For example if
+            you have encryption, compression and image resizing then the image resizing
+            can't work after the response has been encrypted or compressed. In most
+            scenarios the application developer probably wants compression after encryption
+            but this should not be enforced by the framework.
+            Note that Output Cache is a special case of IResponseRewriter because it needs
+            to communicate with downstream middleware.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.IResponseRewriter.OutputBuffer">
+            <summary>
+            When the OWIN pipeline contains mutiple middleware that buffer and modify
+            the response, this property allows them to share the same buffer rather than
+            each middleware capturing the response from the previous middleware.
+            If IResponseRewriter is in the OWIN context then the OutputBuffer property
+            can not be null. If the middleware did not buffer the output from the 
+            current request then it should not add IResponseRewriter to the context.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Middleware.ISession">
+            <summary>
+            Defines the functionallity exposed by the session feature that
+            can be used by other middleware compoennts
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.ISession.HasSession">
+            <summary>
+            Returns true if a sesion was established for the current request. If this property
+            is false then reading session values is not reliable and updating session values
+            will have no effect
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Middleware.ISession.Get``1(System.String)">
+            <summary>
+            Gets a strongly typed value from the user's session
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Middleware.ISession.Set``1(System.String,``0)">
+            <summary>
+            Updates the user's session with a strongly typed value
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Middleware.ISession.Item(System.String)">
+            <summary>
+            For the situations where strong typing is not possible
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Upstream.IUpstreamAuthorization">
+            <summary>
+            Allows middleware that is further down the pipeline to communicate upstream to
+            the authorization middleware. This allows request processing to be short-circuited
+            by the authorization module when the required permissions are not granted to the
+            user making the request.
+            
+            If the downstream middleware does not specify any permissions here, the permissions
+            can also be checked later, it is just less efficient because a lot of other work
+            was done that was not needed.
+            
+            More complex permission checks can be carried out downstream, or an authorization
+            middleware can be built that knows how to do these checks itself.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Upstream.IUpstreamAuthorization.AddRequiredRole(System.String)">
+            <summary>
+            Adds a required role to the request. If the user who made the request
+            does not have this role the authorization middleware should end the request
+            and return a not-authorized response to the caller.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Upstream.IUpstreamAuthorization.AddRequiredPermission(System.String)">
+            <summary>
+            Adds a required permission to the request. If the user who made the request
+            does not have this permission the authorization middleware should end the request
+            and return a not-authorized response to the caller.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Upstream.IUpstreamIdentification">
+            <summary>
+            Allows middleware that is further down the pipeline to communicate upstream to
+            the identification middleware
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Upstream.IUpstreamIdentification.AllowAnonymous">
+            <summary>
+            When this is false and the user can not be identified, the identification
+            middleware should end the request processing and set back a not authorized
+            response to the caller.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Upstream.IUpstreamOutputCache">
+            <summary>
+            This interface is injected into the OWIN context by the output cache
+            during the routing phase. The output cache indicates if a cached version
+            is available, and the rendering middleware can tell the output cache
+            whether to serve the cached content or pass the request to the owin
+            pipeline for rendering.
+            For example a request comes in for a user profile and there is a
+            cached version available should we serve the response from cache? That
+            depends on the identity of the user making the request. If this
+            request is from a user requesting their own profile then it should
+            be rendered every time from backing store, but otherwise it can be
+            served from cache.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Upstream.IUpstreamOutputCache.CachedContentIsAvailable">
+            <summary>
+            The output cache sets this to true if it has a cached version
+            of the content available and false otherwise. Downstream
+            middleware should check this and perform no further checking
+            of cachability if it is false.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Upstream.IUpstreamOutputCache.TimeInCache">
+            <summary>
+            The output cache sets this to the amount of time that elapsed
+            since this content was added to the cache. Typically middleware
+            will be configured to cache different types of content for different
+            amounts of time. This type of middleware will look at the request
+            and the time it has been cacehd for, then set the UseCachedContent
+            property appropriately.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Upstream.IUpstreamOutputCache.UseCachedContent">
+            <summary>
+            Middleware downstream of the output cache can set this to false
+            to tell the output cache not to serve the cached content, but
+            render the output again from scratch.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.InterfacesV1.Upstream.IUpstreamSession">
+            <summary>
+            Allows middleware that is further down the pipeline to communicate upstream to
+            the session middleware
+            </summary>
+        </member>
+        <member name="M:OwinFramework.InterfacesV1.Upstream.IUpstreamSession.EstablishSession(System.String)">
+            <summary>
+            Signals to the session provider middleware that a session is needed to process this request.
+            The session middleware should try to establish a session before returning, but if this
+            is not possible it must return False;
+            </summary>
+            <param name="sessionId">Only pass a session ID under very special circumstances. In
+            almost all cases the session middleware is responsible for managing the session ID.</param>
+        </member>
+        <member name="P:OwinFramework.InterfacesV1.Upstream.IUpstreamSession.SessionId">
+            <summary>
+            Applications don't normally need to know the session ID, but there are some special
+            circumstances where downstream middleware needs to establish a specific session, not
+            the one associated with the request, and in these circumstances the session ID can be
+            obtained here.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.IBuilder">
+            <summary>
+            Defines the component that is responsible for examining the
+            dependencied between OWIN middleware compoennts and building
+            an OWIN chain that will work.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Builder.IBuilder.Register``1(OwinFramework.Interfaces.Builder.IMiddleware{``0})">
+            <summary>
+            Adds a middleware component to the list of middleware to build into
+            the OWIN ippeline
+            </summary>
+            <typeparam name="T">The type of middleware or 'object' if this is generic middleware</typeparam>
+            <param name="middleware">The middleware instance to include in the OWIN pipeline</param>
+            <returns>The middleware for fluid syntax</returns>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Builder.IBuilder.Build(Owin.IAppBuilder)">
+            <summary>
+            Figures out middleware dependencies and route assigmnents and builds
+            an OWIN pipeline
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.IConfiguration">
+            <summary>
+            Defines an application configuration mechanism. The application can choose any available configuration
+            mechanism (for example using the web.config file) or provide a custom implementation.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Builder.IConfiguration.Register``1(System.String,System.Action{``0},``0)">
+            <summary>
+            Middleware components can call this to register for changes in the configuration data
+            for the middleware component.
+            </summary>
+            <typeparam name="T">The type of the class that configuration should be deserialized into</typeparam>
+            <param name="path">The root location in the configuration file for this middleware components config. 
+            This path looks like the path part of a URL, but maps onto the XML structure, JSON structure or other
+            heirachical structure used by the configuration system</param>
+            <param name="onChangeAction">A Lambda expression that will be called immediately upon registration and
+            again whenever the configuration changes</param>
+            <param name="defaultValue">The default value to return when the configuration file does not have
+            a configuration for this middleware component</param>
+            <returns>A disposable object. Disposing of this object will stop any future onChangeAction events</returns>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.PipelinePosition">
+            <summary>
+            Note that the order of this enumeration is important because
+            middleware components are sorted by position and added to the
+            pipeline in that order.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.Interfaces.Builder.PipelinePosition.Front">
+            <summary>
+            Specifies that the middleware should handle requests before
+            any routing takes place, in other words all requests will come
+            through this middleware regardless of how they are routed
+            afterwards.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.Interfaces.Builder.PipelinePosition.Middle">
+            <summary>
+            Specifies that the middleware should run in the middle of
+            the OWIN pipeline. This is the appropriate value for most
+            middleware.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.Interfaces.Builder.PipelinePosition.Back">
+            <summary>
+            Specifies that the middleware should run after all other
+            middleware. In this case the middleware will only see
+            requests that all other middleware chose not to handle.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.IDependency">
+            <summary>
+            Contains information about a dependency on another OWIN
+            middleware component.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Builder.IDependency.Position">
+            <summary>
+            Specifies which part of the pipeline this middleware should
+            run in.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Builder.IDependency.DependentType">
+            <summary>
+            The type of middleware functionallity that this component
+            depends on or null if the dependency is on name only.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Builder.IDependency.Name">
+            <summary>
+            If the DependentType property is set and theer are multiple OWIN 
+            components that provide the dependant type functionallity this 
+            name will identify which of those it refers to.
+            If there is only one OWIN component implementing the
+            specified type then this property should be null.
+            If the DependentType property is null then this Name can not be 
+            null or empty.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Builder.IDependency.Required">
+            <summary>
+            This should be true if it is an error to have the dependency
+            missing from the configuration. When this property is false the
+            dependency is only used to defene execution order.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.IDependency`1">
+            <summary>
+            Adds type information to the dependency
+            </summary>
+            <typeparam name="T">The type of middleware that is dependent on</typeparam>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.IMiddleware">
+            <summary>
+            All OWIN middleware should implement this interface. It provides a 
+            way for code to pass a reference to a middleware building block
+            without knowing what that component does.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Builder.IMiddleware.Name">
+            <summary>
+            A unique name for this middleware instance
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Builder.IMiddleware.Dependencies">
+            <summary>
+            A list of the other middleware that this one directly depends on
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Builder.IMiddleware.Invoke(Microsoft.Owin.IOwinContext,System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Standard OWIN function for invoking middleware
+            </summary>
+            <param name="context">The context of this request</param>
+            <param name="next">A function pointer that will execute the next
+            middleware in the OWIN pipeline</param>
+            <returns></returns>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.IMiddleware`1">
+            <summary>
+            This interface defines an OWIN middleware component that provides
+            a specific feature.
+            </summary>
+            <typeparam name="T">Defines the feature that this middleware component
+            provides. This design deliberately restricts middleware components to
+            implementing only one feature. For example this type can be ISession,
+            IAuthorization etc. You are not limited to the interfaces defined in this
+            project, you can use any interface you like.</typeparam>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.IRequestTracer">
+            <summary>
+            This interface is implemented by the builder and allows application
+            developers to decide how tracing information is output. If this
+            interface is not used, then trace output is output using the
+            built in System.Diagnostics.Trace class.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Builder.IRequestTracer.EnableTracing(OwinFramework.Interfaces.Builder.RequestsToTrace)">
+            <summary>
+            Turns tracing on. This should only be used in a development environment.
+            If your production environment is very low volume you could also choose
+            to leave it on in production but this is not the use case it was designed 
+            for. You can also trace specific requests by passing a traceOption of
+            QueryString then appending ?trace=true the url when calling your service.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Builder.IRequestTracer.TraceOutput">
+            <summary>
+            A function that gets called at the end of processing each
+            request that is being traced. This function should output
+            the trace information so that developers can see it and
+            use it to debug issues.
+            The default function writes the trace information using
+            the built-in System.Diagnostics.Trace class.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.IUpstreamCommunicator`1">
+            <summary>
+            Middleware that implement this interface are specifying that they support
+            upstream communication via interface T. The middleware must inject an
+            implementation of T into the Owin context during the routing phase of
+            request processing.
+            </summary>
+            <typeparam name="T">The type of upstream communication, for example IUpstreamSession</typeparam>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Builder.RequestsToTrace">
+            <summary>
+             When request tracing is enabled, defines which requests will be traced
+            </summary>
+        </member>
+        <member name="F:OwinFramework.Interfaces.Builder.RequestsToTrace.None">
+            <summary>
+            No requests will produce any trace output
+            </summary>
+        </member>
+        <member name="F:OwinFramework.Interfaces.Builder.RequestsToTrace.QueryString">
+            <summary>
+            Only requests that have trace in the query string will be traced
+            </summary>
+        </member>
+        <member name="F:OwinFramework.Interfaces.Builder.RequestsToTrace.All">
+            <summary>
+            All requests will be traced
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Routing.IRoute">
+            <summary>
+            Defines the functionallity exposed by the routing feature that
+            can be used by other middleware compoennts
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Routing.IRouter">
+            <summary>
+            The framework router implements this interfae. You can resolve it from
+            your IoC container to create routes then you can add these routes
+            to your Owin pipeline to create a multi-way split of the pipelne
+            into multiple pipelines.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Routing.IRouter.Add(System.String,System.Func{Microsoft.Owin.IOwinContext,System.Boolean})">
+            <summary>
+            Fluid interface for adding routes to the router
+            </summary>
+            <param name="routeName">Unique name for this route</param>
+            <param name="filterExpression">An expression that determines which
+            requests should be routed down this route</param>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Routing.IRouter.Segments">
+            <summary>
+            This is for internal use. It is also used by some diagnostic
+            middleware that traverses the routing graph
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Routing.IRoutingProcessor">
+            <summary>
+            Middleware components implement this interface when they want to be included
+            in the routing phase of request processing. The routing phase establishes the
+            route that the request will take through the middleware pipeline, once this
+            phase is complete there is a second request processing phase.
+            
+            There are several uses for this interface.
+            1) Routing components will test the incomming request against filters to determine
+               how to route the request.
+            2) Middleware that supports upstream communication will add objects to the OWIN
+               context that can be used to communicate with it prior to request processing.
+               For example the session middleware will add an object to the OWIN context that
+               other middleware can use to indicate whether session is required or not.
+            3) Middleware will retrieve the upstream communication objects and communicate
+               back upstream, for example the presentation layer may have a page level setting
+               indicating if session is required, the presentation middleware can use this
+               interface to access the object that allows it to communicate this information
+               to the session middleware.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Routing.IRoutingProcessor.RouteRequest(Microsoft.Owin.IOwinContext,System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            This method of your middleware will be called during the routing phase
+            of request processing. Your middleware should decide if this request
+            should be handled by this middleware or not, and store the result of
+            this decision in the owin context.
+            If the request is for this middleware you should perform any upstream
+            communication then return null.
+            If the request is not for this middleware then you should call the next
+            middleware and return whatever it returns.
+            </summary>
+            <param name="context">The owin context</param>
+            <param name="next">The next middleware in the chain that implements 
+            IRoutingProcessor</param>
+            <returns>The result of calling next() or null</returns>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Routing.IRoutingSegment">
+            <summary>
+            Represents a list of middleware that all execute or none execute
+            for a given route.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Routing.IRoutingSegment.Name">
+            <summary>
+            Returns the name of this segment of the routing graph
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Routing.IRoutingSegment.Filter">
+            <summary>
+            Returns the filter expression that determines is this segment should be
+            executed for a request.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Routing.IRoutingSegment.Middleware">
+            <summary>
+            A list of the middleware to execute if the filter matches the request
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Routing.IRoutingSegment.Add(OwinFramework.Interfaces.Builder.IMiddleware,System.Type)">
+            <summary>
+            Adds a middleware component to this routing segment
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Routing.IRoutingSegment.ResolveDependencies">
+            <summary>
+            You must resolve dependencies after adding middleware and before
+            processing requests
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Routing.IRoutingSegment.Invoke(Microsoft.Owin.IOwinContext,System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Processes a request by passing it down the pipe of middleware in this segment
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Utility.IDependencyGraph`1">
+            <summary>
+            Implements algorthims for constructing dependency graphs and resolving dependencies
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.IDependencyGraph`1.Add(System.String,`0,System.Collections.Generic.IEnumerable{OwinFramework.Interfaces.Utility.IDependencyGraphEdge},OwinFramework.Interfaces.Builder.PipelinePosition)">
+            <summary>
+            Adds a node to the dependency graph
+            </summary>
+            <param name="key">A unique key for this node in the graph</param>
+            <param name="data">Application data associated with this node</param>
+            <param name="edges">A list of other nodes in the graph that are directly connected to this one</param>
+            <param name="position">The position within the OWIN pipeline for this middleware</param>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.IDependencyGraph`1.GetData(System.String)">
+            <summary>
+            Returns the data associated with a node in the graph
+            </summary>
+            <param name="key">The unique key provided when the graph node was added</param>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.IDependencyGraph`1.GetDecendents(System.String,System.Boolean)">
+            <summary>
+            Returns the unique IDs of the nodes beneath a specific node in the dependnecy tree.
+            </summary>
+            <param name="key">The unique ID of the node whose decendants are wanted</param>
+            <param name="topDown">True to traverse the tree top-down and false to traverse bottom-up</param>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.IDependencyGraph`1.GetBuildOrderKeys(System.Boolean)">
+            <summary>
+            Returns all nodes in the graph ordered such that all nodes appear in the list after all of the
+            nodes that they depend on.
+            </summary>
+            <param name="topDown">True to traverse the tree top-down and false to traverse bottom-up</param>
+            <returns>Unique IDs for nodes in the graph in buid order</returns>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.IDependencyGraph`1.GetBuildOrderData(System.Boolean)">
+            <summary>
+            This is a convenience method that wraps a call to GetBuildOrderKeys, calling the GetData
+            method for each key.
+            </summary>
+            <param name="topDown">True to traverse the tree top-down and false to traverse bottom-up</param>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Utility.IDependencyGraphEdge">
+            <summary>
+            Represents an edge in the dependency graph
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Utility.IDependencyGraphEdge.Key">
+            <summary>
+            The unique key of the node that this edge connects to
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Interfaces.Utility.IDependencyGraphEdge.Required">
+            <summary>
+            True if this dependency is mandatory, i.e. the 'from' end of the 
+            edge can not function without the 'to' end of the edge being present.
+            False if this dependency is optional. In this case the 'to' node
+            does not have to exits, but if it does exist it must be before in
+            the build order.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Utility.IDependencyGraphFactory">
+            <summary>
+            Constructs instances of IDependencyGraph and supplies dependencies
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.IDependencyGraphFactory.Create``1">
+            <summary>
+            Creates and initializes an instance of IDependencyGraph
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Utility.IHostingEnvironment">
+            <summary>
+            This interface provides a way for the application to supply the OWIN
+            Framework with information about the hosting environment. Unfortunately
+            OWIN itself does not provide a mechanism that works for all types of hosting.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.IHostingEnvironment.MapPath(System.String)">
+            <summary>
+            Maps a relative path within the web site to a physical file path.
+            There is no way to write code that works for every hosting environment,
+            so you might need to provide your own implementation of this in your
+            application.
+            </summary>
+            <param name="path">The path to a file within your web site</param>
+            <returns>The fully qualified file name in the file system for this file</returns>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Utility.ISegmenter">
+            <summary>
+            Implements a segmentation algorithm. Given a tree of route segments and a 
+            list of nodes calculates which nodes should be on which segments of the 
+            route such that any path through the route tree will satisfy the dependencies
+            of all nodes.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.ISegmenter.Clear">
+            <summary>
+            Removes all the nodes and segments from the segmenter
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.ISegmenter.AddNode(System.String,System.Collections.Generic.IEnumerable{System.Collections.Generic.IList{System.String}},System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Adds a node to be segmented
+            </summary>
+            <param name="key">A unique identifier for this node</param>
+            <param name="dependencies">A list of dependencies, each dependency comprises a
+            list of keys that can be used to satisfy the dependency. All dependencies have 
+            to be met.</param>
+            <param name="segments">A list of the names of the route segments that must 
+            include this node when traversed</param>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.ISegmenter.AddSegment(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Adds a route segment
+            </summary>
+            <param name="name">The unique name of this segment</param>
+            <param name="childSegments">The names of the segments that are
+            under this one in the routing tree</param>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.ISegmenter.GetSegmentNodes(System.String)">
+            <summary>
+            Figures out shich nodes should be in a given segment
+            </summary>
+            <param name="segmentName">The name of the segment</param>
+            <returns>A list of the node key values for this segment</returns>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.ISegmenter.GetNodeSegments(System.String)">
+            <summary>
+            Figures out which segments a node should be in
+            </summary>
+            <param name="nodeKey">The unique key identifying a node</param>
+            <returns>A list of the names of the segments that this node is in</returns>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.ISegmenter.GetSegmentChildren(System.String)">
+            <summary>
+            Returns a list of the child segments
+            </summary>
+            <param name="segmentName">The name of the parent segment or null
+            to get the root segment</param>
+            <returns>A list of the child segment names</returns>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.ISegmenter.GetNodeSegmentDependencies(System.String,System.String)">
+            <summary>
+            Gets a list of the nodes that another node depends on within a given
+            segment. This information is needed to order nodes correctly within
+            the segment.
+            </summary>
+            <param name="nodeKey">The unique key identifying a node</param>
+            <param name="segmentName">The name of the segment</param>
+            <returns>A list of node keys for the dependant nodes or null if this
+            node is not assigned to this segment</returns>
+        </member>
+        <member name="T:OwinFramework.Interfaces.Utility.ISegmenterFactory">
+            <summary>
+            Creates instances of ISegmenter
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Interfaces.Utility.ISegmenterFactory.Create">
+            <summary>
+            Creates and initializes an instance of ISegmenter
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Analysable.CountPerTimeSpanStatistic">
+            <summary>
+            Implements IStatistic when measuring the number of events that occured
+            within a given time span
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.CountPerTimeSpanStatistic.GetValue(System.TimeSpan@,System.Int32@)">
+            <summary>
+            You must override this in a derrived class and provide the mechanism for
+            retrieving the values to record
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.CountPerTimeSpanStatistic.Refresh">
+            <summary>
+            Updates the properties with the latest statistic
+            </summary>
+            <returns>this for fluid syntax</returns>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Analysable.FloatStatistic">
+            <summary>
+            Implements IStatistic for float statistic values
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.FloatStatistic.#ctor(System.Func{System.Single})">
+            <summary>
+            Constructs a new floating point statistic
+            </summary>
+            <param name="getValue">A lambda expression that will get the current value of this statistic</param>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.FloatStatistic.Refresh">
+            <summary>
+            Updates the properties with the latest statistic
+            </summary>
+            <returns>this for fluid syntax</returns>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Analysable.IntStatistic">
+            <summary>
+            Implements IStatistic for int statistic values
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.IntStatistic.#ctor(System.Func{System.Int32})">
+            <summary>
+            Constructs a new number statistic
+            </summary>
+            <param name="getValue">A lambda expression that will get the current value of this statistic</param>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.IntStatistic.Refresh">
+            <summary>
+            Updates the properties with the latest statistic
+            </summary>
+            <returns>this for fluid syntax</returns>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Analysable.LongStatistic">
+            <summary>
+            Implements IStatistic for long statistic values
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.LongStatistic.#ctor(System.Func{System.Int64})">
+            <summary>
+            Constructs a new long number statistic
+            </summary>
+            <param name="getValue">A lambda expression that will get the current value of this statistic</param>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.LongStatistic.Refresh">
+            <summary>
+            Updates the properties with the latest statistic
+            </summary>
+            <returns>this for fluid syntax</returns>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Analysable.Statistic">
+            <summary>
+            An abstract base class which makes it easier to implement IStatistic
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Analysable.Statistic.Value">
+            <summary>
+            The value that gets graphed and displayed of this statistic
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Analysable.Statistic.Denominator">
+            <summary>
+            If this statistic is a ratio then this is the denominator. You can get back
+            the numerator of the ratio by multiplying the Value and the Denominator
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Analysable.Statistic.Formatted">
+            <summary>
+            Human readable format of the Value property
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.Statistic.Refresh">
+            <summary>
+            When this is called the properties of this object should be all updated
+            </summary>
+            <returns>this for fluid syntax</returns>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Analysable.StatisticInformation">
+            <summary>
+            Implemennts IStatisticInformation with read/write properties
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Analysable.StatisticInformation.Id">
+            <summary>
+            Any unique ID that identifies this statistic within your middleware
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Analysable.StatisticInformation.Name">
+            <summary>
+            A short name to display in labels and drop-down lists
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Analysable.StatisticInformation.Description">
+            <summary>
+            Longer description, can include HTML
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Analysable.StatisticInformation.Explanation">
+            <summary>
+            Technical explanation of how this staticstic is measured and calculated
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Analysable.StatisticInformation.Units">
+            <summary>
+            Basic units of measure (for example 's' for seconds)
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Analysable.TimeSpanPerCountStatistic">
+            <summary>
+            Implements IStatistic when measuring the total time taken to
+            complete a specific number of events
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.TimeSpanPerCountStatistic.GetValue(System.TimeSpan@,System.Int32@)">
+            <summary>
+            You must override this in a derrived class and provide the mechanism for
+            retrieving the values to record
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.TimeSpanPerCountStatistic.Refresh">
+            <summary>
+            Updates the properties with the latest statistic
+            </summary>
+            <returns>this for fluid syntax</returns>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Analysable.TimeSpanStatistic">
+            <summary>
+            Implements IStatistic for TimeSpan statistic values
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.TimeSpanStatistic.#ctor(System.Func{System.TimeSpan})">
+            <summary>
+            Constructs a new time span statistic
+            </summary>
+            <param name="getValue">A lambda expression that will get the current value of this statistic</param>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Analysable.TimeSpanStatistic.Refresh">
+            <summary>
+            Updates the properties with the latest statistic
+            </summary>
+            <returns>this for fluid syntax</returns>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.EmbeddedResources.EmbeddedResource">
+            <summary>
+            This is a cached version of a resource that is embedded into the middleware assembly
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.EmbeddedResources.EmbeddedResource.FileName">
+            <summary>
+            The name of the file that was embedded into the assembly
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.EmbeddedResources.EmbeddedResource.MimeType">
+            <summary>
+            The mime type to return to the browser when this file is served
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.EmbeddedResources.EmbeddedResource.Content">
+            <summary>
+            The contents of this file
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.EmbeddedResources.MimeTypeEvaluator">
+            <summary>
+            This is an implementation of IMimeTypeEvaluator that you can register with IoC
+            or you can provide your own if this one does not meet your needs.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.EmbeddedResources.ResourceManager">
+            <summary>
+            This class is useful if your middleware has embedded resources that
+            you want to serve to the client. For example if your middleware comes
+            with a user interface comprising html, css JavaScript etc and you want
+            to embed those files into your middleware DLL and serve them to the
+            browser to present the UI, then this class will help you with that.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.EmbeddedResources.ResourceManager.LocalResourcePath">
+            <summary>
+            Set this property to the a relative path within your website folder structure.
+            Any files placed in this folder will override the files embedded into the assembly.
+            For example if you embedded a UI that includes CSS, the consumer of your middleware
+            can place a CSS file into this folder to customize the look and feel of your UI.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.EmbeddedResources.ResourceManager.#ctor(OwinFramework.Interfaces.Utility.IHostingEnvironment,OwinFramework.InterfacesV1.Facilities.IMimeTypeEvaluator)">
+            <summary>
+            Constructs a new resource manager
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.EmbeddedResources.ResourceManager.GetResource(System.Reflection.Assembly,System.String)">
+            <summary>
+            Retrieves a cached resource from the specified assembly. If the resource exists
+            on disk this will override the one that is embedded into the assembly - set the
+            LocalResourcePath property to enable this override feature.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.EmbeddedResources.ResourceManager.Clear">
+            <summary>
+            Deletes all cached resources forcing them to be reloaded on next access
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.EmbeddedResources.ResourceManager.TransformTextResource(System.String,System.String)">
+            <summary>
+            Override this method to apply any transformations to text resources. These
+            transformations happen only once for each file, the results are cached and reused.
+            Examples of transformations are converting LESS to CSS.
+            </summary>
+            <param name="filename">The name of the requested resource file</param>
+            <param name="content">The contents of the file</param>
+            <returns>Transformed text content to serve to the user agent</returns>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.EmbeddedResources.ResourceManager.IsBinaryMimeType(System.String)">
+            <summary>
+            Override this method to provide logic to determine which mime types should be
+            handled as binary files and which ones should be handled as text.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Identification.Identification">
+            <summary>
+            You can use this class to implement IIdentification if you want. The
+            main advantage of using this class is that if future versions of
+            IIdentification have additional properties your code won't break because
+            the new version of Identification will also have those properties
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Identification.Identification.Identity">
+            <summary>
+            Gets or sets the unique identifer for this identity
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Identification.Identification.Claims">
+            <summary>
+            Gets or sets the list of claims that this identity makes about itself
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Identification.Identification.Purposes">
+            <summary>
+            A list of the purposes that this identification can be used for.
+            Empty list indicates that the identification can be used for any purpose
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Identification.Identification.AllowAnonymous">
+            <summary>
+            Sets or sets the flag indicating if the current request is permitted
+            for identities with no verified claims
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Identification.Identification.IsAnonymous">
+            <summary>
+            Returns trus if the identity has no verified claims
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Identification.Identification.#ctor">
+            <summary>
+            Default public constructor required for serialization
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Identification.Identification.#ctor(System.String,System.Collections.Generic.IEnumerable{OwinFramework.InterfacesV1.Middleware.IIdentityClaim},System.Boolean,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Constructs an instance that implements IIdentification
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Identification.Identification.#ctor(OwinFramework.InterfacesV1.Middleware.IIdentification)">
+            <summary>
+            Copy constructor
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Identification.IdentityClaim">
+            <summary>
+            You can use this class to implement IIdentityClaim if you want. The
+            main advantage of using this class is that if future versions of
+            IIdentityClaim have additional properties your code won't break because
+            the new version of IdentityClaim will also have those properties
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Identification.IdentityClaim.Name">
+            <summary>
+            Gets or sets the name of this claim
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Identification.IdentityClaim.Value">
+            <summary>
+            Gets or sets the value of this claim
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Identification.IdentityClaim.Status">
+            <summary>
+            Gets of sets the status of this claim
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Identification.IdentityClaim.#ctor">
+            <summary>
+            Default public constructor required for serialization
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Identification.IdentityClaim.#ctor(OwinFramework.InterfacesV1.Middleware.IIdentityClaim)">
+            <summary>
+            Copy constructor
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Identification.IdentityClaim.#ctor(System.String,System.String,OwinFramework.InterfacesV1.Middleware.ClaimStatus)">
+            <summary>
+            Constructs an identity claim
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.ResponseRewriter.ResponseCapture">
+            <summary>
+            This is a helper class for middleware that captures the response and modifies it
+            before returning it to the browser
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.ResponseRewriter.ResponseCapture.#ctor(Microsoft.Owin.IOwinContext)">
+            <summary>
+            Constructs an object that will capture the output from downstream middleware.
+            If multiple middleware components do this, then the response will only be
+            captured once and they will all share the same output buffer.
+            </summary>
+            <param name="owinContext"></param>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.ResponseRewriter.ResponseCapture.Send">
+            <summary>
+            Sends the buffered output to the browser
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.ResponseRewriter.ResponseCapture.OutputBuffer">
+            <summary>
+            Gets or sets the content that will be returned to the browser when request
+            processing is complete.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.SelfDocumenting.EndpointAttributeDocumentation">
+            <summary>
+            Concrete implementatation of IEndpointDocumentation
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.SelfDocumenting.EndpointAttributeDocumentation.Type">
+            <summary>
+            The kind of attribute you are describing, can be a path segment, query
+            string parameter, header etc
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.SelfDocumenting.EndpointAttributeDocumentation.Name">
+            <summary>
+            The name of the attribute you are describing. For example if the Type
+            property is 'Header' then this would be the name of the header
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.SelfDocumenting.EndpointAttributeDocumentation.Description">
+            <summary>
+            A description of the accepted values for this attribue. Can inclue
+            simple HTML for formatting
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.SelfDocumenting.EndpointDocumentation">
+            <summary>
+            Concrete implementatation of IEndpointDocumentation
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.SelfDocumenting.EndpointDocumentation.RelativePath">
+            <summary>
+            The URL of an endpoint within this website
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.SelfDocumenting.EndpointDocumentation.Description">
+            <summary>
+            A description of what this endpoint is for, Can basic include HTML
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.SelfDocumenting.EndpointDocumentation.Examples">
+            <summary>
+            Example URLs showing examples of how to invoke this endpoint properly with
+            explananation. Can include simple HTML
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.SelfDocumenting.EndpointDocumentation.Attributes">
+            <summary>
+            Optional and required characteristics of this endpoint. You can document
+            variable path elements, query string parameters, http methods, request headers
+            and the request body.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Traceable.TraceFilter">
+            <summary>
+            Adds the ability to filter trace output according to level of severity
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Traceable.TraceFilter.#ctor(OwinFramework.Interfaces.Builder.IConfiguration,OwinFramework.InterfacesV1.Capability.ITraceable)">
+            <summary>
+            Constructs a new trace filter. This filter can be used in place of
+            calling the trace method directly to provide the ability to filter
+            trace messages and configure which trace messages are output to the
+            reace log
+            </summary>
+            <param name="configuration">The Owin Framework configuration mechanism</param>
+            <param name="traceable">The middleware that implements ITraceable. It will
+            be possible to filter trace messages by the class name of this middleware</param>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Traceable.TraceFilter.Trace(Microsoft.Owin.IOwinContext,OwinFramework.MiddlewareHelpers.Traceable.TraceLevel,System.Func{System.String})">
+            <summary>
+            Outputs trace information only if tracing is turned on and the trace filter
+            allows the message to go through
+            </summary>
+            <param name="context">The Owin context for the request</param>
+            <param name="level">The level of severity/importance of this message</param>
+            <param name="messageFunc">A lambda expression to execute only if tracing is enabled</param>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Traceable.TraceFilter.Configuration">
+            <summary>
+            Defines the configuration options available for the trace filter
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Traceable.TraceFilter.Configuration.Level">
+            <summary>
+            Defines the maximum level of detail to output into the trace log
+            </summary>
+        </member>
+        <member name="P:OwinFramework.MiddlewareHelpers.Traceable.TraceFilter.Configuration.MiddlewareClasses">
+            <summary>
+            When null or empty all middleware is traced.
+            When this is a list of class names then only these middleware will output
+            trace information
+            </summary>
+        </member>
+        <member name="M:OwinFramework.MiddlewareHelpers.Traceable.TraceFilter.Configuration.#ctor">
+            <summary>
+            Default public constructor initializes with default trace filter configuration
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Traceable.TraceFilterLevel">
+            <summary>
+            Specifies the importance/severity of the trace information
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.Traceable.TraceFilterLevel.None">
+            <summary>
+            Do not output any trace information
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.Traceable.TraceFilterLevel.Error">
+            <summary>
+            Only output error messages
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.Traceable.TraceFilterLevel.Information">
+            <summary>
+            Output error and information messages
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.Traceable.TraceFilterLevel.All">
+            <summary>
+            Output all trace information
+            </summary>
+        </member>
+        <member name="T:OwinFramework.MiddlewareHelpers.Traceable.TraceLevel">
+            <summary>
+            Specifies the importance/severity of the trace information
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.Traceable.TraceLevel.Error">
+            <summary>
+            This is an error condition or very significant information and is always output unless tracing is
+            turned off completely. For example exceptions, badly formed requests, authentication failures etc
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.Traceable.TraceLevel.Information">
+            <summary>
+            This is important information about the processing of the request.
+            For example the identification of the caller, successful authorization, request matches the middleware
+            path and method. Provides basic information about the processing of the request.
+            </summary>
+        </member>
+        <member name="F:OwinFramework.MiddlewareHelpers.Traceable.TraceLevel.Debug">
+            <summary>
+            Output only in the most detailed and verbose setting. This is can be used to track down very
+            complicated problems where all of information needs to be analysed in detail to figure out
+            what is going on.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Package">
+            <summary>
+            Configures IoC modules with IoC container needs
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Package.#ctor">
+            <summary>
+            Consutucts this IoC.Modules package definition
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Routing.RoutingException">
+            <summary>
+            This type of executopn is thrown by the routing compoennts in the OWIN Framework
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Routing.RoutingException.#ctor">
+            <summary>
+            Default public constructor for RoutingException
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Routing.RoutingException.#ctor(System.String)">
+            <summary>
+            Constructs a RoutingException containing an error message
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Routing.RoutingException.#ctor(System.String,System.Exception)">
+            <summary>
+            Constructs a RoutingException containing an error message and an inner exception
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Routing.Router">
+            <summary>
+            A router consists of a set of filter expressions and a segment (list of middleware) 
+            to execute when that filter evaluates to true. When routing and processing
+            requests the router will evaluate filters until one matches, then only
+            execute that one segment.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Routing.Router.Name">
+            <summary>
+             Impelemnts IRouter
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Routing.Router.Trace">
+            <summary>
+            Implements ITraceable
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Routing.Router.#ctor(OwinFramework.Interfaces.Builder.IConfiguration,OwinFramework.Interfaces.Utility.IDependencyGraphFactory)">
+            <summary>
+            Constructs a new router
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Routing.Router.Component">
+            <summary>
+            This is used to encapsulate information about the middleware components
+            during the process of resolving dependencies
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Routing.Router.RoutingSegment">
+            <summary>
+            The routing segment represents an ordered list of middleware components
+            that are chained together and executed in a pipeline. The Router will 
+            use logic to select which RoutingSegment to execute for a given request.
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Utility.CircularDependencyException">
+            <summary>
+            This exception is thrown when the dependencies defined for
+            middleware go around in a circle. For example if middleware A
+            depends on middlewere B and middleware B depende on middleware C
+            but middleware C depends on middleware A, then it is not possible
+            to configure the OWIN pipeline so that dependant middleware is
+            always executed before any middleware that depends on it.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.CircularDependencyException.#ctor(System.String)">
+            <summary>
+            Constructs a new CircularDependencyException
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Utility.Containers.ArrayPool`1">
+            <summary>
+            Pools and reuses arrays of a specific type and size to 
+            avoid garbage collection.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Utility.Containers.ArrayPool`1.ArrayLength">
+            <summary>
+            Returns the length of the arrays in this pool
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.ArrayPool`1.#ctor(System.Int32)">
+            <summary>
+            Constructs a new pool of reusable arrays
+            </summary>
+            <param name="length">The length of the arrays in this pool</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.ArrayPool`1.GetArray">
+            <summary>
+            Gets an array from the pool, constructing a new array if necessary.
+            Dispose of the array to put is back into the pool for reuse.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.ArrayPool`1.Clear">
+            <summary>
+            Deletes all of the arrays from the pool. Any arrays that are in
+            use will still be returned to the pool when they are disposed
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Utility.Containers.LinkedList`1">
+            <summary>
+            This is a high performance thread-safe linked list whose
+            design makes it possible to have the same objects exist on
+            multiple lists (so that the objects can be traversed in
+            different orders).
+            Threads will be blocked during some operations that modify
+            the list contents but multiple threads can concurrently
+            enumerate the list, and the list can be safely enumerated
+            whilst it is being modified by other threads.
+            Also provides PopFirst and PopLast that enables the list
+            to be used as a queue or stack.
+            </summary>
+            <typeparam name="T">The type of data to store in the list</typeparam>
+        </member>
+        <member name="P:OwinFramework.Utility.Containers.LinkedList`1.IsEmpty">
+            <summary>
+            Returns true if the list is empty
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.Clear(System.Boolean)">
+            <summary>
+            Removes all items from the list
+            </summary>
+            <param name="dispose">Pass true to call the Dispose() method
+            on each item in the list</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.Append(`0)">
+            <summary>
+            Adds a new element to the end of the list
+            </summary>
+            <param name="data">The data to add to the list</param>
+            <returns>The new list element. This can be used to delete
+            the element later, or enumerate the list starting from
+            this element</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.Prepend(`0)">
+            <summary>
+            Adds a new element to the start of the list
+            </summary>
+            <param name="data">The data to add to the list</param>
+            <returns>The new list element. This can be used to delete
+            the element later, or enumerate the list starting from
+            this element</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.InsertAfter(OwinFramework.Utility.Containers.LinkedList{`0}.ListElement,`0)">
+            <summary>
+            Adds an element to the list immediately after the specified element.
+            To use this to maintain a sorted list with multiple threads inserting
+            values you will need to block the threads for the duretion of the 
+            find + insert operation. If you only have one thread inserting an
+            multiple threads enumerating the list then no additional locks are 
+            required.
+            </summary>
+            <param name="element">The element to add after</param>
+            <param name="data">The data to add to the list</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.InsertBefore(OwinFramework.Utility.Containers.LinkedList{`0}.ListElement,`0)">
+            <summary>
+            Adds an element to the list immediately before the specified element
+            To use this to maintain a sorted list with multiple threads inserting
+            values you will need to block the threads for the duretion of the 
+            find + insert operation. If you only have one thread inserting an
+            multiple threads enumerating the list then no additional locks are 
+            required.
+            </summary>
+            <param name="element">The element to add before</param>
+            <param name="data">The data to add to the list</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.Delete(OwinFramework.Utility.Containers.LinkedList{`0}.ListElement)">
+            <summary>
+            Removes an element from anywhere in the list
+            </summary>
+            <param name="element">The element to remove</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.DeleteWhere(System.Func{`0,System.Boolean},System.Boolean)">
+            <summary>
+            Deletes elements from the list that match the supplied predicate
+            </summary>
+            <param name="predicate">Deletes elements that are true for this expression</param>
+            <param name="dispose">Pass true to call the Dispose() method on deleted items</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.Truncate(OwinFramework.Utility.Containers.LinkedList{`0}.ListElement,System.Boolean)">
+            <summary>
+            Deletes an element from the list and all elements following
+            it. Optionally disposes of the data in the list.
+            </summary>
+            <param name="element">The first element to delete</param>
+            <param name="dispose">Pass true to call the Dispose() method on deleted items</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.PopFirst">
+            <summary>
+            Removes the first item from the list and returnes it in a thread-safe way
+            ensuring that each thread will pop a different item from the list.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.PopLast">
+            <summary>
+            Removes the last item from the list and returnes it in a thread-safe way
+            ensuring that each thread will pop a different item from the list.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.ToElementList(System.Func{`0,System.Boolean})">
+            <summary>
+            Constructs a list of elements that match the supplied predicate
+            </summary>
+            <param name="predicate">Returns elements that are true for this expression</param>
+            <returns>A list of list elements. You can pass these elements to the 
+            Delete method to remove them from the list</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.FirstElementOrDefault(System.Func{`0,System.Boolean})">
+            <summary>
+            Returns the first list element that matches the supplied predicate function.
+            Returns null if there are no matching elements in the list
+            </summary>
+            <param name="predicate">Defines how to test list elements</param>
+            <returns>The first list element that matches the predicate</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.NextElement(OwinFramework.Utility.Containers.LinkedList{`0}.ListElement)">
+            <summary>
+            Returns the next element in the list or null if this is the last element
+            </summary>
+            <param name="start">The list element to start from</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.PriorElement(OwinFramework.Utility.Containers.LinkedList{`0}.ListElement)">
+            <summary>
+            Returns the prior element in the list or null if this is the first element
+            </summary>
+            <param name="start">The list element to start from</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.FirstElement(System.Func{`0,System.Boolean})">
+            <summary>
+            Returns the first list element that matches the supplied predicate function.
+            Throws an exception if there are no matching elements in the list
+            </summary>
+            <param name="predicate">Defines how to test list elements</param>
+            <returns>The first list element that matches the predicate</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.LastElementOrDefault(System.Func{`0,System.Boolean})">
+            <summary>
+            Returns the last list element that matches the supplied predicate function.
+            Returns null if there are no matching elements in the list
+            </summary>
+            <param name="predicate">Defines how to test list elements</param>
+            <returns>The last list element that matches the predicate</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.LastElement(System.Func{`0,System.Boolean})">
+            <summary>
+            Returns the last list element that matches the supplied predicate function.
+            Throws an exception if there are no matching elements in the list
+            </summary>
+            <param name="predicate">Defines how to test list elements</param>
+            <returns>The last list element that matches the predicate</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.EnumerateElementsFrom(OwinFramework.Utility.Containers.LinkedList{`0}.ListElement,System.Boolean)">
+            <summary>
+            Enumerates the rest of the list starting at the specified list element.
+            The starting element will the Current value of the enumerator to begin
+            with and the first call to MoveNext() will advance to the next item in
+            the list
+            </summary>
+            <param name="start">Where to start. Pass null to start from the 
+            beginning/end of the list</param>
+            <param name="forwards">Choose whether to go forwards or backwards in
+            the list</param>
+            <returns>A thread-safe enumerator</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.GetEnumerator">
+            <summary>
+            Implements IEnumerable so that you can use Linq expressions with the list
+            The enumerator is thread-safe and can be reset to start back at the beginning
+            of the list
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Implements IEnumerable
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.ToList(System.Func{`0,System.Boolean})">
+            <summary>
+            Constructs a list of data that match the supplied predicate
+            </summary>
+            <param name="predicate">Returns elements that are true for this expression</param>
+            <returns>A list of list elements. You can pass these elements to the 
+            Delete method to remove them from the list</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.FirstOrDefault(System.Func{`0,System.Boolean})">
+            <summary>
+            Returns the first item in the list that matches the supplied predicate function.
+            Returns null if there are no matching elements in the list
+            </summary>
+            <param name="predicate">Defines how to test list elements</param>
+            <returns>The first list element that matches the predicate</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.First(System.Func{`0,System.Boolean})">
+            <summary>
+            Returns the first list element that matches the supplied predicate function.
+            Throws an exception if there are no matching elements in the list
+            </summary>
+            <param name="predicate">Defines how to test list elements</param>
+            <returns>The first list element that matches the predicate</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.LastOrDefault(System.Func{`0,System.Boolean})">
+            <summary>
+            Returns the last list element that matches the supplied predicate function.
+            Returns null if there are no matching elements in the list
+            </summary>
+            <param name="predicate">Defines how to test list elements</param>
+            <returns>The last list element that matches the predicate</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.Last(System.Func{`0,System.Boolean})">
+            <summary>
+            Returns the last list element that matches the supplied predicate function.
+            Throws an exception if there are no matching elements in the list
+            </summary>
+            <param name="predicate">Defines how to test list elements</param>
+            <returns>The last list element that matches the predicate</returns>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.LinkedList`1.EnumerateFrom(OwinFramework.Utility.Containers.LinkedList{`0}.ListElement,System.Boolean)">
+            <summary>
+            Enumerates the rest of the list starting at the specified list element.
+            The starting element will the Current value of the enumerator to begin
+            with and the first call to MoveNext() will advance to the next item in
+            the list
+            </summary>
+            <param name="start">Where to start. Pass null to start from the 
+            beginning/end of the list</param>
+            <param name="forwards">Choose whether to go forwards or backwards in
+            the list</param>
+            <returns>A thread-safe enumerator</returns>
+        </member>
+        <member name="T:OwinFramework.Utility.Containers.LinkedList`1.ListElement">
+            <summary>
+            Wrapper for an element in the list
+            </summary>
+        </member>
+        <member name="F:OwinFramework.Utility.Containers.LinkedList`1.ListElement.Data">
+            <summary>
+            The data stored in this list element
+            </summary>
+        </member>
+        <member name="F:OwinFramework.Utility.Containers.LinkedList`1.ListElement.Next">
+            <summary>
+            Pointer to the next list element
+            </summary>
+        </member>
+        <member name="F:OwinFramework.Utility.Containers.LinkedList`1.ListElement.Prior">
+            <summary>
+            Pointer to the prior list element
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Utility.Containers.OrderedCollection`1">
+            <summary>
+            Provides a non-blocking thread-safe container for ordered items.
+            You can use this in place of the built-in List class in places
+            where non-blocking thread safety is needed.
+            Note that arrays are already shread-safe and non-blocking so if
+            you know the size of your collection this is the best choice.
+            Internally this class maintains a linked list of arrays.
+            This class is very efficient at adding items and enumerations
+            to the collection and allows miltiple threads to enumerate the 
+            collection whilst it is being modified in other threads, but is
+            very slow at removing items from the collection and moderately
+            slow at finding items in the collection.
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Utility.Containers.OrderedCollection`1.Count">
+            <summary>
+            Returns the number of elements in the collection
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.#ctor(OwinFramework.Utility.Containers.ArrayPool{`0})">
+            <summary>
+            Constructs a new ordered collection using the supplied array pool
+            </summary>
+            <param name="arrayPool">This collection will retrieve arrays from
+            this pool and return them to the pool when this collection is disposed</param>
+        </member>
+        <member name="P:OwinFramework.Utility.Containers.OrderedCollection`1.Item(System.Int32)">
+            <summary>
+            Gets and sets individual elements in the collection by their index.
+            The first item added is at index position 0. The last item added is
+            at index position Count-1
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.Add(`0)">
+            <summary>
+            Adds a new item to the collection
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.AddRange(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Adds a number of items to the collection more efficiently
+            than adding the items individually
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.Remove(`0)">
+            <summary>
+            Removes all items from the collection that equal the supplied item 
+            and returns true if at least one item was removed
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.Clear">
+            <summary>
+            Empties the collection
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.IndexOf(`0)">
+            <summary>
+            Finds the index position of an item in the collection
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.Insert(System.Int32,`0)">
+            <summary>
+            Adds a new item into the middle of the collection
+            </summary>
+            <param name="index">The index of the item to insert before</param>
+            <param name="item">The item to insert</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.RemoveAt(System.Int32)">
+            <summary>
+            Removes an item from the collection by index position
+            </summary>
+            <param name="index"></param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.Contains(`0)">
+            <summary>
+            Returns true if the collection contains the specified item
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.CopyTo(`0[],System.Int32,System.Func{`0,`0})">
+            <summary>
+            Copies of this collection to an array
+            </summary>
+            <param name="array">The array to copy elements to</param>
+            <param name="arrayIndex">The index in the array to start copying</param>
+            <param name="cloneFunc">Optional function to allow deep copying</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.OrderedCollection`1.System#Collections#Generic#ICollection{T}#CopyTo(`0[],System.Int32)">
+            <summary>
+            Copies of this collection to an array
+            </summary>
+            <param name="array">The array to copy elements to</param>
+            <param name="arrayIndex">The index in the array to start copying</param>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:OwinFramework.Utility.Containers.OrderedCollection`1.GetEnumerator" -->
+        <member name="T:OwinFramework.Utility.Containers.ReusableArray`1">
+            <summary>
+            This is an array that can be disposed when you are done with it
+            to put it back into a pool of arrays available for reuse
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.ReusableArray`1.#ctor(System.Int32,System.Action{OwinFramework.Utility.Containers.ReusableArray{`0}})">
+            <summary>
+            Constructs an array of fixed length
+            </summary>
+            <param name="length">The fixed length of this array</param>
+            <param name="disposeAction">What to do when this instance is disposed</param>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.ReusableArray`1.#ctor(`0[],System.Action{OwinFramework.Utility.Containers.ReusableArray{`0}})">
+            <summary>
+            Constructs an array of fixed length
+            </summary>
+            <param name="data">The array to initialize this instance with</param>
+            <param name="disposeAction">What to do when this instance is disposed</param>
+        </member>
+        <member name="P:OwinFramework.Utility.Containers.ReusableArray`1.Item(System.Int32)">
+            <summary>
+            Gets and sets the elements of this array
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Containers.ReusableArray`1.Clear(`0)">
+            <summary>
+            Sets all elements of the array to the same value
+            </summary>
+            <param name="value">The value to set into every element of the array</param>
+        </member>
+        <member name="P:OwinFramework.Utility.Containers.ReusableArray`1.Length">
+            <summary>
+            Reurns the length of the array
+            </summary>
+        </member>
+        <member name="P:OwinFramework.Utility.Containers.ReusableArray`1.Count">
+            <summary>
+            This property is provided for the convenience of the application programmer
+            to use. The ReusableArray class does not make use of this property.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.DependencyGraph`1.GetSortedList">
+            <summary>
+            Implements depth first topological sort. There is a small variation in this
+            version because nodes can be defined as being fin first or last.
+            See https://en.wikipedia.org/wiki/Topological_sorting
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Utility.DependencyGraphFactory">
+            <summary>
+            Constructs instances that implement IDependencyGraph
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.DependencyGraphFactory.Create``1">
+            <summary>
+            Constructs an instance IDependencyGraph
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Utility.DuplicateKeyException">
+            <summary>
+            This exception is thrown when the application developer
+            configures two or more middleware with the same name.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.DuplicateKeyException.#ctor(System.String)">
+            <summary>
+            Constructs a new DuplicateKeyException
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Utility.HostingEnvironment">
+            <summary>
+            Provides a MapPath method that uses AppDomain.CurrentDomain.SetupInformation.ApplicationBase
+            which works for many different hosting envronments (but not all).
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.HostingEnvironment.OwinFramework#Interfaces#Utility#IHostingEnvironment#MapPath(System.String)">
+            <summary>
+            There is no known method that works for all environments. The safest way is to provide
+            an implementation of this method within your application. The OWIN Framework will use
+            your implementation wherever it needs to resolve a relative path into a physical file
+            location. See http://stackoverflow.com/questions/24571258/how-do-you-resolve-a-virtual-path-to-a-file-under-an-owin-host
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Utility.MissingDependencyException">
+            <summary>
+            This exception is thrown when a middleware is configured that has a
+            mandatory dependency on another middleware that was not configured by
+            the application developer.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.MissingDependencyException.#ctor(System.String)">
+            <summary>
+            Constructs a new MissingDependencyException
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.PopulateSegments">
+            <summary>
+            Evaluate all parent/child relationships, create missing segments
+            and add references between parents and children
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.PopulateNodes">
+            <summary>
+            Evaluate node dependencies and store references to dependant nodes
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.AssignRequiredSegments">
+            <summary>
+            Assigns nodes to the segments configured in the application.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.AssignUnassignedNodes">
+            <summary>
+            Find nodes that are not assigned to any segment and add them as close
+            to the root segment as possible with all of their dependencies met
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.CheckOptionalDependancies">
+            <summary>
+            Where there are optional dependencies thatt are not being satisfied,
+            try to rearange nodes so that as many optional dependencies as possible
+            are satisfied.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.FixMissingDependencies">
+            <summary>
+            Add dependencies to nodes where they have the same nodes
+            asigned to all ancestor segments. If the application configured
+            nodes in all of the parent segments it must intend these to run first.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.DuplicateHardDependencies">
+            <summary>
+            Where the application defines a hard dependency that is not met by
+            segment assigmnents, duplicate the dependant nodes onto the same
+            segments as the nodes that depend on them.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.DuplicateHardDependencies(OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Where the application defines a hard dependency that is not met by
+            segment assigmnents, duplicate the dependant nodes onto the same
+            segments as the nodes that depend on them.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.ResolveMultiChoiceDependencies">
+            <summary>
+            Finds nodes with dependencies where any one of the dependant nodes
+            will satisfy the dependency, and chooses which of those node choices
+            will be used to satisfy the dependency.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.ConsolidateCommonNodes">
+            <summary>
+            Recursively traverses the segmentation graph moving nodes into
+            the parent segment where they are present more than one child segment
+            and where moving them would not break any of their dependencies
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.ResolveMultiChoiceDependency(OwinFramework.Utility.Segmenter.NodeSegmentAssignment,System.Collections.Generic.IList{OwinFramework.Utility.Segmenter.Node})">
+            <summary>
+            Takes a node, and a list of alternate dependencies and chooses which
+            of the dependencies will be satisfied by the segmentation graph for
+            this particular segment assignment
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.SortNodesByDependencies(OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Arranges the nodes within the segment so that dependant nodes
+            are after the nodes that they depend on
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.ConsolidateCommonNodes(OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Move nodes into the parent segment where they are present multiple 
+            child segments and where moving them would not break any of their 
+            dependencies
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.RemoveDuplicates(OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Removes nodes from child segments if these nodes are already
+            included in an ancestor segment.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.Assign(OwinFramework.Utility.Segmenter.Node,OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Assigns a node to a segment if it is not already assigned to
+            it, and adds any hard dependencies to the same segment unless
+            the dependants are already in a parent segment
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.FindHighestSegment(OwinFramework.Utility.Segmenter.Node)">
+            <summary>
+            Finds the segment closest to the root where all of a nodes
+            dependencies have been met.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.FindHighestSegment(System.Collections.Generic.IList{System.Collections.Generic.IList{OwinFramework.Utility.Segmenter.Node}},OwinFramework.Utility.Segmenter.Segment,System.Int32@)">
+            <summary>
+            Recursively traverses the segment tree finding the segment closest to
+            the start segment that satisfies all of the dependancies
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.AddAssignment(OwinFramework.Utility.Segmenter.Node,OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Adds a node to a segment in the graph
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.RemoveAssignment(OwinFramework.Utility.Segmenter.Node,OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Deletes a node from a segment
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.MoveFromChildrenToParent(OwinFramework.Utility.Segmenter.Segment,OwinFramework.Utility.Segmenter.Node)">
+            <summary>
+            Removes a specific node from all child segments and adds it into 
+            the parent segment. Note that is the node has segment assignment
+            specific dependencies they will be reset back to the node 
+            dependencies.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.MoveFromParentToChildren(OwinFramework.Utility.Segmenter.Segment,OwinFramework.Utility.Segmenter.Node)">
+            <summary>
+            Removes a node from a parent segment and duplicates it in all the
+            child segments.
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.RootSegment">
+            <summary>
+            Returns the segment at the root of the segmentation graph
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.TraverseTopDown(OwinFramework.Utility.Segmenter.Segment,System.Action{OwinFramework.Utility.Segmenter.Segment})">
+            <summary>
+            Performs an action in all decendants of the given segment. The tree
+            is traversed top down
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.TraverseBottomUp(OwinFramework.Utility.Segmenter.Segment,System.Action{OwinFramework.Utility.Segmenter.Segment})">
+            <summary>
+            Performs an action in all decendants of the given segment. The tree
+            is traversed top down
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.NodeAncestors(OwinFramework.Utility.Segmenter.Node)">
+            <summary>
+            Returns a list of all nodes that appear before the specified node
+            in any part of the segment graph
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.NodeAncestors(OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Returns a list of all nodes that appear before the specified segment
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.SegmentAncestors(OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Returns a list of all the segments that preceed the specified segment
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.Segmenter.NodeDescendants(OwinFramework.Utility.Segmenter.Segment)">
+            <summary>
+            Returns a bottom up list of all descentants of the specified segment
+            </summary>
+        </member>
+        <member name="T:OwinFramework.Utility.SegmenterFactory">
+            <summary>
+            Constructs instances that implement ISegmenter
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.SegmenterFactory.#ctor(OwinFramework.Interfaces.Utility.IDependencyGraphFactory)">
+            <summary>
+            Consuructs a SegmenterFactory
+            </summary>
+        </member>
+        <member name="M:OwinFramework.Utility.SegmenterFactory.Create">
+            <summary>
+            Constructs an instance that implements ISegmenter
+            </summary>
+        </member>
+    </members>
+</doc>

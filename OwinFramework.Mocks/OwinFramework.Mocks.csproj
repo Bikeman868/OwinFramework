@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;net45</TargetFrameworks>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Authors>Martin Halliday</Authors>
+    <Version>2.7.0</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Copyright>Copyright © Martin Halliday 2014-2019</Copyright>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>Owin.Framework.Mocks</PackageId>
+    <Product>Owin Framework</Product>
+    <PackageTags>OWIN Owin-framework moq modules mock</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
+    <PackageReference Include="Owin">
+      <Version>1.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Owin">
+      <Version>2.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Moq.Modules">
+      <Version>1.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Ioc.Modules.Contract">
+      <Version>1.4.1</Version>
+    </PackageReference>
+    <PackageReference Include="NUnit">
+      <Version>3.5.0</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Owin">
+      <Version>1.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Owin">
+      <Version>3.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Moq.Modules">
+      <Version>1.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Ioc.Modules.Contract">
+      <Version>1.4.1</Version>
+    </PackageReference>
+    <PackageReference Include="NUnit">
+      <Version>3.5.0</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OwinFramework\OwinFramework.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OwinFramework", "OwinFramework\OwinFramework.csproj", "{C49A3A6E-3AA0-4745-A345-A0CB737E1CF3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8CA382C3-4B63-479E-B1DD-FC4AD2655ED6}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		application_developer.md = application_developer.md
+		middleware_developer.md = middleware_developer.md
+		NuGet\Owin.Framework.ConfigurationManager.nuspec = NuGet\Owin.Framework.ConfigurationManager.nuspec
+		NuGet\Owin.Framework.Mocks.nuspec = NuGet\Owin.Framework.Mocks.nuspec
+		NuGet\Owin.Framework.nuspec = NuGet\Owin.Framework.nuspec
+		NuGet\Owin.Framework.Urchin.nuspec = NuGet\Owin.Framework.Urchin.nuspec
+		NuGet\Package.cmd = NuGet\Package.cmd
+		readme.md = readme.md
+		SharedVersionInfo.cs = SharedVersionInfo.cs
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OwinFramework.Configuration.ConfigurationManager", "OwinFramework.Configuration.ConfigurationManager\OwinFramework.Configuration.ConfigurationManager.csproj", "{08B8F72E-F1FA-47C4-AFF1-5E8ECB23B8AB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OwinFramework.Configuration.Urchin", "OwinFramework.Configuration.Urchin\OwinFramework.Configuration.Urchin.csproj", "{44EEB6A1-CA6B-45F4-8117-50B2E0E9C6EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OwinFramework.Mocks", "OwinFramework.Mocks\OwinFramework.Mocks.csproj", "{8D125F23-5B02-46C2-9CF9-3BE720F991CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "OwinFramework.UnitTests\UnitTests.csproj", "{B31455ED-DA8F-4C8C-B663-0369521F0537}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C49A3A6E-3AA0-4745-A345-A0CB737E1CF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C49A3A6E-3AA0-4745-A345-A0CB737E1CF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C49A3A6E-3AA0-4745-A345-A0CB737E1CF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C49A3A6E-3AA0-4745-A345-A0CB737E1CF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08B8F72E-F1FA-47C4-AFF1-5E8ECB23B8AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08B8F72E-F1FA-47C4-AFF1-5E8ECB23B8AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08B8F72E-F1FA-47C4-AFF1-5E8ECB23B8AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08B8F72E-F1FA-47C4-AFF1-5E8ECB23B8AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44EEB6A1-CA6B-45F4-8117-50B2E0E9C6EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44EEB6A1-CA6B-45F4-8117-50B2E0E9C6EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44EEB6A1-CA6B-45F4-8117-50B2E0E9C6EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44EEB6A1-CA6B-45F4-8117-50B2E0E9C6EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D125F23-5B02-46C2-9CF9-3BE720F991CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D125F23-5B02-46C2-9CF9-3BE720F991CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D125F23-5B02-46C2-9CF9-3BE720F991CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D125F23-5B02-46C2-9CF9-3BE720F991CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B31455ED-DA8F-4C8C-B663-0369521F0537}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B31455ED-DA8F-4C8C-B663-0369521F0537}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B31455ED-DA8F-4C8C-B663-0369521F0537}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B31455ED-DA8F-4C8C-B663-0369521F0537}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {672FCE6D-92FF-4EE3-AF1B-F5F4F894171D}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;net45</TargetFrameworks>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Authors>Martin Halliday</Authors>
+    <Version>2.7.0</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Description>Contains interface definitions that allow middleware components from different
+ authors to be interchangeable in the OWIN pipeline. This gives application developers
+ the freedom to integrate any third-party middleware into their solution and
+ have all the different pieces work together.
+ Also allows middleware developers to specialize in one specific kind of middleware
+ whithout having to create the rest of the infrastructure to support it.</Description>
+    <Copyright>Copyright © Martin Halliday 2014-2019</Copyright>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>Owin.Framework</PackageId>
+    <Product>Owin Framework</Product>
+    <PackageTags>OWIN framework standards open-architecture</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net40|AnyCPU'">
+    <DocumentationFile>bin\Release\net40\OwinFramework.xml</DocumentationFile>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU'">
+    <DocumentationFile>bin\Release\net45\OwinFramework.xml</DocumentationFile>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
+    <PackageReference Include="Owin">
+      <Version>1.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Owin">
+      <Version>2.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Ioc.Modules.Contract">
+      <Version>1.4.1</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Owin">
+      <Version>1.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Owin">
+      <Version>3.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Ioc.Modules.Contract">
+      <Version>1.4.1</Version>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

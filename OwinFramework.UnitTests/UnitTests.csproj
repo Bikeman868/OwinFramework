@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;net45</TargetFrameworks>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Authors>Martin Halliday</Authors>
+    <Version>2.7.0</Version>
+    <Copyright>Copyright © Martin Halliday 2014-2019</Copyright>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit.Console" Version="3.10.0" />
+    <PackageReference Include="Owin" Version="1.0.0" />
+    <PackageReference Include="Moq.Modules" Version="1.0.2" />
+    <PackageReference Include="NUnit" Version="3.5.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.5.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
+    <PackageReference Include="Microsoft.Owin" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Microsoft.Owin" Version="3.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OwinFramework.Mocks\OwinFramework.Mocks.csproj" />
+    <ProjectReference Include="..\OwinFramework\OwinFramework.csproj" />
+  </ItemGroup>
+
+</Project>
