@@ -32,12 +32,34 @@ namespace OwinFramework.MiddlewareHelpers.Traceable
             ITraceable traceable)
         {
             _traceable = traceable;
+            _traceFilterLevel = TraceFilterLevel.Information;
+            ConfigureWith(configuration);
+        }
 
-            _traceFilterLevel = TraceFilterLevel.None;
+        /// <summary>
+        /// IDisposable implementation
+        /// </summary>
+        public void Dispose()
+        {
+            if (_configRegistration != null)
+                _configRegistration.Dispose();
+
+            _configRegistration = null;
+        }
+
+        /// <summary>
+        /// Changes the configuration provider for the trace filter
+        /// </summary>
+        /// <param name="configuration">The new configuration provider to use</param>
+        public void ConfigureWith(IConfiguration configuration)
+        {
+            Dispose();
+
+            if (configuration == null) return;
 
             _configRegistration = configuration.Register(
                 "/owinFramework/middleware/traceFilter",
-                cfg => 
+                cfg =>
                 {
                     if (cfg.MiddlewareClasses != null && cfg.MiddlewareClasses.Count > 0)
                     {
@@ -54,13 +76,6 @@ namespace OwinFramework.MiddlewareHelpers.Traceable
                         _traceFilterLevel = traceFilterLevel;
                 },
                 new Configuration());
-        }
-
-        public void Dispose()
-        {
-            if (_configRegistration != null)
-                _configRegistration.Dispose();
-            _configRegistration = null;
         }
 
         /// <summary>
@@ -100,7 +115,7 @@ namespace OwinFramework.MiddlewareHelpers.Traceable
             /// </summary>
             public Configuration()
             {
-                Level = TraceFilterLevel.None.ToString();
+                Level = TraceFilterLevel.Information.ToString();
             }
         }
 
