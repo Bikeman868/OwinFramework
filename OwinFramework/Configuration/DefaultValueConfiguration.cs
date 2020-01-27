@@ -7,7 +7,7 @@ namespace OwinFramework.Configuration
     /// This implementation of IConfiguration always supplies the default configuration value.
     /// Most real world applications need to be configurable and should use a different
     /// implementation of IConfiguration. This implementation is useful for demo projects,
-    /// unit tests and 'hello world' type projets.
+    /// unit tests and 'hello world' type projects.
     /// </summary>
     public class DefaultValueConfiguration: IConfiguration
     {
@@ -15,6 +15,11 @@ namespace OwinFramework.Configuration
         {
             onChangeAction(defaultValue);
             return new ChangeRegistration();
+        }
+
+        public IDisposable Register<T>(string path, Action<T> onChangeAction)
+        {
+            throw new Exception("You are using the default value configuration but this middleware requires an explicit configuration to be provided");
         }
 
         private class ChangeRegistration: IDisposable

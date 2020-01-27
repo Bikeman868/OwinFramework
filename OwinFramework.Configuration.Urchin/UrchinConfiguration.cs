@@ -22,5 +22,10 @@ namespace OwinFramework.Configuration.Urchin
         {
             return _configurationStore.Register(path, onChangeAction, defaultValue);
         }
+
+        public IDisposable Register<T>(string path, Action<T> onChangeAction)
+        {
+            return _configurationStore.Register(path, onChangeAction);
+        }
     }
 }

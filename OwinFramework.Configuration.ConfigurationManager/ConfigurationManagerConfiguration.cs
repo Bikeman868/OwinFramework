@@ -38,7 +38,20 @@ namespace OwinFramework.Configuration.ConfigurationManager
 
             return new ChangeRegistration();
         }
-    
+
+        public IDisposable Register<T>(string path, Action<T> onChangeAction)
+        {
+            var section = System.Configuration.ConfigurationManager.GetSection(path);
+            if (section == null)
+                throw new Exception("A configuration is required for " + path);
+
+            var value = Mapper.Map<T>(section);
+
+            onChangeAction(value);
+
+            return new ChangeRegistration();
+        }
+
         private class ChangeRegistration : IDisposable
         {
             public void Dispose() { }

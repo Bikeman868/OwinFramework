@@ -28,6 +28,16 @@ namespace OwinFramework.Mocks.Builder
             return this;
         }
 
+        public IDisposable Register<T>(string path, Action<T> onChangeAction)
+        {
+            _registrations.Add(new Registration<T>().Initialize(path, onChangeAction));
+
+            object config;
+            if (_configurations.TryGetValue(path.ToLower(), out config))
+                onChangeAction((T)config);
+            return this;
+        }
+
         public void CancelRegistrations()
         {
             _registrations.Clear();
