@@ -26,9 +26,9 @@ namespace OwinFramework.Mocks.UnitTests
         [Test]
         public void Should_store_and_retrieve_values()
         {
-            var exist1 = _cache.Put("key1", "value1", null);
-            var exist2 = _cache.Put("key2", "value2", null);
-            var exist3 = _cache.Put("key1", "value3", null);
+            var exist1 = _cache.Replace("key1", "value1", null);
+            var exist2 = _cache.Replace("key2", "value2", null);
+            var exist3 = _cache.Replace("key1", "value3", null);
 
             Assert.IsFalse(exist1, "Key 1 does not exist");
             Assert.IsFalse(exist2, "Key 2 does not exist");
@@ -50,7 +50,7 @@ namespace OwinFramework.Mocks.UnitTests
                 {
                     var value = _cache.Get("key", 0, lockTime);
                     Thread.Sleep(sleepTime);
-                    _cache.Put("key", value + 1);
+                    _cache.Replace("key", value + 1);
                 }
             };
 
@@ -71,9 +71,9 @@ namespace OwinFramework.Mocks.UnitTests
         [Test]
         public void Should_expire_content()
         {
-            _cache.Put("key1", 1);
-            _cache.Put("key2", 2, TimeSpan.FromMilliseconds(250));
-            _cache.Put("key3", 3, TimeSpan.FromMilliseconds(750));
+            _cache.Replace("key1", 1);
+            _cache.Replace("key2", 2, TimeSpan.FromMilliseconds(250));
+            _cache.Replace("key3", 3, TimeSpan.FromMilliseconds(750));
 
             Assert.AreEqual(1, _cache.Get("key1", 0));
             Assert.AreEqual(2, _cache.Get("key2", 0));

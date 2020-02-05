@@ -70,6 +70,11 @@ namespace OwinFramework.Mocks.V1.Facilities
 
             bool ICache.Put<T>(string key, T value, TimeSpan? lifespan, string category)
             {
+                return ((ICache)this).Replace(key, value, lifespan, category);
+            }
+
+            bool ICache.Replace<T>(string key, T value, TimeSpan? lifespan, string category)
+            {
                 lock (_cache)
                 {
                     var exists = _cache.ContainsKey(key);
@@ -79,6 +84,19 @@ namespace OwinFramework.Mocks.V1.Facilities
                         Expires = DateTime.UtcNow + lifespan
                     };
                     return exists;
+                }
+            }
+
+            bool ICache.Merge<T>(string key, T value, TimeSpan? lifespan, string category)
+            {
+                lock (_cache)
+                {
+                    _cache[key] = new CacheEntry
+                    {
+                        Data = value,
+                        Expires = DateTime.UtcNow + lifespan
+                    };
+                    return false;
                 }
             }
 
