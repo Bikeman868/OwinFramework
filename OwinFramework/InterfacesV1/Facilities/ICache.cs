@@ -47,6 +47,12 @@ namespace OwinFramework.InterfacesV1.Facilities
         bool Replace<T>(string key, T value, TimeSpan? lifespan = null, string category = null);
 
         /// <summary>
+        /// Returns true if this cache implementation supports merge operations. If this
+        /// property is false and you call the Merge method it will throw a NotImplementedException
+        /// </summary>
+        bool CanMerge { get; }
+
+        /// <summary>
         /// Merges changes into existing cached data. Unlocks the cache entry if it is locked. The purpose
         /// of this method is to update only modified properties of the cached object. This allows multiple
         /// callers to write different changes into the cache for the same object without overwriting

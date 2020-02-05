@@ -87,17 +87,11 @@ namespace OwinFramework.Mocks.V1.Facilities
                 }
             }
 
+            bool ICache.CanMerge { get { return false; } }
+
             bool ICache.Merge<T>(string key, T value, TimeSpan? lifespan, string category)
             {
-                lock (_cache)
-                {
-                    _cache[key] = new CacheEntry
-                    {
-                        Data = value,
-                        Expires = DateTime.UtcNow + lifespan
-                    };
-                    return false;
-                }
+                throw new NotImplementedException();
             }
 
             private class CacheEntry
