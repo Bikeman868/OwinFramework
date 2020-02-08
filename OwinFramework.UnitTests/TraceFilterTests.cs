@@ -33,13 +33,13 @@ namespace UnitTests
         }
 
         [Test]
-        [TestCase(TraceLevel.Debug, "Debug message")]
-        [TestCase(TraceLevel.Information, "Information message")]
-        [TestCase(TraceLevel.Error, "Error message")]
-        public void Should_supress_trace_by_default(TraceLevel level, string message)
+        [TestCase(TraceLevel.Debug, "Debug message", 0)]
+        [TestCase(TraceLevel.Information, "Information message", 1)]
+        [TestCase(TraceLevel.Error, "Error message", 1)]
+        public void Should_supress_debug_trace_by_default(TraceLevel level, string message, int expected)
         {
             _traceFilter.Trace(null, level, () => message);
-            Assert.AreEqual(0, _traceMessages.Count);
+            Assert.AreEqual(expected, _traceMessages.Count);
         }
 
         [Test]

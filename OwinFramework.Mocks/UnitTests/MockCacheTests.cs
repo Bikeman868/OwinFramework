@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using NUnit.Framework;
-using OwinFramework.InterfacesV1.Facilities;
-using OwinFramework.Mocks.V1.Facilities;
+using OwinFramework.InterfacesV2.Facilities;
+using OwinFramework.Mocks.V2.Facilities;
 
 namespace OwinFramework.Mocks.UnitTests
 {

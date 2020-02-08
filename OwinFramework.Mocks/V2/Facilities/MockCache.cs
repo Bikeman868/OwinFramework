@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Threading;
 using Moq.Modules;
-using OwinFramework.InterfacesV1.Facilities;
 
-namespace OwinFramework.Mocks.V1.Facilities
+namespace OwinFramework.Mocks.V2.Facilities
 {
-    public class MockCache : ConcreteImplementationProvider<ICache>
+    public class MockCache : ConcreteImplementationProvider<InterfacesV2.Facilities.ICache>
     {
         private readonly TestCache _cache = new TestCache();
 
-        protected override ICache GetImplementation(IMockProducer mockProducer)
+        protected override InterfacesV2.Facilities.ICache GetImplementation(IMockProducer mockProducer)
         {
             return _cache;
         }
@@ -20,7 +19,7 @@ namespace OwinFramework.Mocks.V1.Facilities
             _cache.Clear();
         }
 
-        private class TestCache: ICache
+        private class TestCache: InterfacesV2.Facilities.ICache
         {
             private readonly IDictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
 
@@ -30,13 +29,15 @@ namespace OwinFramework.Mocks.V1.Facilities
                     _cache.Clear();
             }
 
-            bool ICache.Delete(string key, string category)
+            #region V1 interface
+
+            bool InterfacesV1.Facilities.ICache.Delete(string key, string category)
             {
                 lock (_cache)
                     return _cache.Remove(key);
             }
 
-            T ICache.Get<T>(string key, T defaultValue, TimeSpan? lockTime, string category)
+            T InterfacesV1.Facilities.ICache.Get<T>(string key, T defaultValue, TimeSpan? lockTime, string category)
             {
                 while (true)
                 {
@@ -68,7 +69,16 @@ namespace OwinFramework.Mocks.V1.Facilities
                 }
             }
 
-            bool ICache.Put<T>(string key, T value, TimeSpan? lifespan, string category)
+            bool InterfacesV1.Facilities.ICache.Put<T>(string key, T value, TimeSpan? lifespan, string category)
+            {
+                return ((InterfacesV2.Facilities.ICache)this).Replace(key, value, lifespan, category);
+            }
+
+            #endregion
+
+            #region V2 interface
+
+            bool InterfacesV2.Facilities.ICache.Replace<T>(string key, T value, TimeSpan? lifespan, string category)
             {
                 lock (_cache)
                 {
@@ -81,6 +91,15 @@ namespace OwinFramework.Mocks.V1.Facilities
                     return exists;
                 }
             }
+
+            bool InterfacesV2.Facilities.ICache.CanMerge { get { return false; } }
+
+            bool InterfacesV2.Facilities.ICache.Merge<T>(string key, T value, TimeSpan? lifespan, string category)
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
 
             private class CacheEntry
             {

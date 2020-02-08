@@ -270,7 +270,10 @@ namespace UnitTests
             Action<int> addAscending = value =>
             {
                 var nextElement = linkedList.FirstElementOrDefault(v => v > value);
-                linkedList.InsertBefore(nextElement, value);
+                if (nextElement == null)
+                    linkedList.Append(value);
+                else
+                    linkedList.InsertBefore(nextElement, value);
             };
 
             addAscending(13);
