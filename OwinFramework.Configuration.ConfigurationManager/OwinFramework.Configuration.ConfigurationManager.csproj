@@ -4,10 +4,10 @@
     <TargetFrameworks>net40;net45</TargetFrameworks>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <Authors>Martin Halliday</Authors>
-    <Version>2.7.0</Version>
+    <Version>2.8.1</Version>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>Configures an implementation of IConfiguration in your IoC container that will use the web.config file to configure Owin middleware</Description>
-    <Copyright>Copyright © Martin Halliday 2014-2019</Copyright>
+    <Copyright>Copyright © Martin Halliday 2014-2020</Copyright>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Owin.Framework.ConfigurationManager</PackageId>
     <Product>Owin Framework</Product>

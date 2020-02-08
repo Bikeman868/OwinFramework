@@ -65,7 +65,7 @@ namespace OwinFramework.Utility.Containers
         /// <summary>
         /// Adds a new element to the end of the list
         /// </summary>
-        /// <param name="data">The data to add to the list</param>
+        /// <param name="data">The data to add to the end of the list</param>
         /// <returns>The new list element. This can be used to delete
         /// the element later, or enumerate the list starting from
         /// this element</returns>
@@ -95,9 +95,22 @@ namespace OwinFramework.Utility.Containers
         }
 
         /// <summary>
+        /// Adds a new element to the end of the list
+        /// </summary>
+        /// <param name="data">The data to add to the end of the list</param>
+        /// <returns>The new list element. This can be used to delete
+        /// the element later, or enumerate the list starting from
+        /// this element</returns>
+        public ListElement PushLast(T data)
+        {
+            return Append(data);
+        }
+
+
+        /// <summary>
         /// Adds a new element to the start of the list
         /// </summary>
-        /// <param name="data">The data to add to the list</param>
+        /// <param name="data">The data to add to the start of the list</param>
         /// <returns>The new list element. This can be used to delete
         /// the element later, or enumerate the list starting from
         /// this element</returns>
@@ -124,6 +137,18 @@ namespace OwinFramework.Utility.Containers
             }
 
             return listElement;
+        }
+
+        /// <summary>
+        /// Adds a new element to the start of the list
+        /// </summary>
+        /// <param name="data">The data to add to the start of the list</param>
+        /// <returns>The new list element. This can be used to delete
+        /// the element later, or enumerate the list starting from
+        /// this element</returns>
+        public ListElement PushFirst(T data)
+        {
+            return Prepend(data);
         }
 
         /// <summary>
@@ -286,7 +311,7 @@ namespace OwinFramework.Utility.Containers
         #region Stack and queue operations
 
         /// <summary>
-        /// Removes the first item from the list and returnes it in a thread-safe way
+        /// Removes the first item from the list and returns it in a thread-safe way
         /// ensuring that each thread will pop a different item from the list.
         /// </summary>
         public T PopFirst()
@@ -307,7 +332,7 @@ namespace OwinFramework.Utility.Containers
         }
 
         /// <summary>
-        /// Removes the last item from the list and returnes it in a thread-safe way
+        /// Removes the last item from the list and returns it in a thread-safe way
         /// ensuring that each thread will pop a different item from the list.
         /// </summary>
         public T PopLast()

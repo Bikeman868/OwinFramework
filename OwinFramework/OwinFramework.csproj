@@ -4,7 +4,7 @@
     <TargetFrameworks>net40;net45</TargetFrameworks>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <Authors>Martin Halliday</Authors>
-    <Version>2.7.0</Version>
+    <Version>2.8.1</Version>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>Contains interface definitions that allow middleware components from different
  authors to be interchangeable in the OWIN pipeline. This gives application developers
@@ -12,11 +12,13 @@
  have all the different pieces work together.
  Also allows middleware developers to specialize in one specific kind of middleware
  whithout having to create the rest of the infrastructure to support it.</Description>
-    <Copyright>Copyright © Martin Halliday 2014-2019</Copyright>
+    <Copyright>Copyright © Martin Halliday 2014-2020</Copyright>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Owin.Framework</PackageId>
     <Product>Owin Framework</Product>
     <PackageTags>OWIN framework standards open-architecture</PackageTags>
+    <AssemblyVersion>2.8.1.0</AssemblyVersion>
+    <FileVersion>2.8.1.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net40|AnyCPU'">
