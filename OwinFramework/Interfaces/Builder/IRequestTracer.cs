@@ -30,5 +30,14 @@ namespace OwinFramework.Interfaces.Builder
         /// the built-in System.Diagnostics.Trace class.
         /// </summary>
         Action<IOwinContext, string> TraceOutput { get; set; }
+
+        /// <summary>
+        /// This provides access to trace information. This can be usefull for
+        /// situations where you want to return the trace information in the
+        /// response rather than just logging it. Be careful when using this that
+        /// you do not introduce a security vulnerability by revealing trace
+        /// information to end users.
+        /// </summary>
+        ITraceContext GetTraceContext(IOwinContext owinContext);
     }
 }

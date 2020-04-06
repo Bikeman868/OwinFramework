@@ -109,6 +109,11 @@ namespace OwinFramework.Builder
             return this;
         }
 
+        public ITraceContext GetTraceContext(IOwinContext owinContext)
+        {
+            return owinContext.Get<TraceContext>("fw.builder.trace");
+        }
+
         IMiddleware<T> IBuilder.Register<T>(IMiddleware<T> middleware)
         {
             var traceable = middleware as InterfacesV1.Capability.ITraceable;
@@ -502,7 +507,7 @@ namespace OwinFramework.Builder
 
 #endif
 
-        private class TraceContext
+        private class TraceContext: ITraceContext
         {
             private static long _nextRequestId;
 
@@ -518,6 +523,11 @@ namespace OwinFramework.Builder
             public void Append(string message)
             {
                 TraceOutput.AppendFormat("#{0:d6} {1:T} {2}{3}", _requestId, DateTime.Now, message, Environment.NewLine);
+            }
+
+            public string GetTraceOutput()
+            {
+                return TraceOutput.ToString();
             }
         }
 

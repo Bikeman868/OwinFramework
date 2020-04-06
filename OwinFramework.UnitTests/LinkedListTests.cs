@@ -29,9 +29,9 @@ namespace UnitTests
         public void Should_behave_like_a_queue()
         {
             var linkedList = new LinkedList<TestData>();
-            linkedList.Prepend(new TestData { Field1 = "A" });
-            linkedList.Prepend(new TestData { Field1 = "B" });
-            linkedList.Prepend(new TestData { Field1 = "C" });
+            linkedList.PushFirst(new TestData { Field1 = "A" });
+            linkedList.PushFirst(new TestData { Field1 = "B" });
+            linkedList.PushFirst(new TestData { Field1 = "C" });
 
             Assert.AreEqual("A", linkedList.PopLast().Field1);
             Assert.AreEqual("B", linkedList.PopLast().Field1);
@@ -42,9 +42,9 @@ namespace UnitTests
         public void Should_behave_like_a_stack()
         {
             var linkedList = new LinkedList<TestData>();
-            linkedList.Prepend(new TestData { Field1 = "A" });
-            linkedList.Prepend(new TestData { Field1 = "B" });
-            linkedList.Prepend(new TestData { Field1 = "C" });
+            linkedList.PushFirst(new TestData { Field1 = "A" });
+            linkedList.PushFirst(new TestData { Field1 = "B" });
+            linkedList.PushFirst(new TestData { Field1 = "C" });
 
             Assert.AreEqual("C", linkedList.PopFirst().Field1);
             Assert.AreEqual("B", linkedList.PopFirst().Field1);
