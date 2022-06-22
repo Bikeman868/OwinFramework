@@ -21,7 +21,7 @@
       <Version>1.4.1</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>7.0.1</Version>
+      <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="Urchin.Client">
       <Version>1.3.0</Version>
@@ -33,7 +33,7 @@
       <Version>1.4.1</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>7.0.1</Version>
+      <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="Urchin.Client">
       <Version>1.3.0</Version>
