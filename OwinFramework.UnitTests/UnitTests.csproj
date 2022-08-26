@@ -21,12 +21,12 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
-    <PackageReference Include="Microsoft.Owin" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Owin" Version="4.1.1" />
     <PackageReference Include="Moq" Version="4.2.1507.118" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-    <PackageReference Include="Microsoft.Owin" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Owin" Version="4.1.1" />
     <PackageReference Include="Moq" Version="4.13.1" />
   </ItemGroup>
 
