@@ -18,7 +18,7 @@
       <Version>1.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Owin">
-      <Version>2.1.0</Version>
+      <Version>4.2.2</Version>
     </PackageReference>
     <PackageReference Include="Moq.Modules">
       <Version>1.0.2</Version>
@@ -36,7 +36,7 @@
       <Version>1.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Owin">
-      <Version>3.1.0</Version>
+      <Version>4.2.2</Version>
     </PackageReference>
     <PackageReference Include="Moq.Modules">
       <Version>1.0.2</Version>
